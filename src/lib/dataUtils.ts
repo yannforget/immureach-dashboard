@@ -90,7 +90,7 @@ export const METRIC_META: Record<MetricKey, MetricMeta> = {
   },
   pred_zerodosepenta: {
     key: 'pred_zerodosepenta',
-    label: '0-dose (penta)',
+    label: '0-dose (pen)',
     countKey: 'pred_zerodosepenta_count',
     isZeroDose: true,
     description: 'Zero-dose children based on pentavalent vaccine uptake',

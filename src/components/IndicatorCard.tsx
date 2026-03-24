@@ -105,7 +105,7 @@ export function IndicatorCard({
             ?
           </div>
           {showTooltip && (
-            <div className="absolute right-0 top-5 z-10 w-64 rounded-md bg-slate-900 px-3 py-3 text-xs text-white shadow-lg space-y-2">
+            <div className="absolute right-0 top-5 z-50 w-64 rounded-md bg-slate-900 px-3 py-3 text-xs text-white shadow-lg space-y-2">
               <div>
                 <div className="font-semibold mb-1">{isZeroDose ? 'Zero-dose Children' : 'Coverage Rate'}</div>
                 <div className="text-slate-300">{metricDescription}</div>
