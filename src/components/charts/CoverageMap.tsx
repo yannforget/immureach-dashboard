@@ -73,10 +73,20 @@ export function CoverageMap() {
     }
 
     console.log('Attaching click handler to map')
-    chart.on('click', handleClick)
+
+    // Try multiple event types to catch the click
+    const handleClickWrapper = (params: any) => {
+      console.log('Raw event received:', params)
+      handleClick(params)
+    }
+
+    chart.on('click', handleClickWrapper)
+    chart.on('mouseclick', handleClickWrapper)
+
     return () => {
-      console.log('Detaching click handler from map')
-      chart.off('click', handleClick)
+      console.log('Detaching click handlers from map')
+      chart.off('click', handleClickWrapper)
+      chart.off('mouseclick', handleClickWrapper)
     }
   }, [selectedProvince, zones, provinces, setProvince])
 
@@ -86,6 +96,7 @@ export function CoverageMap() {
     if (!chart) return
 
     const handleMouseOver = (params: any) => {
+      console.log('Mouseover detected:', params.name)
       if (params.componentType === 'series' && params.name) {
         const zone = zones.find(z => z.displayName === params.name)
         if (zone) {
@@ -95,6 +106,7 @@ export function CoverageMap() {
     }
 
     const handleMouseOut = () => {
+      console.log('Mouseout detected')
       setHoveredZone(null)
     }
 
