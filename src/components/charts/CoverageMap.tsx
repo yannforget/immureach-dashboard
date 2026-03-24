@@ -48,26 +48,34 @@ export function CoverageMap() {
     if (!chart) return
 
     const handleClick = (params: any) => {
+      console.log('Click detected:', { componentType: params.componentType, name: params.name, seriesName: params.seriesName })
+
       // Handle clicks on map areas
       if (params.componentType === 'series' && params.name) {
         if (selectedProvince) {
           // If already showing zones, select the clicked zone
           const zone = zones.find(z => z.displayName === params.name)
+          console.log('Looking for zone:', params.name, 'found:', zone)
           if (zone) {
             useDashboardStore.setState({ selectedZoneId: zone.id })
           }
         } else {
           // If showing provinces, select the province
+          console.log('Available provinces:', provinces.map(p => p.displayName))
           const province = provinces.find(p => p.displayName === params.name)
+          console.log('Looking for province:', params.name, 'found:', province)
           if (province) {
+            console.log('Setting province to:', province.displayName)
             setProvince(province.displayName)
           }
         }
       }
     }
 
+    console.log('Attaching click handler to map')
     chart.on('click', handleClick)
     return () => {
+      console.log('Detaching click handler from map')
       chart.off('click', handleClick)
     }
   }, [selectedProvince, zones, provinces, setProvince])
