@@ -58,22 +58,46 @@ export function IndicatorCard({
             ?
           </div>
           {showTooltip && (
-            <div className="absolute right-0 top-5 z-10 w-56 rounded-md bg-slate-900 px-3 py-2 text-xs text-white shadow-lg">
-              <div className="space-y-0.5">
-                {isZeroDose ? (
-                  <>
-                    <div>Zero-dose children (6-24 months)</div>
-                    <div>From ImmuReach models (national immunization surveys)</div>
-                    <div>Count: % × population (GRID3 data)</div>
-                  </>
-                ) : (
-                  <>
-                    <div>Coverage from ImmuReach models</div>
-                    <div>(national immunization surveys, 6-24 months)</div>
-                    <div># of children: % × population (GRID3 data)</div>
-                  </>
-                )}
-              </div>
+            <div className="absolute right-0 top-5 z-10 w-64 rounded-md bg-slate-900 px-3 py-3 text-xs text-white shadow-lg space-y-2">
+              {isZeroDose ? (
+                <>
+                  <div>
+                    <div className="font-semibold mb-1">Zero-dose Children</div>
+                    <div className="text-slate-300">Children aged 6-24 months without any doses</div>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-slate-400 text-2xs mb-1">Source</div>
+                    <div className="text-slate-300">ImmuReach models + national surveys</div>
+                  </div>
+                  <div>
+                    <div className="font-semibold mb-1">Number of Children</div>
+                    <div className="text-slate-300">Count in 6-24 month age group</div>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-slate-400 text-2xs mb-1">Source</div>
+                    <div className="text-slate-300">ImmuReach estimates + GRID3 population data</div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <div className="font-semibold mb-1">Coverage Rate</div>
+                    <div className="text-slate-300">Percentage of children aged 6-24 months</div>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-slate-400 text-2xs mb-1">Source</div>
+                    <div className="text-slate-300">ImmuReach models + national surveys</div>
+                  </div>
+                  <div>
+                    <div className="font-semibold mb-1">Number of Children</div>
+                    <div className="text-slate-300">Count in 6-24 month age group</div>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-slate-400 text-2xs mb-1">Source</div>
+                    <div className="text-slate-300">ImmuReach estimates + GRID3 population data</div>
+                  </div>
+                </>
+              )}
               <div className="absolute -top-1 right-2 h-2 w-2 rotate-45 bg-slate-900"></div>
             </div>
           )}
