@@ -42,56 +42,38 @@ export function CoverageMap() {
     zoneRows: zones,
   })
 
-  // Handle map clicks - try multiple event types to find which one fires
+  // Handle map clicks via ECharts instance
   useEffect(() => {
     const chart = chartRef.current?.getEchartsInstance()
     if (!chart) return
 
-    // Generic event handler that logs all echarts events
-    const handleAnyEvent = (params: any) => {
-      console.log('ECharts event fired:', {
-        type: params.type,
-        componentType: params.componentType,
-        name: params.name,
-        seriesName: params.seriesName,
-        dataIndex: params.dataIndex
-      })
+    const handleClick = (params: any) => {
+      console.log('ECharts click event:', JSON.stringify(params, null, 2))
 
-      // Try to extract the area name from various possible params
-      const areaName = params.name || params.seriesName
-
-      if (areaName) {
+      if (params.name) {
         if (selectedProvince) {
-          // If already showing zones, select the clicked zone
-          const zone = zones.find(z => z.displayName === areaName)
+          // If showing zones, select the clicked zone
+          const zone = zones.find(z => z.displayName === params.name)
           if (zone) {
-            console.log('Selected zone:', areaName)
+            console.log('Selecting zone:', zone.displayName)
             useDashboardStore.setState({ selectedZoneId: zone.id })
           }
         } else {
           // If showing provinces, select the province
-          const province = provinces.find(p => p.displayName === areaName)
+          const province = provinces.find(p => p.displayName === params.name)
           if (province) {
-            console.log('Selected province:', areaName)
+            console.log('Selecting province:', province.displayName)
             setProvince(province.displayName)
           }
         }
       }
     }
 
-    // List of events to try
-    const eventsToTry = ['click', 'mouseclick', 'selectchanged', 'itemclick', 'seriesclick', 'geoselectchanged']
-
-    console.log('Attaching event handlers:', eventsToTry)
-    eventsToTry.forEach(event => {
-      chart.on(event, handleAnyEvent)
-    })
+    console.log('Attaching click handler')
+    chart.on('click', handleClick)
 
     return () => {
-      console.log('Detaching event handlers')
-      eventsToTry.forEach(event => {
-        chart.off(event, handleAnyEvent)
-      })
+      chart.off('click', handleClick)
     }
   }, [selectedProvince, zones, provinces, setProvince])
 
