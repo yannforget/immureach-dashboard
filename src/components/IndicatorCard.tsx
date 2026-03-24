@@ -85,7 +85,7 @@ export function IndicatorCard({
       }`}
     >
       <div className="flex items-center justify-between gap-1">
-        <h3 className="text-sm font-semibold text-slate-700">{label}</h3>
+        <h3 className="text-xs font-semibold text-slate-700">{label}</h3>
         <div
           className="relative flex-shrink-0"
           onMouseEnter={() => setShowTooltip(true)}
