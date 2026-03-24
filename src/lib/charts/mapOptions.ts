@@ -73,6 +73,18 @@ export function buildMapOptions(config: MapConfig): EChartsOption {
       type: 'map',
       geoIndex: 0,
       data: dataSeries,
+      itemStyle: {
+        areaColor: '#e2e8f0',
+        borderColor: '#cbd5e1',
+        borderWidth: 0.5,
+      },
+      emphasis: {
+        itemStyle: {
+          areaColor: '#bfdbfe',
+          borderColor: '#0369a1',
+          borderWidth: 1.5,
+        },
+      },
     },
   ]
 
@@ -150,11 +162,6 @@ export function buildMapOptions(config: MapConfig): EChartsOption {
     geo: {
       map: mapName,
       roam: false,
-      itemStyle: {
-        areaColor: '#e2e8f0',
-        borderColor: '#cbd5e1',
-        borderWidth: 0.5,
-      },
     } as any,
     series: series as any,
   }
