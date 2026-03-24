@@ -37,10 +37,10 @@ export function IndicatorCard({
           : 'border-slate-200 bg-white hover:border-teal-400'
       }`}
     >
-      <div className="flex items-start justify-between">
+      <div className="flex items-center justify-between gap-1">
         <h3 className="text-sm font-semibold text-slate-700">{label}</h3>
         <div
-          className="relative"
+          className="relative flex-shrink-0"
           onMouseEnter={() => setShowTooltip(true)}
           onMouseLeave={() => setShowTooltip(false)}
         >
@@ -49,7 +49,7 @@ export function IndicatorCard({
               e.stopPropagation()
               setShowTooltip(!showTooltip)
             }}
-            className="ml-1 text-xs font-semibold text-slate-400 hover:text-slate-600 cursor-pointer inline-block w-5 h-5 rounded-full border border-slate-400 flex items-center justify-center"
+            className="w-4 h-4 rounded-full border border-slate-400 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:border-slate-600 cursor-pointer text-2xs font-bold leading-none"
             role="button"
             tabIndex={0}
             title="More information"
