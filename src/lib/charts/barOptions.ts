@@ -12,10 +12,11 @@ interface BarConfig {
   hoveredId: string | null
   metricLabel: string
   suffix: string
+  isZeroDose?: boolean
 }
 
 export function buildBarOptions(config: BarConfig): EChartsOption {
-  const { items, hoveredId, metricLabel, suffix } = config
+  const { items, hoveredId, metricLabel, suffix, isZeroDose = false } = config
 
   // Sort items in descending order (largest at top)
   const sortedItems = [...items].sort((a, b) => a.value - b.value)
@@ -37,8 +38,25 @@ export function buildBarOptions(config: BarConfig): EChartsOption {
       },
       formatter: (params: any) => {
         if (Array.isArray(params) && params.length > 0) {
-          const item = params[0]
-          return `${item.name}<br/>${metricLabel}: ${item.value}${suffix}`
+          const param = params[0]
+          const dataIndex = param.dataIndex
+          const item = sortedItems[dataIndex]
+
+          // Format percentage consistently: (value * 100).toFixed(1) for coverage, just toFixed(1) for zero-dose
+          const displayValue = isZeroDose
+            ? (item.value).toFixed(1)
+            : (item.value).toFixed(1)
+
+          // Format count if available
+          let tooltip = `<strong>${item.name}</strong><br/>`
+          tooltip += `${metricLabel}: ${displayValue}${suffix}`
+
+          if (typeof item.count === 'number') {
+            const displayCount = Math.round(item.count).toLocaleString()
+            tooltip += `<br/># Children: ${displayCount}`
+          }
+
+          return tooltip
         }
         return ''
       },

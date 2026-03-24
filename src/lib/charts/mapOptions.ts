@@ -84,10 +84,37 @@ export function buildMapOptions(config: MapConfig): EChartsOption {
           if (params.seriesName === 'Antennes') {
             return `${params.name}<br/>⭐ Antenne`
           }
+
+          // Find the corresponding feature for this area
+          const feature = features.find(f => f.displayName === params.name)
+          if (!feature) return ''
+
           const value = params.value
-          const displayValue = typeof value === 'number' ? value.toFixed(1) : value
+          const displayPercentage = typeof value === 'number'
+            ? (value).toFixed(1)
+            : value
+
+          // Get count value
+          const countValue = (feature.properties as any)[metricMeta.countKey]
+          const displayCount = typeof countValue === 'number'
+            ? Math.round(countValue).toLocaleString()
+            : '—'
+
+          // Get births per year
+          const birthsValue = (feature.properties as any).births_per_year
+          const displayBirths = typeof birthsValue === 'number'
+            ? Math.round(birthsValue).toLocaleString()
+            : '—'
+
           const suffix = isZeroDose ? ' children' : '%'
-          return `${params.name}<br/>${metricMeta.label}: ${displayValue}${suffix}`
+
+          // Build tooltip with 3 data points
+          let tooltip = `<strong>${params.name}</strong><br/>`
+          tooltip += `${metricMeta.label}: ${displayPercentage}${suffix}<br/>`
+          tooltip += `# Children: ${displayCount}<br/>`
+          tooltip += `Births/Year: ${displayBirths}`
+
+          return tooltip
         }
         return ''
       },

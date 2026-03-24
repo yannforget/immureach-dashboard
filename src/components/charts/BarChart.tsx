@@ -70,6 +70,7 @@ export function BarChart() {
     hoveredId: hoveredZoneId,
     metricLabel: metricMeta.label,
     suffix,
+    isZeroDose: metricMeta.isZeroDose,
   })
 
   // Handle bar clicks
