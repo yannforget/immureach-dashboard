@@ -144,7 +144,7 @@ export function buildMapOptions(config: MapConfig): EChartsOption {
           min: 0,
           max: 1,
           inRange: {
-            color: ['#e5e7eb', '#0d9488'], // light gray for 0 (non-antenne), teal for 1 (antenne)
+            color: ['#fee2e2', '#dc2626'], // light red for 0 (non-antenne), red for 1 (antenne)
           },
           show: false, // Hide the legend but keep the color mapping
         }
