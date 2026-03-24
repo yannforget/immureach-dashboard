@@ -1,0 +1,142 @@
+[
+    {
+        "column_name": "q101",
+        "label": "Province",
+        "description": "Province name"
+    },
+    {
+        "column_name": "q103",
+        "label": "Health zone",
+        "description": "Zone de Santé (health zone) name"
+    },
+    {
+        "column_name": "geometry",
+        "label": "Geometry",
+        "description": "Geographic boundary of the health zone"
+    },
+    {
+        "column_name": "pop_0_12mo",
+        "label": "Population under 1",
+        "description": "Population count of children under 1 year old (0-12 months), from GRID3 raster data"
+    },
+    {
+        "column_name": "pop_0_5yo",
+        "label": "Population under 5",
+        "description": "Population count of children under 5 years old, from GRID3 raster data"
+    },
+    {
+        "column_name": "imr",
+        "label": "Infant mortality rate",
+        "description": "Infant mortality rate per 1,000 live births, province-level estimate"
+    },
+    {
+        "column_name": "births_per_year",
+        "label": "Live births per year",
+        "description": "Estimated number of live births per year, computed as pop_0_12mo / (1 - imr / 1000)"
+    },
+    {
+        "column_name": "pop_6_12mo",
+        "label": "Population 6-12 months",
+        "description": "Estimated population of children aged 6-12 months (half of pop_0_12mo)"
+    },
+    {
+        "column_name": "pop_12_24mo",
+        "label": "Population 12-24 months",
+        "description": "Estimated population of children aged 12-24 months (25% of the 1-5 year old population)"
+    },
+    {
+        "column_name": "pop_6_24mo",
+        "label": "Population 6-24 months",
+        "description": "Estimated population of children aged 6-24 months (sum of pop_6_12mo and pop_12_24mo)"
+    },
+    {
+        "column_name": "pred_zerodosepenta",
+        "label": "Predicted zero dose (pentavalent)",
+        "description": "Predicted proportion of zero dose children based on pentavalent vaccine uptake"
+    },
+    {
+        "column_name": "pred_zerodosepenta_count",
+        "label": "Predicted zero dose count (pentavalent)",
+        "description": "Predicted number of zero dose children (pentavalent) in the 6-24 months population"
+    },
+    {
+        "column_name": "pred_zerodoseall",
+        "label": "Predicted zero dose (all vaccines)",
+        "description": "Predicted proportion of zero dose children based on uptake of all vaccines"
+    },
+    {
+        "column_name": "pred_zerodoseall_count",
+        "label": "Predicted zero dose count (all vaccines)",
+        "description": "Predicted number of zero dose children (all vaccines) in the 6-24 months population"
+    },
+    {
+        "column_name": "pred_bcg",
+        "label": "Predicted BCG uptake",
+        "description": "Predicted proportion of children vaccinated with BCG (vaccine against Tuberculosis)"
+    },
+    {
+        "column_name": "pred_bcg_count",
+        "label": "Predicted BCG count",
+        "description": "Predicted number of children vaccinated with BCG in the 6-24 months population"
+    },
+    {
+        "column_name": "pred_rota",
+        "label": "Predicted rotavirus uptake",
+        "description": "Predicted proportion of children vaccinated with rotavirus vaccine"
+    },
+    {
+        "column_name": "pred_rota_count",
+        "label": "Predicted rotavirus count",
+        "description": "Predicted number of children vaccinated with rotavirus vaccine in the 6-24 months population"
+    },
+    {
+        "column_name": "pred_var",
+        "label": "Predicted measles uptake",
+        "description": "Predicted proportion of children vaccinated with measles vaccine"
+    },
+    {
+        "column_name": "pred_var_count",
+        "label": "Predicted measles count",
+        "description": "Predicted number of children vaccinated with measles vaccine in the 6-24 months population"
+    },
+    {
+        "column_name": "pred_vaa",
+        "label": "Predicted yellow fever uptake",
+        "description": "Predicted proportion of children vaccinated with yellow fever vaccine"
+    },
+    {
+        "column_name": "pred_vaa_count",
+        "label": "Predicted yellow fever count",
+        "description": "Predicted number of children vaccinated with yellow fever vaccine in the 6-24 months population"
+    },
+    {
+        "column_name": "pred_polio",
+        "label": "Predicted polio uptake",
+        "description": "Predicted proportion of children vaccinated with polio vaccine"
+    },
+    {
+        "column_name": "pred_polio_count",
+        "label": "Predicted polio count",
+        "description": "Predicted number of children vaccinated with polio vaccine in the 6-24 months population"
+    },
+    {
+        "column_name": "pred_pcv",
+        "label": "Predicted pneumococcal uptake",
+        "description": "Predicted proportion of children vaccinated with pneumococcal vaccine (against Streptococcus pneumoniae)"
+    },
+    {
+        "column_name": "pred_pcv_count",
+        "label": "Predicted pneumococcal count",
+        "description": "Predicted number of children vaccinated with pneumococcal vaccine in the 6-24 months population"
+    },
+    {
+        "column_name": "antenne",
+        "label": "Antenne",
+        "description": "Name of the antenne associated with the health zone"
+    },
+    {
+        "column_name": "is_antenne",
+        "label": "Is antenne",
+        "description": "Whether the health zone is an antenne"
+    }
+]
