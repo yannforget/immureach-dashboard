@@ -42,53 +42,55 @@ export function CoverageMap() {
     zoneRows: zones,
   })
 
-  // Handle map clicks
+  // Handle map clicks using selectchanged event which fires when user selects an item
   useEffect(() => {
     const chart = chartRef.current?.getEchartsInstance()
     if (!chart) return
 
-    const handleClick = (params: any) => {
-      console.log('Click detected:', { componentType: params.componentType, name: params.name, seriesName: params.seriesName })
+    const handleSelectChanged = (params: any) => {
+      console.log('Selection changed:', params)
 
-      // Handle clicks on map areas
-      if (params.componentType === 'series' && params.name) {
-        if (selectedProvince) {
-          // If already showing zones, select the clicked zone
-          const zone = zones.find(z => z.displayName === params.name)
-          console.log('Looking for zone:', params.name, 'found:', zone)
-          if (zone) {
-            useDashboardStore.setState({ selectedZoneId: zone.id })
-          }
-        } else {
-          // If showing provinces, select the province
-          console.log('Available provinces:', provinces.map(p => p.displayName))
-          const province = provinces.find(p => p.displayName === params.name)
-          console.log('Looking for province:', params.name, 'found:', province)
-          if (province) {
-            console.log('Setting province to:', province.displayName)
-            setProvince(province.displayName)
-          }
+      // Get the selected indices from the series
+      if (params.type === 'selectchanged' && params.seriesIndex === 0) {
+        const selected = params.selected?.[0] || []
+        console.log('Selected indices:', selected)
+
+        // Find which area was selected
+        const option = chart.getOption()
+        if (option && option.series && option.series[0] && option.series[0].data) {
+          const data = option.series[0].data
+          selected.forEach((index: number) => {
+            if (data[index]) {
+              const areaName = data[index].name
+              console.log('Selected area:', areaName)
+
+              if (selectedProvince) {
+                // If already showing zones, select the clicked zone
+                const zone = zones.find(z => z.displayName === areaName)
+                if (zone) {
+                  useDashboardStore.setState({ selectedZoneId: zone.id })
+                }
+              } else {
+                // If showing provinces, select the province
+                const province = provinces.find(p => p.displayName === areaName)
+                if (province) {
+                  setProvince(province.displayName)
+                }
+              }
+            }
+          })
         }
       }
     }
 
-    console.log('Attaching click handler to map')
-
-    // Try multiple event types to catch the click
-    const handleClickWrapper = (params: any) => {
-      console.log('Raw event received:', params)
-      handleClick(params)
-    }
-
-    chart.on('click', handleClickWrapper)
-    chart.on('mouseclick', handleClickWrapper)
+    console.log('Attaching selectchanged handler to map')
+    chart.on('selectchanged', handleSelectChanged)
 
     return () => {
-      console.log('Detaching click handlers from map')
-      chart.off('click', handleClickWrapper)
-      chart.off('mouseclick', handleClickWrapper)
+      console.log('Detaching selectchanged handler from map')
+      chart.off('selectchanged', handleSelectChanged)
     }
-  }, [selectedProvince, zones, provinces, setProvince])
+  }, [selectedProvince, zones, provinces, setProvince, chartRef])
 
   // Handle hover interactions
   useEffect(() => {

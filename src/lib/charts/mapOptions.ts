@@ -85,6 +85,14 @@ export function buildMapOptions(config: MapConfig): EChartsOption {
           borderWidth: 1.5,
         },
       },
+      select: {
+        itemStyle: {
+          areaColor: '#fbbf24', // Yellow color for selected areas
+          borderColor: '#f59e0b',
+          borderWidth: 2,
+        },
+      },
+      selectedMode: 'single', // Allow selecting one area at a time
     },
   ]
 
