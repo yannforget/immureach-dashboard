@@ -48,6 +48,7 @@ export function CoverageMap() {
     if (!chart) return
 
     const handleClick = (params: any) => {
+      // Handle clicks on map areas
       if (params.componentType === 'series' && params.name) {
         if (selectedProvince) {
           // If already showing zones, select the clicked zone
