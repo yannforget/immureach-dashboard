@@ -13,6 +13,7 @@ export interface MetricMeta {
   label: string;
   countKey: string;
   isZeroDose: boolean;
+  description: string;
 }
 
 export interface ProvinceProperties {

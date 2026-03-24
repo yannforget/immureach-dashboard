@@ -92,6 +92,7 @@ export function ZoneTable({ rows }: ZoneTableProps) {
                     key={key}
                     className="whitespace-nowrap text-right cursor-pointer hover:bg-slate-100"
                     onClick={() => handleSort(key)}
+                    title={meta.description}
                   >
                     {meta.label}
                     {sortKey === key ? (sortDirection === 'asc' ? ' ▲' : ' ▼') : null}
@@ -101,12 +102,14 @@ export function ZoneTable({ rows }: ZoneTableProps) {
               <TableHead
                 className="whitespace-nowrap text-right cursor-pointer hover:bg-slate-100"
                 onClick={() => handleSort('births')}
+                title="Estimated number of live births per year"
               >
                 Births/Year{sortKey === 'births' ? (sortDirection === 'asc' ? ' ▲' : ' ▼') : null}
               </TableHead>
               <TableHead
                 className="whitespace-nowrap text-right cursor-pointer hover:bg-slate-100"
                 onClick={() => handleSort('pop6_24mo')}
+                title="Estimated population of children aged 6-24 months"
               >
                 6-24 mo{sortKey === 'pop6_24mo' ? (sortDirection === 'asc' ? ' ▲' : ' ▼') : null}
               </TableHead>

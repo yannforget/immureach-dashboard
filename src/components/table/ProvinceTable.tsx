@@ -82,6 +82,7 @@ export function ProvinceTable({ rows }: ProvinceTableProps) {
                   key={key}
                   className="whitespace-nowrap text-right cursor-pointer hover:bg-slate-100"
                   onClick={() => handleSort(key)}
+                  title={meta.description}
                 >
                   {meta.label}
                   {getSortIndicator(key)}
@@ -91,12 +92,14 @@ export function ProvinceTable({ rows }: ProvinceTableProps) {
             <TableHead
               className="whitespace-nowrap text-right cursor-pointer hover:bg-slate-100"
               onClick={() => handleSort('births')}
+              title="Estimated number of live births per year"
             >
               Births/Year{getSortIndicator('births')}
             </TableHead>
             <TableHead
               className="whitespace-nowrap text-right cursor-pointer hover:bg-slate-100"
               onClick={() => handleSort('pop6_24mo')}
+              title="Estimated population of children aged 6-24 months"
             >
               6-24 mo{getSortIndicator('pop6_24mo')}
             </TableHead>
