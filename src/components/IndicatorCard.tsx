@@ -10,6 +10,50 @@ interface IndicatorCardProps {
   isZeroDose: boolean
 }
 
+// Vaccine descriptions mapping
+const VACCINE_DESCRIPTIONS: Record<MetricKey, { coverage: string; count: string }> = {
+  pred_bcg: {
+    coverage: 'Predicted proportion of children vaccinated with BCG (vaccine against tuberculosis)',
+    count: 'Predicted number of children vaccinated with BCG in the 6-24 months population'
+  },
+  pred_rota: {
+    coverage: 'Predicted proportion of children vaccinated with rotavirus vaccine',
+    count: 'Predicted number of children vaccinated with rotavirus vaccine in the 6-24 months population'
+  },
+  pred_var: {
+    coverage: 'Predicted proportion of children vaccinated with measles vaccine',
+    count: 'Predicted number of children vaccinated with measles vaccine in the 6-24 months population'
+  },
+  pred_vaa: {
+    coverage: 'Predicted proportion of children vaccinated with yellow fever vaccine',
+    count: 'Predicted number of children vaccinated with yellow fever vaccine in the 6-24 months population'
+  },
+  pred_polio: {
+    coverage: 'Predicted proportion of children vaccinated with polio vaccine',
+    count: 'Predicted number of children vaccinated with polio vaccine in the 6-24 months population'
+  },
+  pred_pcv: {
+    coverage: 'Predicted proportion of children vaccinated with pneumococcal vaccine (against Streptococcus pneumoniae)',
+    count: 'Predicted number of children vaccinated with pneumococcal vaccine in the 6-24 months population'
+  },
+  pred_zerodosepenta: {
+    coverage: 'Predicted proportion of zero dose children based on pentavalent vaccine uptake',
+    count: 'Predicted number of zero dose children (pentavalent) in the 6-24 months population'
+  },
+  pred_zerodoseall: {
+    coverage: 'Predicted proportion of zero dose children based on uptake of all vaccines',
+    count: 'Predicted number of zero dose children (all vaccines) in the 6-24 months population'
+  }
+}
+
+function getMetricDescription(metricKey: MetricKey, isZeroDose: boolean): string {
+  return VACCINE_DESCRIPTIONS[metricKey]?.coverage || ''
+}
+
+function getCountDescription(metricKey: MetricKey): string {
+  return VACCINE_DESCRIPTIONS[metricKey]?.count || ''
+}
+
 export function IndicatorCard({
   metricKey,
   label,
@@ -27,6 +71,9 @@ export function IndicatorCard({
   const suffix = '%'
   const formattedCount = Math.round(count).toLocaleString()
   const countLabel = isZeroDose ? `${formattedCount} (6-24 mo)` : `${formattedCount} (6-24 mo)`
+
+  const metricDescription = getMetricDescription(metricKey, isZeroDose)
+  const countDescription = getCountDescription(metricKey)
 
   return (
     <button
@@ -59,45 +106,22 @@ export function IndicatorCard({
           </div>
           {showTooltip && (
             <div className="absolute right-0 top-5 z-10 w-64 rounded-md bg-slate-900 px-3 py-3 text-xs text-white shadow-lg space-y-2">
-              {isZeroDose ? (
-                <>
-                  <div>
-                    <div className="font-semibold mb-1">Zero-dose Children</div>
-                    <div className="text-slate-300">Children aged 6-24 months without any doses</div>
-                  </div>
-                  <div>
-                    <div className="font-semibold text-slate-400 text-2xs mb-1">Source</div>
-                    <div className="text-slate-300">ImmuReach models + national surveys</div>
-                  </div>
-                  <div>
-                    <div className="font-semibold mb-1">Number of Children</div>
-                    <div className="text-slate-300">Count in 6-24 month age group</div>
-                  </div>
-                  <div>
-                    <div className="font-semibold text-slate-400 text-2xs mb-1">Source</div>
-                    <div className="text-slate-300">ImmuReach estimates + GRID3 population data</div>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div>
-                    <div className="font-semibold mb-1">Coverage Rate</div>
-                    <div className="text-slate-300">Percentage of children aged 6-24 months</div>
-                  </div>
-                  <div>
-                    <div className="font-semibold text-slate-400 text-2xs mb-1">Source</div>
-                    <div className="text-slate-300">ImmuReach models + national surveys</div>
-                  </div>
-                  <div>
-                    <div className="font-semibold mb-1">Number of Children</div>
-                    <div className="text-slate-300">Count in 6-24 month age group</div>
-                  </div>
-                  <div>
-                    <div className="font-semibold text-slate-400 text-2xs mb-1">Source</div>
-                    <div className="text-slate-300">ImmuReach estimates + GRID3 population data</div>
-                  </div>
-                </>
-              )}
+              <div>
+                <div className="font-semibold mb-1">{isZeroDose ? 'Zero-dose Children' : 'Coverage Rate'}</div>
+                <div className="text-slate-300">{metricDescription}</div>
+              </div>
+              <div>
+                <div className="font-semibold text-slate-400 text-2xs mb-1">Source</div>
+                <div className="text-slate-300">ImmuReach models + national surveys</div>
+              </div>
+              <div>
+                <div className="font-semibold mb-1">Number of Children</div>
+                <div className="text-slate-300">{countDescription}</div>
+              </div>
+              <div>
+                <div className="font-semibold text-slate-400 text-2xs mb-1">Source</div>
+                <div className="text-slate-300">ImmuReach estimates + GRID3 population data</div>
+              </div>
               <div className="absolute -top-1 right-2 h-2 w-2 rotate-45 bg-slate-900"></div>
             </div>
           )}
