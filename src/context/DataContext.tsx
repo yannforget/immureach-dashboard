@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import * as echarts from 'echarts'
-import { cleanName, stripPrefix } from '@/lib/dataUtils'
+import { cleanName } from '@/lib/dataUtils'
 import type { ProvinceRow, ZoneRow } from '@/types'
 
 interface DataContextType {

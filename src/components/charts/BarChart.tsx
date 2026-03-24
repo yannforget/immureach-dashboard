@@ -9,20 +9,12 @@ import { buildBarOptions } from '@/lib/charts/barOptions'
 
 type BarDataType = 'coverage' | 'children' | 'births'
 
-const PROVINCES_WITH_ANTENNES = [
-  'Kwilu',
-  'Kasai',
-  'Sankuru',
-]
-
 export function BarChart() {
   const [barDataType, setBarDataType] = useState<BarDataType>('coverage')
   const chartRef = useRef<EChartsReact>(null)
   const selectedProvince = useDashboardStore(s => s.selectedProvince)
   const selectedMetric = useDashboardStore(s => s.selectedMetric)
   const hoveredZoneId = useDashboardStore(s => s.hoveredZoneId)
-  const showAntennes = useDashboardStore(s => s.showAntennes)
-  const setShowAntennes = useDashboardStore(s => s.setShowAntennes)
   const setSelectedZone = useDashboardStore(s => s.setSelectedZone)
   const setHoveredZone = useDashboardStore(s => s.setHoveredZone)
 
@@ -32,12 +24,10 @@ export function BarChart() {
 
   const rows = selectedProvince ? zones : provinces
   const metricMeta = METRIC_META[selectedMetric]
-  const canShowAntennes =
-    selectedProvince && PROVINCES_WITH_ANTENNES.includes(selectedProvince)
 
   // Determine suffix and data column based on barDataType
   let suffix = '%'
-  let dataColumn = selectedMetric
+  let dataColumn: string = selectedMetric
 
   if (barDataType === 'children') {
     suffix = ' children'
