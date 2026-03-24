@@ -43,7 +43,7 @@ export function ZoneDetail({ row, zoneName }: ZoneDetailProps) {
               key={key}
               className="rounded border border-slate-200 bg-slate-50 p-2"
             >
-              <h4 className="text-xs font-medium text-slate-600 cursor-help" title={meta.description}>
+              <h4 className="text-xs font-medium text-slate-600 cursor-help line-clamp-1" title={meta.description}>
                 {meta.label}
               </h4>
               <p className="mt-1 text-lg font-bold text-slate-900">
