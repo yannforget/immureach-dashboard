@@ -44,15 +44,17 @@ export function IndicatorCard({
           onMouseEnter={() => setShowTooltip(true)}
           onMouseLeave={() => setShowTooltip(false)}
         >
-          <button
+          <div
             onClick={(e) => {
               e.stopPropagation()
               setShowTooltip(!showTooltip)
             }}
-            className="ml-1 text-xs text-slate-400 hover:text-slate-600"
+            className="ml-1 text-xs text-slate-400 hover:text-slate-600 cursor-pointer inline-block"
+            role="button"
+            tabIndex={0}
           >
             ⓘ
-          </button>
+          </div>
           {showTooltip && (
             <div className="absolute right-0 top-5 z-10 w-56 rounded-md bg-slate-900 px-3 py-2 text-xs text-white shadow-lg">
               <div className="space-y-0.5">
