@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import EChartsReact from 'echarts-for-react'
 import { useDashboardStore } from '@/store/dashboardStore'
 import { useProvinceData } from '@/hooks/useProvinceData'

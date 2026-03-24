@@ -46,7 +46,7 @@ const VACCINE_DESCRIPTIONS: Record<MetricKey, { coverage: string; count: string 
   }
 }
 
-function getMetricDescription(metricKey: MetricKey, isZeroDose: boolean): string {
+function getMetricDescription(metricKey: MetricKey): string {
   return VACCINE_DESCRIPTIONS[metricKey]?.coverage || ''
 }
 
@@ -70,9 +70,9 @@ export function IndicatorCard({
   const displayValue = Math.round(value)
   const suffix = '%'
   const formattedCount = Math.round(count).toLocaleString()
-  const countLabel = isZeroDose ? `${formattedCount} (6-24 mo)` : `${formattedCount} (6-24 mo)`
+  const countLabel = `${formattedCount} (6-24 mo)`
 
-  const metricDescription = getMetricDescription(metricKey, isZeroDose)
+  const metricDescription = getMetricDescription(metricKey)
   const countDescription = getCountDescription(metricKey)
 
   return (
