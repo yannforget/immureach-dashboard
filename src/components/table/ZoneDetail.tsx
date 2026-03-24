@@ -46,9 +46,9 @@ export function ZoneDetail({ row, zoneName }: ZoneDetailProps) {
               <h4 className="text-xs font-medium text-slate-600 cursor-help line-clamp-1 h-4" title={meta.description}>
                 {meta.label}
               </h4>
-              <p className="mt-1 text-lg font-bold text-slate-900">
+              <p className="mt-1 text-base font-bold text-slate-900">
                 {displayValue}
-                <span className="text-sm text-slate-600">%</span>
+                <span className="text-xs text-slate-600">%</span>
               </p>
               <p className="text-xs text-slate-500">{countLabel}</p>
             </div>
