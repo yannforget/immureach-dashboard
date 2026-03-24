@@ -170,6 +170,7 @@ export function buildMapOptions(config: MapConfig): EChartsOption {
     geo: {
       map: mapName,
       roam: false,
+      selectedMode: 'single',
     } as any,
     series: series as any,
   }

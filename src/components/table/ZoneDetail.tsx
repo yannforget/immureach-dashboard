@@ -28,12 +28,15 @@ export function ZoneDetail({ row, zoneName }: ZoneDetailProps) {
         {METRIC_KEYS.map(key => {
           const meta = METRIC_META[key]
           const value = (row.properties as any)[key]
-          const suffix = meta.isZeroDose ? ' children' : '%'
+          const countValue = (row.properties as any)[meta.countKey]
+
           const displayValue = typeof value === 'number'
-            ? meta.isZeroDose
-              ? value.toFixed(1)
-              : (value * 100).toFixed(1)
+            ? Math.round(value * 100)
             : '—'
+          const formattedCount = typeof countValue === 'number'
+            ? Math.round(countValue).toLocaleString()
+            : '—'
+          const countLabel = `${formattedCount} (6-24 mo)`
 
           return (
             <div
@@ -45,8 +48,9 @@ export function ZoneDetail({ row, zoneName }: ZoneDetailProps) {
               </h4>
               <p className="mt-1 text-lg font-bold text-slate-900">
                 {displayValue}
+                <span className="text-sm text-slate-600">%</span>
               </p>
-              <p className="text-xs text-slate-500">{suffix}</p>
+              <p className="text-xs text-slate-500">{countLabel}</p>
             </div>
           )
         })}

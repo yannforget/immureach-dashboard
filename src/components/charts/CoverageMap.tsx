@@ -42,69 +42,44 @@ export function CoverageMap() {
     zoneRows: zones,
   })
 
-  // Handle map clicks via ECharts instance
-  useEffect(() => {
-    const chart = chartRef.current?.getEchartsInstance()
-    if (!chart) return
-
-    const handleClick = (params: any) => {
-      console.log('ECharts click event:', JSON.stringify(params, null, 2))
-
-      if (params.name) {
-        if (selectedProvince) {
-          // If showing zones, select the clicked zone
-          const zone = zones.find(z => z.displayName === params.name)
-          if (zone) {
-            console.log('Selecting zone:', zone.displayName)
-            useDashboardStore.setState({ selectedZoneId: zone.id })
-          }
-        } else {
-          // If showing provinces, select the province
-          const province = provinces.find(p => p.displayName === params.name)
-          if (province) {
-            console.log('Selecting province:', province.displayName)
-            setProvince(province.displayName)
-          }
-        }
-      }
-    }
-
-    console.log('Attaching click handler')
-    chart.on('click', handleClick)
-
-    return () => {
-      chart.off('click', handleClick)
-    }
-  }, [selectedProvince, zones, provinces, setProvince])
-
-  // Handle hover interactions
-  useEffect(() => {
-    const chart = chartRef.current?.getEchartsInstance()
-    if (!chart) return
-
-    const handleMouseOver = (params: any) => {
-      console.log('Mouseover detected:', params.name)
-      if (params.componentType === 'series' && params.name) {
+  // Handle map selection and hover interactions
+  const handleChartClick = (params: any) => {
+    if (params.name) {
+      if (selectedProvince) {
+        // If showing zones, select the clicked zone
         const zone = zones.find(z => z.displayName === params.name)
         if (zone) {
-          setHoveredZone(zone.id)
+          useDashboardStore.setState({ selectedZoneId: zone.id })
+        }
+      } else {
+        // If showing provinces, select the province
+        const province = provinces.find(p => p.displayName === params.name)
+        if (province) {
+          setProvince(province.displayName)
         }
       }
     }
+  }
 
-    const handleMouseOut = () => {
-      console.log('Mouseout detected')
-      setHoveredZone(null)
+  const handleChartMouseOver = (params: any) => {
+    if (params.componentType === 'series' && params.name) {
+      const zone = zones.find(z => z.displayName === params.name)
+      if (zone) {
+        setHoveredZone(zone.id)
+      }
     }
+  }
 
-    chart.on('mouseover', handleMouseOver)
-    chart.on('mouseout', handleMouseOut)
+  const handleChartMouseOut = () => {
+    setHoveredZone(null)
+  }
 
-    return () => {
-      chart.off('mouseover', handleMouseOver)
-      chart.off('mouseout', handleMouseOut)
-    }
-  }, [zones, setHoveredZone])
+  const onEvents = {
+    click: handleChartClick,
+    mouseover: handleChartMouseOver,
+    mouseout: handleChartMouseOut,
+  }
+
 
   // Show loading state only after all hooks have been called
   if (loading || error) {
@@ -132,6 +107,7 @@ export function CoverageMap() {
           theme="dashboard"
           style={{ width: '100%', height: '100%' }}
           key={`map-${selectedProvince}-${selectedMetric}-${showAntennes}`}
+          onEvents={onEvents}
         />
         {selectedProvince && canShowAntennes && (
           <button
