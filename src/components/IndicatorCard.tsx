@@ -49,10 +49,11 @@ export function IndicatorCard({
               e.stopPropagation()
               setShowTooltip(!showTooltip)
             }}
-            className="w-4 h-4 rounded-full border border-slate-400 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:border-slate-600 cursor-pointer text-2xs font-bold leading-none"
+            className="w-4 h-4 rounded-full border border-slate-400 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:border-slate-600 cursor-pointer leading-none"
             role="button"
             tabIndex={0}
             title="More information"
+            style={{ fontSize: '10px', fontWeight: '600' }}
           >
             ?
           </div>
