@@ -49,11 +49,12 @@ export function IndicatorCard({
               e.stopPropagation()
               setShowTooltip(!showTooltip)
             }}
-            className="ml-1 text-xs text-slate-400 hover:text-slate-600 cursor-pointer inline-block"
+            className="ml-1 text-xs font-semibold text-slate-400 hover:text-slate-600 cursor-pointer inline-block w-5 h-5 rounded-full border border-slate-400 flex items-center justify-center"
             role="button"
             tabIndex={0}
+            title="More information"
           >
-            ⓘ
+            ?
           </div>
           {showTooltip && (
             <div className="absolute right-0 top-5 z-10 w-56 rounded-md bg-slate-900 px-3 py-2 text-xs text-white shadow-lg">
