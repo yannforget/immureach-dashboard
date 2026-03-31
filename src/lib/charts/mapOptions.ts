@@ -126,11 +126,9 @@ export function buildMapOptions(config: MapConfig): EChartsOption {
             ? Math.round(birthsValue).toLocaleString()
             : '—'
 
-          const suffix = isZeroDose ? ' children' : '%'
-
           // Build tooltip with 3 data points
           let tooltip = `<strong>${params.name}</strong><br/>`
-          tooltip += `${metricMeta.label}: ${displayPercentage}${suffix}<br/>`
+          tooltip += `${metricMeta.label}: ${displayPercentage}%<br/>`
           tooltip += `# Children: ${displayCount}<br/>`
           tooltip += `Births/Year: ${displayBirths}`
 
