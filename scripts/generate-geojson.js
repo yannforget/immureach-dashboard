@@ -96,6 +96,7 @@ function aggregateMetricsForProvince(zones) {
   // Metrics configuration: how to aggregate each metric
   const metricsToAggregate = [
     // Population metrics - sum them
+    { name: 'total_population', aggregate: 'sum' },
     { name: 'pop_0_12mo', aggregate: 'sum' },
     { name: 'pop_0_5yo', aggregate: 'sum' },
     { name: 'pop_6_12mo', aggregate: 'sum' },

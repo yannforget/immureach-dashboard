@@ -15,7 +15,7 @@ interface ZoneTableProps {
   rows: ZoneRow[]
 }
 
-type SortKey = 'name' | 'births' | 'pop6_24mo' | string
+type SortKey = 'name' | 'births' | 'total_population' | string
 
 export function ZoneTable({ rows }: ZoneTableProps) {
   const setSelectedZone = useDashboardStore(s => s.setSelectedZone)
@@ -43,9 +43,9 @@ export function ZoneTable({ rows }: ZoneTableProps) {
       } else if (sortKey === 'births') {
         aVal = (a.properties as any).births_per_year ?? 0
         bVal = (b.properties as any).births_per_year ?? 0
-      } else if (sortKey === 'pop6_24mo') {
-        aVal = (a.properties as any).pop_6_24mo ?? 0
-        bVal = (b.properties as any).pop_6_24mo ?? 0
+      } else if (sortKey === 'total_population') {
+        aVal = (a.properties as any).total_population ?? 0
+        bVal = (b.properties as any).total_population ?? 0
       } else {
         aVal = ((a.properties as any)[sortKey] ?? 0) * 100
         bVal = ((b.properties as any)[sortKey] ?? 0) * 100
@@ -76,21 +76,35 @@ export function ZoneTable({ rows }: ZoneTableProps) {
       </div>
 
       <div className="flex-1 overflow-x-auto">
-        <Table>
+        <Table className="table-fixed">
           <TableHeader>
             <TableRow>
               <TableHead
-                className="w-40 cursor-pointer hover:bg-slate-100"
+                className="w-32 cursor-pointer hover:bg-slate-100"
                 onClick={() => handleSort('name')}
               >
                 Zone{sortKey === 'name' ? (sortDirection === 'asc' ? ' ▲' : ' ▼') : null}
+              </TableHead>
+              <TableHead
+                className="text-right cursor-pointer hover:bg-slate-100"
+                onClick={() => handleSort('total_population')}
+                title="Estimated total population of the zone de santé"
+              >
+                Population{sortKey === 'total_population' ? (sortDirection === 'asc' ? ' ▲' : ' ▼') : null}
+              </TableHead>
+              <TableHead
+                className="text-right cursor-pointer hover:bg-slate-100"
+                onClick={() => handleSort('births')}
+                title="Estimated number of live births per year"
+              >
+                Births/Year{sortKey === 'births' ? (sortDirection === 'asc' ? ' ▲' : ' ▼') : null}
               </TableHead>
               {METRIC_KEYS.map(key => {
                 const meta = METRIC_META[key]
                 return (
                   <TableHead
                     key={key}
-                    className="whitespace-nowrap text-right cursor-pointer hover:bg-slate-100"
+                    className="text-right cursor-pointer hover:bg-slate-100"
                     onClick={() => handleSort(key)}
                     title={meta.description}
                   >
@@ -99,20 +113,6 @@ export function ZoneTable({ rows }: ZoneTableProps) {
                   </TableHead>
                 )
               })}
-              <TableHead
-                className="whitespace-nowrap text-right cursor-pointer hover:bg-slate-100"
-                onClick={() => handleSort('births')}
-                title="Estimated number of live births per year"
-              >
-                Births/Year{sortKey === 'births' ? (sortDirection === 'asc' ? ' ▲' : ' ▼') : null}
-              </TableHead>
-              <TableHead
-                className="whitespace-nowrap text-right cursor-pointer hover:bg-slate-100"
-                onClick={() => handleSort('pop6_24mo')}
-                title="Estimated population of children aged 6-24 months"
-              >
-                6-24 mo{sortKey === 'pop6_24mo' ? (sortDirection === 'asc' ? ' ▲' : ' ▼') : null}
-              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -122,8 +122,22 @@ export function ZoneTable({ rows }: ZoneTableProps) {
                 className="cursor-pointer hover:bg-slate-100/50"
                 onClick={() => setSelectedZone(row.id)}
               >
-                <TableCell className="font-medium w-40">
+                <TableCell className="font-medium w-32">
                   {row.displayName}
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="text-xs text-slate-400">
+                    {typeof (row.properties as any).total_population === 'number'
+                      ? Math.round((row.properties as any).total_population).toLocaleString()
+                      : '—'}
+                  </div>
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="text-xs text-slate-400">
+                    {typeof (row.properties as any).births_per_year === 'number'
+                      ? Math.round((row.properties as any).births_per_year).toLocaleString()
+                      : '—'}
+                  </div>
                 </TableCell>
                 {METRIC_KEYS.map(key => {
                   const meta = METRIC_META[key]
@@ -147,20 +161,6 @@ export function ZoneTable({ rows }: ZoneTableProps) {
                     </TableCell>
                   )
                 })}
-                <TableCell className="text-right">
-                  <div className="text-xs text-slate-400">
-                    {typeof (row.properties as any).births_per_year === 'number'
-                      ? Math.round((row.properties as any).births_per_year).toLocaleString()
-                      : '—'}
-                  </div>
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="text-xs text-slate-400">
-                    {typeof (row.properties as any).pop_6_24mo === 'number'
-                      ? Math.round((row.properties as any).pop_6_24mo).toLocaleString()
-                      : '—'}
-                  </div>
-                </TableCell>
               </TableRow>
             ))}
           </TableBody>
