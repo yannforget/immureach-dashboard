@@ -31,30 +31,24 @@ export function ProvinceTable({ rows }: ProvinceTableProps) {
 
   const sortedRows = useMemo(() => {
     const sorted = [...rows].sort((a, b) => {
-      let aVal: any
-      let bVal: any
-
       if (sortKey === 'name') {
-        aVal = a.displayName
-        bVal = b.displayName
-      } else if (sortKey === 'births') {
-        aVal = (a.properties as any).births_per_year ?? 0
-        bVal = (b.properties as any).births_per_year ?? 0
-      } else if (sortKey === 'total_population') {
-        aVal = (a.properties as any).total_population ?? 0
-        bVal = (b.properties as any).total_population ?? 0
-      } else {
-        aVal = ((a.properties as any)[sortKey] ?? 0) * 100
-        bVal = ((b.properties as any)[sortKey] ?? 0) * 100
-      }
-
-      if (typeof aVal === 'string') {
         return sortDirection === 'asc'
-          ? aVal.localeCompare(bVal)
-          : bVal.localeCompare(aVal)
+          ? a.displayName.localeCompare(b.displayName)
+          : b.displayName.localeCompare(a.displayName)
       }
 
-      return sortDirection === 'asc' ? aVal - bVal : bVal - aVal
+      const propKey = sortKey === 'births' ? 'births_per_year' : sortKey
+      const av = (a.properties as any)[propKey]
+      const bv = (b.properties as any)[propKey]
+      const aNull = typeof av !== 'number'
+      const bNull = typeof bv !== 'number'
+
+      // Nulls sink to the bottom regardless of sort direction.
+      if (aNull && bNull) return 0
+      if (aNull) return 1
+      if (bNull) return -1
+
+      return sortDirection === 'asc' ? av - bv : bv - av
     })
 
     return sorted

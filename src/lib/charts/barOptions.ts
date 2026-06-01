@@ -18,12 +18,12 @@ interface BarConfig {
 export function buildBarOptions(config: BarConfig): EChartsOption {
   const { items, hoveredId, metricLabel, suffix, isZeroDose = false } = config
 
-  // Sort items in descending order (largest at top)
-  const sortedItems = [...items].sort((a, b) => a.value - b.value)
-
-  const names = sortedItems.map(item => item.name)
-  const values = sortedItems.map(item => item.value)
-  const ids = sortedItems.map(item => item.id || item.name)
+  // Caller is responsible for ordering items the way they should render. We
+  // used to re-sort here, which left the BarChart event handlers indexing
+  // into the unsorted array and mis-mapping hovered bars to other rows.
+  const names = items.map(item => item.name)
+  const values = items.map(item => item.value)
+  const ids = items.map(item => item.id || item.name)
 
   // Create item style with hover highlight
   const itemStyles = ids.map(id => ({
@@ -33,6 +33,7 @@ export function buildBarOptions(config: BarConfig): EChartsOption {
   const option: EChartsOption = {
     tooltip: {
       trigger: 'axis',
+      appendToBody: true,
       axisPointer: {
         type: 'shadow',
       },
@@ -40,7 +41,7 @@ export function buildBarOptions(config: BarConfig): EChartsOption {
         if (Array.isArray(params) && params.length > 0) {
           const param = params[0]
           const dataIndex = param.dataIndex
-          const item = sortedItems[dataIndex]
+          const item = items[dataIndex]
 
           // Format percentage consistently: (value * 100).toFixed(1) for coverage, just toFixed(1) for zero-dose
           const displayValue = isZeroDose

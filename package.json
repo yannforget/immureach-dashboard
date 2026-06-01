@@ -7,11 +7,11 @@
     "build": "tsc -b && vite build",
     "deploy": "npm run build && npx gh-pages -d dist",
     "preview": "vite preview",
-    "prepare-data": "uv run scripts/prepare-data.py",
-    "generate-geojson": "node scripts/generate-geojson.js"
+    "build-data": "uv run scripts/build-dashboard-geojson.py && uv run scripts/build-profile-json.py"
   },
   "dependencies": {
     "@radix-ui/react-primitive": "^2.1.4",
+    "@radix-ui/react-tabs": "^1.1.13",
     "@radix-ui/react-toggle": "^1.1.10",
     "class-variance-authority": "^0.7.1",
     "echarts": "^5.5.0",
@@ -28,7 +28,6 @@
     "@vitejs/plugin-react": "^4.2.0",
     "autoprefixer": "^10.4.17",
     "clsx": "^2.0.0",
-    "mapshaper": "^0.6.113",
     "postcss": "^8.4.35",
     "tailwind-merge": "^2.2.0",
     "tailwindcss": "^3.4.0",

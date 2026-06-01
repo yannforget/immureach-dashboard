@@ -1,13 +1,36 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import * as echarts from 'echarts'
 import { cleanName } from '@/lib/dataUtils'
-import type { ProvinceRow, ZoneRow } from '@/types'
+import type { ProfileData, ProvinceRow, ZoneRow } from '@/types'
+
+export type Bbox = [number, number, number, number] // [minLon, minLat, maxLon, maxLat]
 
 interface DataContextType {
   provinces: ProvinceRow[]
   zones: ZoneRow[]
+  profile: ProfileData | null
+  provinceBboxes: Record<string, Bbox>
   loading: boolean
   error: Error | null
+}
+
+function computeBbox(geometry: any): Bbox {
+  let minLon = Infinity, minLat = Infinity, maxLon = -Infinity, maxLat = -Infinity
+
+  const visit = (coords: any) => {
+    if (typeof coords[0] === 'number') {
+      const [lon, lat] = coords as [number, number]
+      if (lon < minLon) minLon = lon
+      if (lon > maxLon) maxLon = lon
+      if (lat < minLat) minLat = lat
+      if (lat > maxLat) maxLat = lat
+      return
+    }
+    for (const c of coords) visit(c)
+  }
+
+  visit(geometry.coordinates)
+  return [minLon, minLat, maxLon, maxLat]
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined)
@@ -15,6 +38,8 @@ const DataContext = createContext<DataContextType | undefined>(undefined)
 export function DataProvider({ children }: { children: React.ReactNode }) {
   const [provinces, setProvinces] = useState<ProvinceRow[]>([])
   const [zones, setZones] = useState<ZoneRow[]>([])
+  const [profile, setProfile] = useState<ProfileData | null>(null)
+  const [provinceBboxes, setProvinceBboxes] = useState<Record<string, Bbox>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
 
@@ -23,29 +48,42 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       try {
         setLoading(true)
 
-        // Fetch GeoJSON files
-        const [provincesRes, zonesRes] = await Promise.all([
+        // Fetch GeoJSON files + the profiling sidecar in parallel.
+        const [provincesRes, zonesRes, profileRes] = await Promise.all([
           fetch('/data/provinces.geojson'),
           fetch('/data/zones.geojson'),
+          fetch('/data/profile.json'),
         ])
 
-        if (!provincesRes.ok || !zonesRes.ok) {
-          throw new Error('Failed to load GeoJSON files')
+        if (!provincesRes.ok || !zonesRes.ok || !profileRes.ok) {
+          throw new Error('Failed to load data files')
         }
 
         const provincesGeo = await provincesRes.json()
         const zonesGeo = await zonesRes.json()
+        const profileJson = (await profileRes.json()) as ProfileData
 
-        // Process provinces
+        // Process provinces and compute per-province bboxes for map zoom.
+        // Keyed by displayName so the dashboard store's `selectedProvince`
+        // (already cleaned) can look up directly.
+        const bboxes: Record<string, Bbox> = {}
         const processedProvinces = (provincesGeo.features as any[]).map(
-          (feature: any, index: number) => ({
-            id: `prov-${index}`,
-            displayName: cleanName((feature.properties as any).q101 || ''),
-            properties: feature.properties,
-          })
+          (feature: any, index: number) => {
+            const rawQ101 = (feature.properties as any).q101 || ''
+            const displayName = cleanName(rawQ101)
+            bboxes[displayName] = computeBbox(feature.geometry)
+            return {
+              id: `prov-${index}`,
+              displayName,
+              mapKey: rawQ101,
+              properties: feature.properties,
+            }
+          }
         )
 
-        // Process zones
+        // Process zones. The map key is the raw q103 (province-prefixed)
+        // because two zones can share a cleaned name (e.g. "Bili" in both
+        // Bas Uele and Nord Ubangi).
         const processedZones = (zonesGeo.features as any[]).map(
           (feature: any, index: number) => {
             const props = feature.properties as any
@@ -53,6 +91,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             return {
               id: `zone-${index}`,
               displayName: cleanName(props.q103 || ''),
+              mapKey: props.q103 || '',
               provinceId: provinceName,
               properties: props,
             }
@@ -61,31 +100,40 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
         setProvinces(processedProvinces)
         setZones(processedZones)
+        setProfile(profileJson)
+        setProvinceBboxes(bboxes)
         setError(null)
 
-        // Register ECharts maps with name field injected
+        // Register ECharts maps using the raw (province-prefixed) name as the
+        // shape name, so each shape is uniquely identifiable.
         const provincesWithNames = {
           ...provincesGeo,
-          features: (provincesGeo.features as any[]).map((feature: any) => ({
-            ...feature,
-            name: cleanName((feature.properties as any).q101 || ''),
-            properties: {
-              ...feature.properties,
-              name: cleanName((feature.properties as any).q101 || ''),
-            },
-          })),
+          features: (provincesGeo.features as any[]).map((feature: any) => {
+            const rawQ101 = (feature.properties as any).q101 || ''
+            return {
+              ...feature,
+              name: rawQ101,
+              properties: {
+                ...feature.properties,
+                name: rawQ101,
+              },
+            }
+          }),
         }
 
         const zonesWithNames = {
           ...zonesGeo,
-          features: (zonesGeo.features as any[]).map((feature: any) => ({
-            ...feature,
-            name: cleanName((feature.properties as any).q103 || ''),
-            properties: {
-              ...feature.properties,
-              name: cleanName((feature.properties as any).q103 || ''),
-            },
-          })),
+          features: (zonesGeo.features as any[]).map((feature: any) => {
+            const rawQ103 = (feature.properties as any).q103 || ''
+            return {
+              ...feature,
+              name: rawQ103,
+              properties: {
+                ...feature.properties,
+                name: rawQ103,
+              },
+            }
+          }),
         }
 
         echarts.registerMap('drc-provinces', provincesWithNames as any)
@@ -102,7 +150,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <DataContext.Provider value={{ provinces, zones, loading, error }}>
+    <DataContext.Provider value={{ provinces, zones, profile, provinceBboxes, loading, error }}>
       {children}
     </DataContext.Provider>
   )

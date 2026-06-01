@@ -7,63 +7,65 @@ import { METRIC_KEYS, METRIC_META } from '@/lib/dataUtils'
 
 export function IndicatorCards() {
   const selectedProvince = useDashboardStore(s => s.selectedProvince)
+  const selectedZoneId = useDashboardStore(s => s.selectedZoneId)
   const provinces = useProvinceData()
   const zones = useZoneData(selectedProvince)
 
-  // Aggregate data based on selection
-  const aggregateData = useMemo(() => {
-    const rows = selectedProvince ? zones : provinces
+  // Pick the single row when a zone or province is selected; otherwise
+  // compute the national value as a population-weighted aggregate via the
+  // pre-computed pred_*_count columns (count / pop_6_24mo).
+  const cards = useMemo(() => {
+    const zoneRow = selectedZoneId ? zones.find(z => z.id === selectedZoneId) : undefined
+    const provinceRow = selectedProvince
+      ? provinces.find(p => p.displayName === selectedProvince)
+      : undefined
+    const scopeRow = zoneRow ?? provinceRow
 
-    const aggregates: Record<string, { sum: number; count: number; countSum: number }> = {}
-
-    METRIC_KEYS.forEach(metricKey => {
-      aggregates[metricKey] = { sum: 0, count: 0, countSum: 0 }
-
+    return METRIC_KEYS.map(metricKey => {
       const meta = METRIC_META[metricKey]
+      let value: number = 0
+      let count: number = 0
 
-      rows.forEach(row => {
-        const value = (row.properties as any)[metricKey]
-        if (typeof value === 'number' && value >= 0) {
-          aggregates[metricKey].sum += value
-          aggregates[metricKey].count += 1
-
-          // Sum up the actual child counts from the _count columns
-          const countValue = (row.properties as any)[meta.countKey]
-          if (typeof countValue === 'number' && countValue >= 0) {
-            aggregates[metricKey].countSum += countValue
+      if (scopeRow) {
+        const v = (scopeRow.properties as any)[metricKey]
+        const c = (scopeRow.properties as any)[meta.countKey]
+        if (typeof v === 'number') value = v * 100
+        if (typeof c === 'number') count = c
+      } else {
+        let countSum = 0
+        let popSum = 0
+        provinces.forEach(p => {
+          const c = (p.properties as any)[meta.countKey]
+          const pop = (p.properties as any).pop_6_24mo
+          if (typeof c === 'number' && typeof pop === 'number') {
+            countSum += c
+            popSum += pop
           }
+        })
+        if (popSum > 0) {
+          value = (countSum / popSum) * 100
+          count = countSum
         }
-      })
-    })
+      }
 
-    return aggregates
-  }, [selectedProvince, provinces, zones])
+      return { metricKey, meta, value, count }
+    })
+  }, [selectedProvince, selectedZoneId, provinces, zones])
 
   return (
     <div className="space-y-3">
       <h2 className="text-sm font-semibold text-slate-700">Key Indicators</h2>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
-        {METRIC_KEYS.map(metricKey => {
-          const meta = METRIC_META[metricKey]
-          const aggregate = aggregateData[metricKey]
-          const avg = aggregate.count > 0 ? aggregate.sum / aggregate.count : 0
-
-          // For all metrics: display the percentage (multiply by 100)
-          // Pass the actual child count from the _count columns
-          const displayValue = avg * 100
-          const count = aggregate.countSum
-
-          return (
-            <IndicatorCard
-              key={metricKey}
-              metricKey={metricKey}
-              label={meta.label}
-              value={displayValue}
-              count={count}
-              isZeroDose={meta.isZeroDose}
-            />
-          )
-        })}
+        {cards.map(({ metricKey, meta, value, count }) => (
+          <IndicatorCard
+            key={metricKey}
+            metricKey={metricKey}
+            label={meta.label}
+            value={value}
+            count={count}
+            isZeroDose={meta.isZeroDose}
+          />
+        ))}
       </div>
     </div>
   )

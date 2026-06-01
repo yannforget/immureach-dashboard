@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { MetricKey } from '@/types';
+import type { MetricKey, ViewMode, Year } from '@/types';
 import { METRIC_KEYS } from '@/lib/dataUtils';
 
 interface DashboardState {
@@ -8,14 +8,18 @@ interface DashboardState {
   selectedProvince: string | null;
   selectedZoneId: string | null;
   hoveredZoneId: string | null;
-  showAntennes: boolean;
+
+  // Lower-panel mode + the year shown in profiling charts.
+  viewMode: ViewMode;
+  selectedYear: Year;
 
   // Actions
   setMetric: (metric: MetricKey) => void;
   setProvince: (province: string | null) => void;
   setSelectedZone: (zoneId: string | null) => void;
   setHoveredZone: (zoneId: string | null) => void;
-  setShowAntennes: (show: boolean) => void;
+  setViewMode: (mode: ViewMode) => void;
+  setSelectedYear: (year: Year) => void;
 }
 
 export const useDashboardStore = create<DashboardState>((set) => ({
@@ -23,7 +27,8 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   selectedProvince: null,
   selectedZoneId: null,
   hoveredZoneId: null,
-  showAntennes: false,
+  viewMode: 'data',
+  selectedYear: 2023,
 
   setMetric: (metric) => set({ selectedMetric: metric }),
 
@@ -31,12 +36,13 @@ export const useDashboardStore = create<DashboardState>((set) => ({
     set({
       selectedProvince: province,
       selectedZoneId: null,
-      showAntennes: false,
     }),
 
   setSelectedZone: (zoneId) => set({ selectedZoneId: zoneId }),
 
   setHoveredZone: (zoneId) => set({ hoveredZoneId: zoneId }),
 
-  setShowAntennes: (show) => set({ showAntennes: show }),
+  setViewMode: (mode) => set({ viewMode: mode }),
+
+  setSelectedYear: (year) => set({ selectedYear: year }),
 }));

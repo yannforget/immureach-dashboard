@@ -7,22 +7,14 @@ import { useData } from '@/context/DataContext'
 import { METRIC_META } from '@/lib/dataUtils'
 import { buildMapOptions } from '@/lib/charts/mapOptions'
 
-const PROVINCES_WITH_ANTENNES = [
-  'Kwilu',
-  'Kasai',
-  'Sankuru',
-]
-
 export function CoverageMap() {
   const chartRef = useRef<EChartsReact>(null)
   const selectedProvince = useDashboardStore(s => s.selectedProvince)
   const selectedMetric = useDashboardStore(s => s.selectedMetric)
-  const showAntennes = useDashboardStore(s => s.showAntennes)
-  const setShowAntennes = useDashboardStore(s => s.setShowAntennes)
   const setProvince = useDashboardStore(s => s.setProvince)
   const setHoveredZone = useDashboardStore(s => s.setHoveredZone)
 
-  const { loading, error } = useData()
+  const { loading, error, provinceBboxes } = useData()
   const provinces = useProvinceData()
   const zones = useZoneData(selectedProvince)
 
@@ -30,30 +22,33 @@ export function CoverageMap() {
   const mapName = selectedProvince ? 'drc-zones' : 'drc-provinces'
   const metricMeta = METRIC_META[selectedMetric]
 
-  const canShowAntennes =
-    selectedProvince && PROVINCES_WITH_ANTENNES.includes(selectedProvince)
+  // Zoom into the selected province's bbox. Zone drill-down does not zoom
+  // further — max zoom is the province level.
+  const provinceBbox = selectedProvince ? provinceBboxes[selectedProvince] : undefined
+  const boundingCoords: [[number, number], [number, number]] | undefined = provinceBbox
+    ? [[provinceBbox[0], provinceBbox[1]], [provinceBbox[2], provinceBbox[3]]]
+    : undefined
 
   const options = buildMapOptions({
     features,
     metric: selectedMetric,
     isZeroDose: metricMeta.isZeroDose,
     mapName,
-    showAntennes: canShowAntennes ? showAntennes : false,
-    zoneRows: zones,
+    boundingCoords,
   })
 
-  // Handle map selection and hover interactions
+  // Handle map selection and hover interactions. We match against `mapKey`
+  // (the raw province-prefixed name) because two zones can share a cleaned
+  // displayName (e.g. "Bili" in both Bas Uele and Nord Ubangi).
   const handleChartClick = (params: any) => {
     if (params.name) {
       if (selectedProvince) {
-        // If showing zones, select the clicked zone
-        const zone = zones.find(z => z.displayName === params.name)
+        const zone = zones.find(z => z.mapKey === params.name)
         if (zone) {
           useDashboardStore.setState({ selectedZoneId: zone.id })
         }
       } else {
-        // If showing provinces, select the province
-        const province = provinces.find(p => p.displayName === params.name)
+        const province = provinces.find(p => p.mapKey === params.name)
         if (province) {
           setProvince(province.displayName)
         }
@@ -63,7 +58,7 @@ export function CoverageMap() {
 
   const handleChartMouseOver = (params: any) => {
     if (params.componentType === 'series' && params.name) {
-      const zone = zones.find(z => z.displayName === params.name)
+      const zone = zones.find(z => z.mapKey === params.name)
       if (zone) {
         setHoveredZone(zone.id)
       }
@@ -106,21 +101,9 @@ export function CoverageMap() {
           option={options}
           theme="dashboard"
           style={{ width: '100%', height: '100%' }}
-          key={`map-${selectedProvince}-${selectedMetric}-${showAntennes}`}
+          key={`map-${selectedProvince}-${selectedMetric}`}
           onEvents={onEvents}
         />
-        {selectedProvince && canShowAntennes && (
-          <button
-            onClick={() => setShowAntennes(!showAntennes)}
-            className={`absolute top-3 right-3 z-10 px-3 py-1 rounded text-xs font-medium transition-colors ${
-              showAntennes
-                ? 'bg-teal-600 text-white'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-            }`}
-          >
-            Antennes
-          </button>
-        )}
       </div>
     </div>
   )

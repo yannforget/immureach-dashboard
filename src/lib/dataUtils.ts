@@ -16,13 +16,6 @@ export function cleanName(name: string): string {
 }
 
 /**
- * Strip 2-letter prefix from names like "kl Kwilu Province" -> "Kwilu Province"
- */
-export function stripPrefix(name: string): string {
-  return name.replace(/^[a-z]{2}\s/, '');
-}
-
-/**
  * Get display name for province buttons (drop " Province" suffix)
  */
 export function getDisplayName(fullName: string): string {

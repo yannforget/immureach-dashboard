@@ -19,7 +19,6 @@ type SortKey = 'name' | 'births' | 'total_population' | string
 
 export function ZoneTable({ rows }: ZoneTableProps) {
   const setSelectedZone = useDashboardStore(s => s.setSelectedZone)
-  const setProvince = useDashboardStore(s => s.setProvince)
   const [sortKey, setSortKey] = useState<SortKey>('name')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
 
@@ -34,30 +33,24 @@ export function ZoneTable({ rows }: ZoneTableProps) {
 
   const sortedRows = useMemo(() => {
     const sorted = [...rows].sort((a, b) => {
-      let aVal: any
-      let bVal: any
-
       if (sortKey === 'name') {
-        aVal = a.displayName
-        bVal = b.displayName
-      } else if (sortKey === 'births') {
-        aVal = (a.properties as any).births_per_year ?? 0
-        bVal = (b.properties as any).births_per_year ?? 0
-      } else if (sortKey === 'total_population') {
-        aVal = (a.properties as any).total_population ?? 0
-        bVal = (b.properties as any).total_population ?? 0
-      } else {
-        aVal = ((a.properties as any)[sortKey] ?? 0) * 100
-        bVal = ((b.properties as any)[sortKey] ?? 0) * 100
-      }
-
-      if (typeof aVal === 'string') {
         return sortDirection === 'asc'
-          ? aVal.localeCompare(bVal)
-          : bVal.localeCompare(aVal)
+          ? a.displayName.localeCompare(b.displayName)
+          : b.displayName.localeCompare(a.displayName)
       }
 
-      return sortDirection === 'asc' ? aVal - bVal : bVal - aVal
+      const propKey = sortKey === 'births' ? 'births_per_year' : sortKey
+      const av = (a.properties as any)[propKey]
+      const bv = (b.properties as any)[propKey]
+      const aNull = typeof av !== 'number'
+      const bNull = typeof bv !== 'number'
+
+      // Nulls sink to the bottom regardless of sort direction.
+      if (aNull && bNull) return 0
+      if (aNull) return 1
+      if (bNull) return -1
+
+      return sortDirection === 'asc' ? av - bv : bv - av
     })
 
     return sorted
@@ -65,14 +58,8 @@ export function ZoneTable({ rows }: ZoneTableProps) {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="border-b border-slate-200 px-4 py-2 flex items-center justify-between">
+      <div className="border-b border-slate-200 px-4 py-2">
         <h3 className="text-sm font-semibold text-slate-700">Zones</h3>
-        <button
-          onClick={() => setProvince(null)}
-          className="text-xs font-medium text-teal-600 hover:text-teal-700"
-        >
-          ← Back to Provinces
-        </button>
       </div>
 
       <div className="flex-1 overflow-x-auto">

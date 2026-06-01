@@ -37,26 +37,39 @@ export function BarChart() {
     dataColumn = 'births_per_year'
   }
 
-  // Prepare bar data
-  const barData = rows.map(row => {
-    const props = row.properties as any
-    let value = 0
+  // Prepare bar data. Rows without a numeric value for the current mode are
+  // dropped (so ungauged zones don't appear as a 0-bar in coverage/children
+  // modes). The births mode is always populated.
+  const barData = rows
+    .map(row => {
+      const props = row.properties as any
+      let value: number | null = null
 
-    if (barDataType === 'coverage') {
-      value = ((props[selectedMetric] ?? 0) * 100)
-    } else if (barDataType === 'children') {
-      value = props[dataColumn] ?? 0
-    } else if (barDataType === 'births') {
-      value = props[dataColumn] ?? 0
-    }
+      if (barDataType === 'coverage') {
+        const raw = props[selectedMetric]
+        value = typeof raw === 'number' ? raw * 100 : null
+      } else if (barDataType === 'children') {
+        const raw = props[dataColumn]
+        value = typeof raw === 'number' ? raw : null
+      } else if (barDataType === 'births') {
+        const raw = props[dataColumn]
+        value = typeof raw === 'number' ? raw : null
+      }
 
-    return {
-      name: row.displayName,
-      value,
-      count: props[metricMeta.countKey] ?? 0,
-      id: row.id,
-    }
-  })
+      const countRaw = props[metricMeta.countKey]
+      return {
+        name: row.displayName,
+        value,
+        count: typeof countRaw === 'number' ? countRaw : 0,
+        id: row.id,
+      }
+    })
+    .filter((item): item is { name: string; value: number; count: number; id: string } =>
+      typeof item.value === 'number'
+    )
+    // Sort here (ascending) so the rendered chart order matches the array the
+    // mouseover / click handlers index into via params.dataIndex.
+    .sort((a, b) => a.value - b.value)
 
   // Calculate chart height based on number of items
   // Use consistent bar height of 28px per item + overhead for axes/margins
