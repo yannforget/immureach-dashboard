@@ -39,6 +39,22 @@ export interface ProvinceProperties {
 
 export interface ZoneProperties extends ProvinceProperties {
   q103: string;
+  // PEV/EPI antenne (operational hub) the zone reports to. Only a few
+  // provinces have antenne assignments — null elsewhere.
+  antenne: string | null;
+}
+
+export interface AntenneGroup {
+  antenne: string;
+  color: string;
+  // The zone that *is* the antenne head. Resolved by exact displayName
+  // match first; if that fails (e.g. "Kikwit" has no zone literally named
+  // "Kikwit", only "Kikwit Nord" / "Kikwit Sud"), we fall back to the
+  // first zone whose displayName contains the antenne name. Null only if
+  // no zone in the group matches even loosely.
+  headMapKey: string | null;
+  headCentroid: [number, number] | null;
+  memberMapKeys: string[];
 }
 
 export interface ProvinceRow {
@@ -56,6 +72,9 @@ export interface ZoneRow {
   displayName: string;
   mapKey: string;
   provinceId: string;
+  // [lon, lat] of the zone's bbox centre — used to anchor map markers
+  // (e.g. the antenne-head icon in Antenne mode).
+  centroid: [number, number];
   properties: ZoneProperties;
 }
 

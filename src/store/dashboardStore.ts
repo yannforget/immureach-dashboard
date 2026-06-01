@@ -13,6 +13,9 @@ interface DashboardState {
   viewMode: ViewMode;
   selectedYear: Year;
 
+  // Map-only Antenne overlay (purely visual; resets when province changes).
+  showAntenne: boolean;
+
   // Actions
   setMetric: (metric: MetricKey) => void;
   setProvince: (province: string | null) => void;
@@ -20,6 +23,7 @@ interface DashboardState {
   setHoveredZone: (zoneId: string | null) => void;
   setViewMode: (mode: ViewMode) => void;
   setSelectedYear: (year: Year) => void;
+  setShowAntenne: (show: boolean) => void;
 }
 
 export const useDashboardStore = create<DashboardState>((set) => ({
@@ -29,6 +33,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   hoveredZoneId: null,
   viewMode: 'data',
   selectedYear: 2023,
+  showAntenne: false,
 
   setMetric: (metric) => set({ selectedMetric: metric }),
 
@@ -36,6 +41,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
     set({
       selectedProvince: province,
       selectedZoneId: null,
+      showAntenne: false,
     }),
 
   setSelectedZone: (zoneId) => set({ selectedZoneId: zoneId }),
@@ -45,4 +51,6 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   setViewMode: (mode) => set({ viewMode: mode }),
 
   setSelectedYear: (year) => set({ selectedYear: year }),
+
+  setShowAntenne: (show) => set({ showAntenne: show }),
 }));

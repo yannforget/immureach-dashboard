@@ -59,6 +59,36 @@ POP_FIELDS_ORDER = [
 PREFIX_RE = re.compile(r"^[a-z]{2}\s")
 
 
+def clean_name(raw: str) -> str:
+    """Mirror of the dashboard's cleanName(): strip the 2-letter prefix and
+    the trailing kind suffix. Lets us join the antenne CSV's `*_clean`
+    columns against boundary names without round-tripping through the raw
+    prefixed form (the CSV ships as latin-1; cleaned names are ASCII)."""
+    cleaned = PREFIX_RE.sub("", raw)
+    cleaned = re.sub(r" Province$", "", cleaned)
+    cleaned = re.sub(r" Zone de Santé$", "", cleaned)
+    return cleaned
+
+
+def load_antennes() -> dict[tuple[str, str], str]:
+    """Map (level_2_name_clean, level_3_name_clean) → antenne clean name.
+
+    The PEV antenne layer is a per-zone operational grouping that only
+    covers a handful of provinces; zones outside those provinces simply
+    have no entry. Returns an empty dict if the input file is missing
+    (the pipeline is allowed to run without it).
+    """
+    csv_path = PROJECT_ROOT / "data" / "input" / "immureach" / "pyramid_antenne.csv"
+    if not csv_path.exists():
+        return {}
+    df = pd.read_csv(csv_path, encoding="latin-1")
+    return {
+        (str(row["level_2_name_clean"]).strip(), str(row["level_3_name_clean"]).strip()):
+            str(row["antenne"]).strip()
+        for _, row in df.iterrows()
+    }
+
+
 def load_predictions_provinces() -> dict[str, dict[str, float]]:
     df = pd.read_csv(DATA_DIR / "predictions" / "provinces.csv")
     return {row["province"]: {k: float(row[k]) for k in METRIC_KEYS} for _, row in df.iterrows()}
@@ -143,6 +173,7 @@ def build_zone_feature(
     feature: dict,
     preds: dict[str, float] | None,
     pops: dict[str, float],
+    antenne: str | None,
 ) -> dict:
     src = feature["properties"]
     props: dict = {
@@ -154,6 +185,7 @@ def build_zone_feature(
         "level_2_name": src.get("level_2_name"),
         "level_3_id": src.get("level_3_id"),
         "level_3_name": src.get("level_3_name"),
+        "antenne": antenne,
     }
     for field in POP_FIELDS_ORDER:
         props[field] = pops.get(field)
@@ -174,9 +206,7 @@ def assert_clean_name(raw: str) -> None:
     """The dashboard's cleanName() strips ^[a-z]{2}\\s then ' Province' / ' Zone de Santé'.
     After cleaning, no name should still start with a 2-letter+space prefix.
     """
-    cleaned = PREFIX_RE.sub("", raw)
-    cleaned = re.sub(r" Province$", "", cleaned)
-    cleaned = re.sub(r" Zone de Santé$", "", cleaned)
+    cleaned = clean_name(raw)
     assert not PREFIX_RE.match(cleaned), f"unexpected double-prefix in {raw!r} -> {cleaned!r}"
 
 
@@ -188,6 +218,7 @@ def main() -> None:
     pred_zone = load_predictions_zones()
     pop_prov = load_population_provinces()
     pop_zone = load_population_zones()
+    antennes = load_antennes()
 
     # --- Provinces ---
     with (DATA_DIR / "boundaries" / "provinces.geojson").open() as f:
@@ -232,6 +263,7 @@ def main() -> None:
 
     zone_pred_matched = 0
     zone_pop_matched = 0
+    zone_antenne_matched = 0
     zone_pred_missing: list[str] = []
     out_zones: list[dict] = []
 
@@ -242,6 +274,7 @@ def main() -> None:
         assert_clean_name(l3)
         preds = pred_zone.get((l2, l3))
         pops = pop_zone.get((l2, l3))
+        antenne = antennes.get((clean_name(l2), clean_name(l3)))
         if pops is None:
             raise SystemExit(f"zone missing population: {(l2, l3)!r}")
         zone_pop_matched += 1
@@ -252,15 +285,18 @@ def main() -> None:
                     out_of_range.append((l3, k, v))
         else:
             zone_pred_missing.append(l3)
-        out_zones.append(build_zone_feature(feat, preds, pops))
+        if antenne is not None:
+            zone_antenne_matched += 1
+        out_zones.append(build_zone_feature(feat, preds, pops, antenne))
 
     # --- Summary ---
     print(f"Provinces: {len(out_provinces)} features")
     print(f"  preds matched: {prov_pred_matched}/{len(out_provinces)}")
     print(f"  pops  matched: {prov_pop_matched}/{len(out_provinces)}")
     print(f"Zones: {len(out_zones)} features")
-    print(f"  preds matched: {zone_pred_matched}/{len(out_zones)}")
-    print(f"  pops  matched: {zone_pop_matched}/{len(out_zones)}")
+    print(f"  preds matched:   {zone_pred_matched}/{len(out_zones)}")
+    print(f"  pops  matched:   {zone_pop_matched}/{len(out_zones)}")
+    print(f"  antenne matched: {zone_antenne_matched}/{len(out_zones)}")
     print(f"  preds missing: {len(zone_pred_missing)}")
     for name in zone_pred_missing:
         print(f"    - {name}")

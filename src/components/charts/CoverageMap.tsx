@@ -3,20 +3,25 @@ import EChartsReact from 'echarts-for-react'
 import { useDashboardStore } from '@/store/dashboardStore'
 import { useProvinceData } from '@/hooks/useProvinceData'
 import { useZoneData } from '@/hooks/useZoneData'
+import { useProvinceAntennes } from '@/hooks/useProvinceAntennes'
 import { useData } from '@/context/DataContext'
 import { METRIC_META } from '@/lib/dataUtils'
 import { buildMapOptions } from '@/lib/charts/mapOptions'
+import { Toggle } from '@/components/ui/toggle'
 
 export function CoverageMap() {
   const chartRef = useRef<EChartsReact>(null)
   const selectedProvince = useDashboardStore(s => s.selectedProvince)
   const selectedMetric = useDashboardStore(s => s.selectedMetric)
+  const showAntenne = useDashboardStore(s => s.showAntenne)
   const setProvince = useDashboardStore(s => s.setProvince)
   const setHoveredZone = useDashboardStore(s => s.setHoveredZone)
+  const setShowAntenne = useDashboardStore(s => s.setShowAntenne)
 
   const { loading, error, provinceBboxes } = useData()
   const provinces = useProvinceData()
   const zones = useZoneData(selectedProvince)
+  const antenneGroups = useProvinceAntennes(selectedProvince)
 
   const features = selectedProvince ? zones : provinces
   const mapName = selectedProvince ? 'drc-zones' : 'drc-provinces'
@@ -35,6 +40,7 @@ export function CoverageMap() {
     isZeroDose: metricMeta.isZeroDose,
     mapName,
     boundingCoords,
+    antenneOverlay: showAntenne && antenneGroups ? antenneGroups : undefined,
   })
 
   // Handle map selection and hover interactions. We match against `mapKey`
@@ -101,9 +107,20 @@ export function CoverageMap() {
           option={options}
           theme="dashboard"
           style={{ width: '100%', height: '100%' }}
-          key={`map-${selectedProvince}-${selectedMetric}`}
+          key={`map-${selectedProvince}-${selectedMetric}-${showAntenne ? 'a' : 'm'}`}
           onEvents={onEvents}
         />
+        {selectedProvince && antenneGroups && (
+          <Toggle
+            size="sm"
+            pressed={showAntenne}
+            onPressedChange={setShowAntenne}
+            aria-label="Toggle antenne overlay"
+            className="absolute top-2 right-2 z-10 border border-slate-200 bg-white/90 backdrop-blur"
+          >
+            Antennes
+          </Toggle>
+        )}
       </div>
     </div>
   )

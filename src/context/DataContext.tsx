@@ -33,6 +33,10 @@ function computeBbox(geometry: any): Bbox {
   return [minLon, minLat, maxLon, maxLat]
 }
 
+function bboxCenter(bbox: Bbox): [number, number] {
+  return [(bbox[0] + bbox[2]) / 2, (bbox[1] + bbox[3]) / 2]
+}
+
 const DataContext = createContext<DataContextType | undefined>(undefined)
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
@@ -93,6 +97,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               displayName: cleanName(props.q103 || ''),
               mapKey: props.q103 || '',
               provinceId: provinceName,
+              centroid: bboxCenter(computeBbox(feature.geometry)),
               properties: props,
             }
           }

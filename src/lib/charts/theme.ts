@@ -1,3 +1,18 @@
+// Categorical palette for the map's Antenne overlay. Distinct hues — no
+// province in the current data has more than ~6 antennes, so 8 is plenty.
+// Avoids teal (the dashboard accent) and red (zero-dose) to keep the
+// overlay readable against the rest of the UI.
+export const ANTENNE_PALETTE: string[] = [
+  '#6366f1', // indigo-500
+  '#f59e0b', // amber-500
+  '#8b5cf6', // violet-500
+  '#0ea5e9', // sky-500
+  '#84cc16', // lime-500
+  '#ec4899', // pink-500
+  '#f97316', // orange-500
+  '#14b8a6', // teal-500
+];
+
 export const DASHBOARD_THEME: any = {
   color: [
     '#0d9488', // teal-600
