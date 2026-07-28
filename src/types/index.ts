@@ -82,6 +82,8 @@ export type TableMode = 'province' | 'zone' | 'detail';
 
 export type ViewMode = 'data' | 'profiling';
 
+export type DashboardSection = 'ecv' | 'zerodose' | 'determinants' | 'actions';
+
 export type Year = 2022 | 2023;
 
 export const ACCESSIBILITY_THRESHOLDS = [30, 60, 90, 120, 150, 180] as const;
