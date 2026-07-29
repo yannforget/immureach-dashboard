@@ -141,3 +141,17 @@ export interface ProfileData {
 }
 
 export type ProfileScopeLevel = 'national' | 'province' | 'zone';
+
+// One row of public/data/key_ecv.csv (columns: year, level, province, zone,
+// nb_people, nb_zones, penta_cov, zdc_cov). `province`/`zone` are only
+// populated for the matching `level`; penta_cov/zdc_cov are 0-1 fractions.
+export interface KeyEcvRow {
+  year: Year;
+  level: ProfileScopeLevel;
+  province: string | null;
+  zone: string | null;
+  nb_people: number | null;
+  nb_zones: number | null;
+  penta_cov: number | null;
+  zdc_cov: number | null;
+}

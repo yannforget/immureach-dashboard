@@ -1,11 +1,11 @@
 import { useMemo } from 'react'
-import { IndicatorCard } from './IndicatorCard'
+import { IndicatorCardZeroDose } from './IndicatorCardZeroDose'
 import { useDashboardStore } from '@/store/dashboardStore'
 import { useProvinceData } from '@/hooks/useProvinceData'
 import { useZoneData } from '@/hooks/useZoneData'
 import { METRIC_KEYS, METRIC_META } from '@/lib/dataUtils'
 
-export function IndicatorCards() {
+export function IndicatorCardsZeroDose() {
   const selectedProvince = useDashboardStore(s => s.selectedProvince)
   const selectedZoneId = useDashboardStore(s => s.selectedZoneId)
   const provinces = useProvinceData()
@@ -57,7 +57,7 @@ export function IndicatorCards() {
       <h2 className="text-sm font-semibold text-slate-700">Key Indicators</h2>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
         {cards.map(({ metricKey, meta, value, count }) => (
-          <IndicatorCard
+          <IndicatorCardZeroDose
             key={metricKey}
             metricKey={metricKey}
             label={meta.label}

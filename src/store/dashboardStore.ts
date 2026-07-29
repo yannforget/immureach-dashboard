@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-// import type { MetricKey, ViewMode, Year } from '@/types';
 import type { DashboardSection, MetricKey, ViewMode, Year } from '@/types';
 import { METRIC_KEYS } from '@/lib/dataUtils';
 

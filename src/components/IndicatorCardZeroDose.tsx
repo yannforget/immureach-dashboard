@@ -54,7 +54,7 @@ function getCountDescription(metricKey: MetricKey): string {
   return VACCINE_DESCRIPTIONS[metricKey]?.count || ''
 }
 
-export function IndicatorCard({
+export function IndicatorCardZeroDose({
   metricKey,
   label,
   value,
@@ -78,11 +78,10 @@ export function IndicatorCard({
   return (
     <button
       onClick={() => setMetric(metricKey)}
-      className={`rounded-lg border px-4 py-3 text-left transition-all ${
-        isSelected
+      className={`rounded-lg border px-4 py-3 text-left transition-all ${isSelected
           ? 'border-teal-600 bg-teal-50 shadow-md'
           : 'border-slate-200 bg-white hover:border-teal-400'
-      }`}
+        }`}
     >
       <div className="flex items-center justify-between gap-1">
         <h3 className="text-xs font-semibold text-slate-700">{label}</h3>

@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import * as echarts from 'echarts'
 import { cleanName } from '@/lib/dataUtils'
-import type { ProfileData, ProvinceRow, ZoneRow } from '@/types'
+import { parseCsv } from '@/lib/csv'
+import type { KeyEcvRow, ProfileData, ProfileScopeLevel, ProvinceRow, Year, ZoneRow } from '@/types'
 
 export type Bbox = [number, number, number, number] // [minLon, minLat, maxLon, maxLat]
 
@@ -9,9 +10,26 @@ interface DataContextType {
   provinces: ProvinceRow[]
   zones: ZoneRow[]
   profile: ProfileData | null
+  keyEcv: KeyEcvRow[]
   provinceBboxes: Record<string, Bbox>
   loading: boolean
   error: Error | null
+}
+
+function parseKeyEcvCsv(text: string): KeyEcvRow[] {
+  const toNum = (v: string) => (v === '' ? null : Number(v))
+  const toStr = (v: string) => (v === '' ? null : v)
+
+  return parseCsv(text).map(r => ({
+    year: Number(r.year) as Year,
+    level: r.level as ProfileScopeLevel,
+    province: toStr(r.province),
+    zone: toStr(r.zone),
+    nb_people: toNum(r.nb_people),
+    nb_zones: toNum(r.nb_zones),
+    penta_cov: toNum(r.penta_cov),
+    zdc_cov: toNum(r.zdc_cov),
+  }))
 }
 
 function computeBbox(geometry: any): Bbox {
@@ -43,6 +61,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [provinces, setProvinces] = useState<ProvinceRow[]>([])
   const [zones, setZones] = useState<ZoneRow[]>([])
   const [profile, setProfile] = useState<ProfileData | null>(null)
+  const [keyEcv, setKeyEcv] = useState<KeyEcvRow[]>([])
   const [provinceBboxes, setProvinceBboxes] = useState<Record<string, Bbox>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
@@ -143,6 +162,19 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
         echarts.registerMap('drc-provinces', provincesWithNames as any)
         echarts.registerMap('drc-zones', zonesWithNames as any)
+
+        // key_ecv.csv (ECV tab key figures) is fetched separately and
+        // non-fatally: it's optional/still being populated, so a missing or
+        // malformed file shouldn't break the rest of the dashboard.
+        try {
+          const keyEcvRes = await fetch('/data/key_ecv.csv')
+          if (keyEcvRes.ok) {
+            setKeyEcv(parseKeyEcvCsv(await keyEcvRes.text()))
+          }
+        } catch (keyEcvErr) {
+          console.warn('Failed to load key_ecv.csv:', keyEcvErr)
+        }
+
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Unknown error'))
         console.error('Failed to load data:', err)
@@ -155,7 +187,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <DataContext.Provider value={{ provinces, zones, profile, provinceBboxes, loading, error }}>
+    <DataContext.Provider value={{ provinces, zones, profile, keyEcv, provinceBboxes, loading, error }}>
       {children}
     </DataContext.Provider>
   )

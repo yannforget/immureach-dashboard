@@ -1,0 +1,7 @@
+year,level,province,zone,nb_people,nb_zones,penta_cov,zdc_cov
+2022,national,,,12000,145,0.71,0.12
+2023,national,,,13500,145,0.75,0.09
+2022,province,Kwilu,,850,12,0.68,0.14
+2023,province,Kwilu,,910,12,0.73,0.10
+2022,zone,Kwilu,Mungindu,60,1,0.65,0.16
+2023,zone,Kwilu,Mungindu,64,1,0.70,0.11

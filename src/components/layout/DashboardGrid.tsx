@@ -1,12 +1,12 @@
 // import { Breadcrumb } from '../Breadcrumb'
 import { Ribbon } from '../Ribbon'
 import { PlaceholderPanel } from '../PlaceholderPanel'
-import { IndicatorCards } from '../IndicatorCards'
+import { IndicatorCardsZeroDose } from '../IndicatorCardsZeroDose'
+import { IndicatorCardsECV } from '../IndicatorCardsECV'
 import { CoverageMap } from '../charts/CoverageMap'
 import { BarChart } from '../charts/BarChart'
 import { DataTable } from '../table/DataTable'
 import { ProfilingPanel } from '../ProfilingPanel'
-// import { YearSelector } from '../YearSelector'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
 import { useDashboardStore } from '@/store/dashboardStore'
 import type { ViewMode } from '@/types'
@@ -23,7 +23,10 @@ export function DashboardGrid() {
         <Ribbon />
       </section>
 
-      {activeSection === 'ecv' && <PlaceholderPanel title="Données brutes ECV" />}
+      {activeSection === 'ecv' && (<section className="mb-8">
+        <IndicatorCardsECV />
+      </section>
+      )}
       {activeSection === 'determinants' && <PlaceholderPanel title="Déterminants ménages" />}
       {activeSection === 'actions' && <PlaceholderPanel title="Actions / interventions" />}
 
@@ -31,7 +34,7 @@ export function DashboardGrid() {
         <>
           {/* Indicator Cards */}
           <section className="mb-8">
-            <IndicatorCards />
+            <IndicatorCardsZeroDose />
           </section>
           {/* Charts Grid */}
           <section className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
