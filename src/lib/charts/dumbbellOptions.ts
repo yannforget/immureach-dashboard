@@ -52,7 +52,7 @@ export function buildDumbbellOptions(config: DumbbellConfig): EChartsOption {
           desc +
           `<span style="color:${VACC}">●</span> Vacciné: ${r.vacc.toFixed(2)} (raw ${rawVacc})<br/>` +
           `<span style="color:${ZD}">●</span> Zéro-dose: ${r.zd.toFixed(2)} (raw ${rawZd})<br/>` +
-          `Gap (0-dose − vacc): ${sign}${gap.toFixed(2)}`
+          `Ecart (0-dose − vacc): ${sign}${gap.toFixed(2)}`
         )
       },
     },

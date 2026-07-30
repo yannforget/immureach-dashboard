@@ -38117,73 +38117,73 @@
         "meta": [
             {
                 "key": "trust_in_hcw",
-                "label": "Trust in hcw",
-                "description": "Perceived welcome and quality of interaction at the health centre during the last visit."
+                "label": "Confiance personnels santé",
+                "description": "Accueil perçu et qualité des échanges au centre de santé lors de la dernière visite."
             },
             {
                 "key": "affordability",
-                "label": "Affordability",
-                "description": "Out-of-pocket costs households face for vaccination (e.g. paying for the vaccination card)."
+                "label": "Abordabilité",
+                "description": "Frais à la charge des ménages liés à la vaccination (par exemple, le coût du carnet de vaccination)."
             },
             {
                 "key": "missed_opportunities",
-                "label": "Missed opportunities",
-                "description": "Past instances where a child was brought to a health centre for vaccination but not vaccinated."
+                "label": "Opportunités manquées",
+                "description": "Cas antérieurs où un enfant a été amené dans un centre de santé pour être vacciné, mais n'a pas été vacciné."
             },
             {
                 "key": "ease_to_vaccinate_children",
-                "label": "Ease to vaccinate children",
-                "description": "Perceived ease of obtaining vaccination services for one's child."
+                "label": "Facilité de vaccination",
+                "description": "Perception de la facilité d'accès aux services de vaccination pour son enfant."
             },
             {
                 "key": "outreach",
-                "label": "Outreach",
-                "description": "Frequency of home visits from community outreach workers."
+                "label": "Sensibilisation",
+                "description": "Fréquence des visites à domicile effectuées par les intervenants de vaccination de proximité."
             },
             {
                 "key": "community_norms",
-                "label": "Community norms",
-                "description": "Belief that most parents in the community vaccinate their children."
+                "label": "Normes communautaires",
+                "description": "Conviction selon laquelle la plupart des parents de la communauté font vacciner leurs enfants."
             },
             {
                 "key": "fear_side_effects",
-                "label": "Fear side effects",
-                "description": "Reported awareness of children who experienced side effects (e.g. abscess) after vaccination."
+                "label": "Peur effets secondaires",
+                "description": "Cas signalés d'enfants ayant présenté des effets indésirables (par exemple, un abcès) après la vaccination."
             },
             {
                 "key": "fear_diseases",
-                "label": "Fear diseases",
-                "description": "Perceived seriousness of vaccine-preventable diseases."
+                "label": "Peur maladies",
+                "description": "Perception de la gravité des maladies évitables par la vaccination."
             },
             {
                 "key": "opinion_on_vaccines",
-                "label": "Opinion on vaccines",
-                "description": "Perceived importance of vaccines for the child's health."
+                "label": "Opinion sur les vaccins",
+                "description": "Importance perçue des vaccins pour la santé de l'enfant."
             },
             {
                 "key": "self_efficacy",
-                "label": "Self efficacy",
-                "description": "Caregiver's confidence in their ability to bring the child to scheduled vaccination sessions."
+                "label": "Confiance propre capacité",
+                "description": "Confiance des personnes qui s'occupent de l'enfant dans leur capacité à l'amener aux séances de vaccination prévues."
             },
             {
                 "key": "knowledge_diseases",
-                "label": "Knowledge diseases",
-                "description": "Knowledge of which childhood illnesses can be prevented by vaccination."
+                "label": "Connaissances maladies",
+                "description": "Connaissance des maladies infantiles qui peuvent être évitées grâce à la vaccination."
             },
             {
                 "key": "knowledge_vaccines",
-                "label": "Knowledge vaccines",
-                "description": "Knowledge of vaccination logistics — campaigns, dates, target age groups."
+                "label": "Connaissances vaccins",
+                "description": "Connaissance de la vaccination : campagnes, dates, tranches d'âge cibles."
             },
             {
                 "key": "household_travel_ohe",
-                "label": "Household travel ohe",
-                "description": "Whether household members lived or travelled away from home in the past year."
+                "label": "Déplacements ménages",
+                "description": "Si les membres du foyer ont vécu ou voyagé loin de chez eux au cours de l'année écoulée."
             },
             {
                 "key": "is_max_ethnic_group",
-                "label": "Is max ethnic group",
-                "description": "Cultural alignment between the respondent's ethnic group and the dominant group of the zone."
+                "label": "Alignement culturel",
+                "description": "Alignement culturel entre le groupe ethnique de la personne interrogée et le groupe dominant de la zone."
             }
         ],
         "2022": {

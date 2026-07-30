@@ -84,7 +84,7 @@ export function DashboardGrid() {
           <section className="mt-8">
             <Notes>
               Résultats du modèle à l'échelle des zones de santé développé dans le cadre d'un
-              post-doctorat par Claire Lescoat, laboratoire SPELL (Belgique)
+              post-doctorat au laboratoire SPELL (Belgique)
             </Notes>
           </section>
         </>

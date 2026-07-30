@@ -68,10 +68,23 @@ INDICATORS = [
     "is_max_ethnic_group",
 ]
 
-# One-line plain-English explanation of each composite index, shown to
-# decision-makers in the Profiling-mode dumbbell tooltip. Sourced from the
-# "Household - details" sheet of data/input/immureach/details_models.xlsx
-# (Variable / Theoretical domain / Composite index columns).
+INDICATORS_LABEL = {
+    "trust_in_hcw": "Confiance personnels santé",
+    "affordability": "Abordabilité",
+    "missed_opportunities": "Opportunités manquées",
+    "ease_to_vaccinate_children": "Facilité de vaccination",
+    "outreach": "Sensibilisation",
+    "community_norms": "Normes communautaires",
+    "fear_side_effects": "Peur effets secondaires",
+    "fear_diseases": "Peur maladies",
+    "opinion_on_vaccines": "Opinion sur les vaccins",
+    "self_efficacy": "Confiance propre capacité",
+    "knowledge_diseases": "Connaissance maladies",
+    "knowledge_vaccines": "Connaissance vaccins",
+    "household_travel_ohe": "Déplacements ménages",
+    "is_max_ethnic_group": "Alignement culturel",
+}
+
 INDICATOR_DESCRIPTIONS = {
     "trust_in_hcw": "Accueil perçu et qualité des échanges au centre de santé lors de la dernière visite.",
     "affordability": "Frais à la charge des ménages liés à la vaccination (par exemple, le coût du carnet de vaccination).",
@@ -91,6 +104,8 @@ INDICATOR_DESCRIPTIONS = {
 
 
 def _label(key: str) -> str:
+    if key in INDICATORS_LABEL:
+        return INDICATORS_LABEL[key]
     return key.replace("_", " ").capitalize()
 
 
