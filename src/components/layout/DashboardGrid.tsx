@@ -1,5 +1,6 @@
 // import { Breadcrumb } from '../Breadcrumb'
 import { Ribbon } from '../Ribbon'
+import { Notes } from '../Notes'
 import { PlaceholderPanel } from '../PlaceholderPanel'
 import { IndicatorCardsZeroDose } from '../IndicatorCardsZeroDose'
 import { IndicatorCardsECV } from '../IndicatorCardsECV'
@@ -24,7 +25,22 @@ export function DashboardGrid() {
       </section>
 
       {activeSection === 'ecv' && (<section className="mb-8">
+        {/* Indicator Cards */}
         <IndicatorCardsECV />
+        <div className="mt-6">
+          {/* Bottom page notes */}
+          <Notes>
+            Données collectées en RDC par l'EPSK, et accessibles{' '}
+            <a
+              href="https://espkinshasa.net/note-dinformation-enquete-de-couverture-vaccinale-ecv-rdc-2023-01/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-teal-700 underline hover:text-teal-800"
+            >
+              ici
+            </a>
+          </Notes>
+        </div>
       </section>
       )}
       {activeSection === 'determinants' && <PlaceholderPanel title="Déterminants ménages" />}
@@ -51,8 +67,8 @@ export function DashboardGrid() {
             <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)}>
               <div className="flex items-center justify-between gap-4">
                 <TabsList>
-                  <TabsTrigger value="data">Data</TabsTrigger>
-                  <TabsTrigger value="profiling">Profiling</TabsTrigger>
+                  <TabsTrigger value="data">Données</TabsTrigger>
+                  <TabsTrigger value="profiling">Profils</TabsTrigger>
                 </TabsList>
               </div>
               <TabsContent value="data">
@@ -64,6 +80,12 @@ export function DashboardGrid() {
                 <ProfilingPanel />
               </TabsContent>
             </Tabs>
+          </section>
+          <section className="mt-8">
+            <Notes>
+              Résultats du modèle à l'échelle des zones de santé développé dans le cadre d'un
+              post-doctorat par Claire Lescoat, laboratoire SPELL (Belgique)
+            </Notes>
           </section>
         </>
       )

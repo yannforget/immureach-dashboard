@@ -92,9 +92,8 @@ function ComparisonRow({ label, value, accentClass, isHighlight }: ComparisonRow
   return (
     <div className="flex items-center gap-3">
       <div
-        className={`w-16 text-xs ${
-          isHighlight ? 'font-semibold text-slate-900' : 'text-slate-500'
-        }`}
+        className={`w-16 text-xs ${isHighlight ? 'font-semibold text-slate-900' : 'text-slate-500'
+          }`}
       >
         {label}
       </div>
@@ -105,9 +104,8 @@ function ComparisonRow({ label, value, accentClass, isHighlight }: ComparisonRow
         />
       </div>
       <div
-        className={`w-10 text-right text-xs tabular-nums ${
-          isHighlight ? 'font-semibold text-slate-900' : 'text-slate-500'
-        }`}
+        className={`w-10 text-right text-xs tabular-nums ${isHighlight ? 'font-semibold text-slate-900' : 'text-slate-500'
+          }`}
       >
         {value.toFixed(0)}%
       </div>
@@ -145,7 +143,7 @@ function MetricCard({
         </h4>
         <span className="text-xs text-slate-500">
           {typeof zoneCount === 'number'
-            ? `${Math.round(zoneCount).toLocaleString()} children`
+            ? `${Math.round(zoneCount).toLocaleString()} enfants`
             : ''}
         </span>
       </div>
@@ -225,46 +223,46 @@ export function ZoneDetail({ row, zoneName }: ZoneDetailProps) {
 
       <section>
         <h4 className="mb-3 text-sm font-semibold text-slate-700">
-          Demographics
+          Données démographiques
         </h4>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           <DemographicTile
-            label="Total population"
+            label="Population totale"
             value={props.total_population}
-            description="Total estimated population residing in the zone."
-            source="GRID3 gridded population estimates"
+            description="Population totale estimée résidant dans la zone."
+            source="Estimations démographiques GRID3"
           />
           <DemographicTile
-            label="Births / year"
+            label="Naissances / an"
             value={props.births_per_year}
-            description="Estimated annual live births, derived from the under-1 population and infant mortality (births = pop_0_12mo / (1 − IMR/1000))."
-            source="GRID3 under-1 population combined with DHS 2024 IMR"
+            description="Estimation du nombre annuel de naissances vivantes, calculée à partir de la population des moins de 1 an et du taux de mortalité infantile (naissances = pop_0_12mo / (1 − TMI/1 000))."
+            source="Population de moins de 1 an selon GRID3, combinée au taux de mortalité infantile (TMI) de l'enquête DHS 2024"
           />
           <DemographicTile
-            label="Under 1"
+            label="Enfants moins de 1 an"
             value={props.pop_0_12mo}
-            description="Estimated population aged 0–12 months."
-            source="GRID3 gridded population estimates"
+            description="Estimation de la population âgée de 0 à 12 mois."
+            source="Estimations démographiques GRID3"
           />
           <DemographicTile
-            label="6–24 months"
+            label="Enfants de 6 à 24 mois"
             value={props.pop_6_24mo}
-            description="Estimated population aged 6–24 months — the denominator used for vaccine coverage counts."
-            source="GRID3 gridded population estimates combined with DHS 2024 IMR"
+            description="Population estimée âgée de 6 à 24 mois — dénominateur utilisé pour le calcul de la couverture vaccinale."
+            source="Estimations démographiques par grille GRID3 combinées au taux de mortalité infantile (TMI) de l'enquête DHS 2024"
           />
           <DemographicTile
-            label="Under 5"
+            label="Enfants moins 5 ans"
             value={props.pop_0_5yo}
-            description="Estimated population aged 0–5 years."
-            source="GRID3 gridded population estimates"
+            description="Estimation de la population âgée de 0 à 5 ans."
+            source="Estimations démographiques GRID3"
           />
           <DemographicTile
-            label="IMR"
+            label="Taux de Mortalité Infantile"
             value={props.imr}
             format="rate"
             unit="/1k"
-            description="Infant mortality rate per 1,000 live births. Provided at the province level and applied uniformly to all zones in the province."
-            source="DHS 2024 (province level)"
+            description="Taux de mortalité infantile pour 1 000 naissances vivantes. Donnée fournie au niveau provincial et appliquée de manière uniforme à toutes les zones de la province."
+            source="DHS 2024 (au niveau provincial)"
           />
         </div>
       </section>
@@ -272,9 +270,9 @@ export function ZoneDetail({ row, zoneName }: ZoneDetailProps) {
       <section>
         <div className="mb-3 flex items-baseline justify-between">
           <h4 className="text-sm font-semibold text-slate-700">
-            Coverage vs province & national average
+            Couverture par rapport à la moyenne provinciale et nationale
           </h4>
-          <span className="text-xs text-slate-500">% of 6–24 mo children</span>
+          <span className="text-xs text-slate-500">% des enfants âgés de 6 à 24 mois</span>
         </div>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {METRIC_KEYS.map(key => {

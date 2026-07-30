@@ -54,7 +54,7 @@ export function IndicatorCardsZeroDose() {
 
   return (
     <div className="space-y-3">
-      <h2 className="text-sm font-semibold text-slate-700">Key Indicators</h2>
+      <h2 className="text-sm font-semibold text-slate-700">Indicateurs clefs</h2>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
         {cards.map(({ metricKey, meta, value, count }) => (
           <IndicatorCardZeroDose

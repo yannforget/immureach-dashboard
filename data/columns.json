@@ -2,141 +2,141 @@
     {
         "column_name": "q101",
         "label": "Province",
-        "description": "Province name"
+        "description": "Province"
     },
     {
         "column_name": "q103",
         "label": "Health zone",
-        "description": "Zone de Santé (health zone) name"
+        "description": "Zone de Santé"
     },
     {
         "column_name": "geometry",
         "label": "Geometry",
-        "description": "Geographic boundary of the health zone"
+        "description": "Limites géographiques de la zone sanitaire"
     },
     {
         "column_name": "pop_0_12mo",
         "label": "Population under 1",
-        "description": "Population count of children under 1 year old (0-12 months), from GRID3 raster data"
+        "description": "Nombre d'enfants de moins d'un an, d'après les données GRID3"
     },
     {
         "column_name": "pop_0_5yo",
         "label": "Population under 5",
-        "description": "Population count of children under 5 years old, from GRID3 raster data"
+        "description": "Nombre d'enfants de moins de 5 ans, d'après les données GRID3"
     },
     {
         "column_name": "imr",
         "label": "Infant mortality rate",
-        "description": "Infant mortality rate per 1,000 live births, province-level estimate"
+        "description": "Taux de mortalité infantile pour 1 000 naissances vivantes, estimation au niveau provincial"
     },
     {
         "column_name": "births_per_year",
         "label": "Live births per year",
-        "description": "Estimated number of live births per year, computed as pop_0_12mo / (1 - imr / 1000)"
+        "description": "Nombre estimé de naissances vivantes par an, calculé selon la formule suivante : pop_0_12mo / (1 - imr / 1 000)"
     },
     {
         "column_name": "pop_6_12mo",
         "label": "Population 6-12 months",
-        "description": "Estimated population of children aged 6-12 months (half of pop_0_12mo)"
+        "description": "Estimation de la population d'enfants âgés de 6 à 12 mois (la moitié de pop_0_12mo)"
     },
     {
         "column_name": "pop_12_24mo",
         "label": "Population 12-24 months",
-        "description": "Estimated population of children aged 12-24 months (25% of the 1-5 year old population)"
+        "description": "Population estimée des enfants âgés de 12 à 24 mois (25 % de la population âgée de 1 à 5 ans)"
     },
     {
         "column_name": "pop_6_24mo",
         "label": "Population 6-24 months",
-        "description": "Estimated population of children aged 6-24 months (sum of pop_6_12mo and pop_12_24mo)"
+        "description": "Population estimée des enfants âgés de 6 à 24 mois (somme de pop_6_12mo et pop_12_24mo)"
     },
     {
         "column_name": "pred_zerodosepenta",
         "label": "Predicted zero dose (pentavalent)",
-        "description": "Predicted proportion of zero dose children based on pentavalent vaccine uptake"
+        "description": "Proportion estimée d'enfants n'ayant reçu aucune dose, sur la base du taux de couverture vaccinale par le vaccin pentavalent"
     },
     {
         "column_name": "pred_zerodosepenta_count",
         "label": "Predicted zero dose count (pentavalent)",
-        "description": "Predicted number of zero dose children (pentavalent) in the 6-24 months population"
+        "description": "Nombre estimé d'enfants n'ayant reçu aucune dose (vaccin pentavalent) parmi la population âgée de 6 à 24 mois"
     },
     {
         "column_name": "pred_zerodoseall",
         "label": "Predicted zero dose (all vaccines)",
-        "description": "Predicted proportion of zero dose children based on uptake of all vaccines"
+        "description": "Proportion estimée d'enfants n'ayant reçu aucune dose, sur la base du taux de couverture vaccinale pour l'ensemble des vaccins"
     },
     {
         "column_name": "pred_zerodoseall_count",
         "label": "Predicted zero dose count (all vaccines)",
-        "description": "Predicted number of zero dose children (all vaccines) in the 6-24 months population"
+        "description": "Nombre estimé d'enfants n'ayant reçu aucune dose (tous vaccins confondus) parmi la population âgée de 6 à 24 mois"
     },
     {
         "column_name": "pred_bcg",
         "label": "Predicted BCG uptake",
-        "description": "Predicted proportion of children vaccinated with BCG (vaccine against Tuberculosis)"
+        "description": "Proportion estimée d'enfants vaccinés par le BCG (vaccin contre la tuberculose)"
     },
     {
         "column_name": "pred_bcg_count",
         "label": "Predicted BCG count",
-        "description": "Predicted number of children vaccinated with BCG in the 6-24 months population"
+        "description": "Nombre estimé d'enfants vaccinés par le BCG parmi la population âgée de 6 à 24 mois"
     },
     {
         "column_name": "pred_rota",
         "label": "Predicted rotavirus uptake",
-        "description": "Predicted proportion of children vaccinated with rotavirus vaccine"
+        "description": "Proportion estimée d'enfants vaccinés contre le rotavirus"
     },
     {
         "column_name": "pred_rota_count",
         "label": "Predicted rotavirus count",
-        "description": "Predicted number of children vaccinated with rotavirus vaccine in the 6-24 months population"
+        "description": "Nombre estimé d'enfants vaccinés contre le rotavirus parmi la population âgée de 6 à 24 mois"
     },
     {
         "column_name": "pred_var",
         "label": "Predicted measles uptake",
-        "description": "Predicted proportion of children vaccinated with measles vaccine"
+        "description": "Proportion estimée d'enfants vaccinés contre la rougeole"
     },
     {
         "column_name": "pred_var_count",
         "label": "Predicted measles count",
-        "description": "Predicted number of children vaccinated with measles vaccine in the 6-24 months population"
+        "description": "Nombre estimé d'enfants vaccinés contre la rougeole parmi la population âgée de 6 à 24 mois"
     },
     {
         "column_name": "pred_vaa",
         "label": "Predicted yellow fever uptake",
-        "description": "Predicted proportion of children vaccinated with yellow fever vaccine"
+        "description": "Proportion estimée d'enfants vaccinés contre la fièvre jaune"
     },
     {
         "column_name": "pred_vaa_count",
         "label": "Predicted yellow fever count",
-        "description": "Predicted number of children vaccinated with yellow fever vaccine in the 6-24 months population"
+        "description": "Nombre estimé d'enfants vaccinés contre la fièvre jaune parmi la population âgée de 6 à 24 mois"
     },
     {
         "column_name": "pred_polio",
         "label": "Predicted polio uptake",
-        "description": "Predicted proportion of children vaccinated with polio vaccine"
+        "description": "Proportion estimée d'enfants vaccinés contre la polio"
     },
     {
         "column_name": "pred_polio_count",
         "label": "Predicted polio count",
-        "description": "Predicted number of children vaccinated with polio vaccine in the 6-24 months population"
+        "description": "Nombre estimé d'enfants vaccinés contre la polio parmi la population âgée de 6 à 24 mois"
     },
     {
         "column_name": "pred_pcv",
         "label": "Predicted pneumococcal uptake",
-        "description": "Predicted proportion of children vaccinated with pneumococcal vaccine (against Streptococcus pneumoniae)"
+        "description": "Proportion estimée d'enfants vaccinés contre le pneumocoque (Streptococcus pneumoniae)"
     },
     {
         "column_name": "pred_pcv_count",
         "label": "Predicted pneumococcal count",
-        "description": "Predicted number of children vaccinated with pneumococcal vaccine in the 6-24 months population"
+        "description": "Nombre estimé d'enfants vaccinés contre le pneumocoque parmi la population âgée de 6 à 24 mois"
     },
     {
         "column_name": "antenne",
         "label": "Antenne",
-        "description": "Name of the antenne associated with the health zone"
+        "description": "Nom de l'antenne rattachée à la zone sanitaire"
     },
     {
         "column_name": "is_antenne",
         "label": "Is antenne",
-        "description": "Whether the health zone is an antenne"
+        "description": "Que la zone de santé soit une antenne"
     }
 ]

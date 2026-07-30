@@ -180,8 +180,8 @@ export function buildMapOptions(config: MapConfig): EChartsOption {
 
         let tooltip = `<strong>${displayName}</strong><br/>`
         tooltip += `${metricMeta.label}: ${displayPercentage}%<br/>`
-        tooltip += `# Children: ${displayCount}<br/>`
-        tooltip += `Births/Year: ${displayBirths}`
+        tooltip += `# Enfants: ${displayCount}<br/>`
+        tooltip += `Naissances/An: ${displayBirths}`
         if (antenneOverlay) {
           const entry = antenneByMapKey.get(params.name)
           if (entry) {
@@ -194,29 +194,29 @@ export function buildMapOptions(config: MapConfig): EChartsOption {
     ...(antenneOverlay
       ? {}
       : {
-          visualMap: {
-            min: min,
-            max: max,
-            inRange: isZeroDose
-              ? {
-                  color: ['#fee2e2', '#7f1d1d'], // light red to dark red
-                }
-              : {
-                  color: ['#d1fae5', '#047857'], // light green to dark green
-                },
-            outOfRange: {
-              color: '#e5e7eb', // neutral grey for null / out-of-range values
+        visualMap: {
+          min: min,
+          max: max,
+          inRange: isZeroDose
+            ? {
+              color: ['#fee2e2', '#7f1d1d'], // light red to dark red
+            }
+            : {
+              color: ['#d1fae5', '#047857'], // light green to dark green
             },
-            textStyle: {
-              color: '#475569',
-              fontSize: 12,
-            },
-            bottom: 20,
-            left: 20,
-            orient: 'vertical',
-            text: [`${Math.round(max)}%`, `${Math.round(min)}%`],
+          outOfRange: {
+            color: '#e5e7eb', // neutral grey for null / out-of-range values
           },
-        }),
+          textStyle: {
+            color: '#475569',
+            fontSize: 12,
+          },
+          bottom: 20,
+          left: 20,
+          orient: 'vertical',
+          text: [`${Math.round(max)}%`, `${Math.round(min)}%`],
+        },
+      }),
     geo: {
       map: mapName,
       roam: false,

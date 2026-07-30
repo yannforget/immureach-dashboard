@@ -31,7 +31,7 @@ interface DashboardState {
 }
 
 export const useDashboardStore = create<DashboardState>((set) => ({
-  activeSection: 'zerodose',
+  activeSection: 'ecv',
   selectedMetric: METRIC_KEYS[0],
   selectedProvince: null,
   selectedZoneId: null,

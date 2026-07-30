@@ -13,36 +13,36 @@ interface IndicatorCardProps {
 // Vaccine descriptions mapping
 const VACCINE_DESCRIPTIONS: Record<MetricKey, { coverage: string; count: string }> = {
   pred_bcg: {
-    coverage: 'Predicted proportion of children vaccinated with BCG (vaccine against tuberculosis)',
-    count: 'Predicted number of children vaccinated with BCG in the 6-24 months population'
+    coverage: "Proportion estimée d'enfants vaccinés par le BCG (vaccin contre la tuberculose)",
+    count: "Nombre estimé d'enfants vaccinés par le BCG parmi la population âgée de 6 à 24 mois"
   },
   pred_rota: {
-    coverage: 'Predicted proportion of children vaccinated with rotavirus vaccine',
-    count: 'Predicted number of children vaccinated with rotavirus vaccine in the 6-24 months population'
+    coverage: "Proportion estimée d'enfants vaccinés contre le rotavirus",
+    count: "Nombre estimé d'enfants vaccinés contre le rotavirus parmi la population âgée de 6 à 24 mois"
   },
   pred_var: {
-    coverage: 'Predicted proportion of children vaccinated with measles vaccine',
-    count: 'Predicted number of children vaccinated with measles vaccine in the 6-24 months population'
+    coverage: "Proportion estimée d'enfants vaccinés contre la rougeole",
+    count: "Nombre estimé d'enfants vaccinés contre la rougeole parmi la population âgée de 6 à 24 mois"
   },
   pred_vaa: {
-    coverage: 'Predicted proportion of children vaccinated with yellow fever vaccine',
-    count: 'Predicted number of children vaccinated with yellow fever vaccine in the 6-24 months population'
+    coverage: "Proportion estimée d'enfants vaccinés contre la fièvre jaune",
+    count: "Nombre estimé d'enfants vaccinés contre la fièvre jaune parmi la population âgée de 6 à 24 mois"
   },
   pred_polio: {
-    coverage: 'Predicted proportion of children vaccinated with polio vaccine',
-    count: 'Predicted number of children vaccinated with polio vaccine in the 6-24 months population'
+    coverage: "Proportion estimée d'enfants vaccinés contre la polio",
+    count: "Nombre estimé d'enfants vaccinés contre la polio parmi la population âgée de 6 à 24 mois"
   },
   pred_pcv: {
-    coverage: 'Predicted proportion of children vaccinated with pneumococcal vaccine (against Streptococcus pneumoniae)',
-    count: 'Predicted number of children vaccinated with pneumococcal vaccine in the 6-24 months population'
+    coverage: "Proportion estimée d'enfants vaccinés contre le pneumocoque (Streptococcus pneumoniae)",
+    count: "Nombre estimé d'enfants vaccinés contre le pneumocoque parmi la population âgée de 6 à 24 mois"
   },
   pred_zerodosepenta: {
-    coverage: 'Predicted proportion of zero dose children based on pentavalent vaccine uptake',
-    count: 'Predicted number of zero dose children (pentavalent) in the 6-24 months population'
+    coverage: "Proportion estimée d'enfants n'ayant reçu aucune dose, sur la base du taux de couverture vaccinale par le vaccin pentavalent",
+    count: "Nombre estimé d'enfants n'ayant reçu aucune dose (vaccin pentavalent) parmi la population âgée de 6 à 24 mois"
   },
   pred_zerodoseall: {
-    coverage: 'Predicted proportion of zero dose children based on uptake of all vaccines',
-    count: 'Predicted number of zero dose children (all vaccines) in the 6-24 months population'
+    coverage: "Proportion estimée d'enfants n'ayant reçu aucune dose, sur la base du taux de couverture vaccinale pour l'ensemble des vaccins",
+    count: "Nombre estimé d'enfants n'ayant reçu aucune dose (tous vaccins confondus) parmi la population âgée de 6 à 24 mois"
   }
 }
 
@@ -70,7 +70,7 @@ export function IndicatorCardZeroDose({
   const displayValue = Math.round(value)
   const suffix = '%'
   const formattedCount = Math.round(count).toLocaleString()
-  const countLabel = `${formattedCount} (6-24 mo)`
+  const countLabel = `${formattedCount} (6 à 24 mois)`
 
   const metricDescription = getMetricDescription(metricKey)
   const countDescription = getCountDescription(metricKey)
@@ -79,8 +79,8 @@ export function IndicatorCardZeroDose({
     <button
       onClick={() => setMetric(metricKey)}
       className={`rounded-lg border px-4 py-3 text-left transition-all ${isSelected
-          ? 'border-teal-600 bg-teal-50 shadow-md'
-          : 'border-slate-200 bg-white hover:border-teal-400'
+        ? 'border-teal-600 bg-teal-50 shadow-md'
+        : 'border-slate-200 bg-white hover:border-teal-400'
         }`}
     >
       <div className="flex items-center justify-between gap-1">
@@ -98,7 +98,7 @@ export function IndicatorCardZeroDose({
             className="w-4 h-4 rounded-full border border-slate-400 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:border-slate-600 cursor-pointer leading-none"
             role="button"
             tabIndex={0}
-            title="More information"
+            title="Plus d'informations"
             style={{ fontSize: '10px', fontWeight: '600' }}
           >
             ?
@@ -110,16 +110,16 @@ export function IndicatorCardZeroDose({
                 <div className="text-slate-300">{metricDescription}</div>
               </div>
               <div>
-                <div className="font-semibold text-slate-400 text-2xs mb-1">Source</div>
-                <div className="text-slate-300">ImmuReach models + national surveys</div>
+                <div className="font-semibold text-slate-400 text-2xs mb-1">Sources</div>
+                <div className="text-slate-300">Modèles ImmuReach models + sondages nationaux</div>
               </div>
               <div>
-                <div className="font-semibold mb-1">Number of Children</div>
+                <div className="font-semibold mb-1">Nombre d'enfants</div>
                 <div className="text-slate-300">{countDescription}</div>
               </div>
               <div>
-                <div className="font-semibold text-slate-400 text-2xs mb-1">Source</div>
-                <div className="text-slate-300">ImmuReach estimates + GRID3 population data</div>
+                <div className="font-semibold text-slate-400 text-2xs mb-1">Sources</div>
+                <div className="text-slate-300">Estimations ImmuReach + données population GRID3</div>
               </div>
               <div className="absolute -top-1 right-2 h-2 w-2 rotate-45 bg-slate-900"></div>
             </div>

@@ -35,11 +35,10 @@ export function AccessibilityChart() {
     <div className="flex h-full flex-col">
       <div className="border-b border-slate-200 px-4 py-3">
         <h3 className="text-sm font-semibold text-slate-700">
-          Accessibility profile · {profile.scopeLabel}
+          Profil d'accessibilité · {profile.scopeLabel}
         </h3>
         <p className="text-xs text-slate-500">
-          Share of 0-dose children within travel-time bands to the nearest health
-          facility
+          Proportion d'enfants n'ayant reçu aucune dose, par tranche de temps de trajet jusqu'à l'établissement de santé le plus proche
           {profile.scopeLevel !== profile.requestedLevel && (
             <span className="ml-1 text-amber-600">· showing {profile.scopeLevel} fallback</span>
           )}

@@ -72,16 +72,16 @@ export function ProvinceTable({ rows }: ProvinceTableProps) {
             <TableHead
               className="text-right cursor-pointer hover:bg-slate-100"
               onClick={() => handleSort('total_population')}
-              title="Estimated total population of the province"
+              title="Population totale estimée de la province"
             >
               Population{getSortIndicator('total_population')}
             </TableHead>
             <TableHead
               className="text-right cursor-pointer hover:bg-slate-100"
               onClick={() => handleSort('births')}
-              title="Estimated number of live births per year"
+              title="Nombre estimé de naissances vivantes par an"
             >
-              Births/Year{getSortIndicator('births')}
+              Naissances/An{getSortIndicator('births')}
             </TableHead>
             {METRIC_KEYS.map(key => {
               const meta = METRIC_META[key]

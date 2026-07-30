@@ -35,10 +35,10 @@ export function DumbbellChart() {
     <div className="flex h-full flex-col">
       <div className="border-b border-slate-200 px-4 py-3">
         <h3 className="text-sm font-semibold text-slate-700">
-          Behaviour indicators · {comparison.scopeLabel}
+          Indicateurs comportementaux · {comparison.scopeLabel}
         </h3>
         <p className="text-xs text-slate-500">
-          Zero-dose vs vaccinated children, sorted by gap (scaled 0–1)
+          Enfants non vaccinés vs enfants vaccinés, classés en fonction de l'écart (sur une échelle de 0 à 1)
           {comparison.scopeLevel !== comparison.requestedLevel && (
             <span className="ml-1 text-amber-600">· showing {comparison.scopeLevel} fallback</span>
           )}

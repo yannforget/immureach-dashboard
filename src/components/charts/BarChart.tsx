@@ -30,10 +30,10 @@ export function BarChart() {
   let dataColumn: string = selectedMetric
 
   if (barDataType === 'children') {
-    suffix = ' children'
+    suffix = ' enfants'
     dataColumn = metricMeta.countKey
   } else if (barDataType === 'births') {
-    suffix = ' births/year'
+    suffix = ' naissance/an'
     dataColumn = 'births_per_year'
   }
 
@@ -172,33 +172,30 @@ export function BarChart() {
         <div className="absolute top-3 right-3 z-10 flex gap-2">
           <button
             onClick={() => setBarDataType('coverage')}
-            className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-              barDataType === 'coverage'
-                ? 'bg-teal-600 text-white'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-            }`}
+            className={`px-3 py-1 rounded text-xs font-medium transition-colors ${barDataType === 'coverage'
+              ? 'bg-teal-600 text-white'
+              : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              }`}
           >
-            Coverage (%)
+            Couverture (%)
           </button>
           <button
             onClick={() => setBarDataType('children')}
-            className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-              barDataType === 'children'
-                ? 'bg-teal-600 text-white'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-            }`}
+            className={`px-3 py-1 rounded text-xs font-medium transition-colors ${barDataType === 'children'
+              ? 'bg-teal-600 text-white'
+              : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              }`}
           >
-            # Children
+            # Enfants
           </button>
           <button
             onClick={() => setBarDataType('births')}
-            className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-              barDataType === 'births'
-                ? 'bg-teal-600 text-white'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-            }`}
+            className={`px-3 py-1 rounded text-xs font-medium transition-colors ${barDataType === 'births'
+              ? 'bg-teal-600 text-white'
+              : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              }`}
           >
-            # Births/Year
+            # Naissances/An
           </button>
         </div>
       </div>

@@ -18,7 +18,7 @@ export function IndicatorCardsECV() {
             },
             {
                 key: 'nb_zones',
-                label: 'Zones de santé',
+                label: 'Zones de santé enquêtées',
                 value: formatNumber(row?.nb_zones ?? null),
                 description: "Nombre de zones de santé couvertes par l'enquête ECV pour la sélection courante.",
             },
