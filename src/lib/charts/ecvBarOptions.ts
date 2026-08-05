@@ -11,10 +11,9 @@ interface EcvBarConfig {
   items: EcvBarItem[]
 }
 
-// Horizontal bar chart of vaccine-coverage percentages with a 95%-CI whisker
-// overlaid on each bar. ECharts has no built-in error-bar series, so the CI
-// is drawn with a `custom` series whose renderItem paints a line + two end
-// caps at each bar's y-position — the standard ECharts error-bar pattern,
+// Horizontal bar chart of ECV vaccine-coverage percentages with a 95%-CI whisker overlaid on each bar. 
+// ECharts has no built-in error-bar series, so the CI is drawn with a `custom` series 
+// whose renderItem paints a line + two end caps at each bar's y-position — the standard ECharts error-bar pattern,
 // mirrored for a horizontal (category-on-y, value-on-x) layout.
 export function buildEcvVaccineBarOptions(config: EcvBarConfig): EChartsOption {
   const { items } = config
@@ -23,12 +22,17 @@ export function buildEcvVaccineBarOptions(config: EcvBarConfig): EChartsOption {
   const values = items.map(item => item.value ?? 0)
 
   // [categoryIndex, ciLow, ciHigh] — falls back to the bar value itself when
-  // a CI bound is missing, so the whisker collapses to a point rather than
-  // drawing from/to 0.
+  // a CI bound is missing, so the whisker collapses to a point rather than drawing from/to 0.
   const errorBarData = items.map((item, i) => [
     i,
     item.ciLow ?? item.value ?? 0,
     item.ciHigh ?? item.value ?? 0,
+  ])
+
+  // Fixed anchor for the label column: always the axis max, never the bar's own value.
+  const labelData = items.map((item, i) => [
+    i,
+    item.value != null ? `${Math.round(item.value)}%` : '—',
   ])
 
   const option: EChartsOption = {
@@ -81,13 +85,6 @@ export function buildEcvVaccineBarOptions(config: EcvBarConfig): EChartsOption {
         barWidth: '55%',
         itemStyle: { color: '#0d9488' },
         emphasis: { itemStyle: { color: '#fbbf24' } },
-        label: {
-          show: true,
-          position: 'right',
-          color: '#334155',
-          fontSize: 11,
-          formatter: (p: any) => `${Number(p.value).toFixed(1)}%`,
-        },
         z: 2,
       },
       {
@@ -100,7 +97,7 @@ export function buildEcvVaccineBarOptions(config: EcvBarConfig): EChartsOption {
           const highPoint = api.coord([api.value(2), categoryIndex])
           const halfWidth = 5
           const style = api.style({
-            stroke: '#0f766e',
+            stroke: '#1f4d43',
             fill: undefined,
             lineWidth: 1.5,
           })
@@ -137,10 +134,37 @@ export function buildEcvVaccineBarOptions(config: EcvBarConfig): EChartsOption {
         },
         data: errorBarData,
         encode: { x: [1, 2], y: 0 },
-        // Purely decorative — the `bar` series above already handles hover
-        // and the axis tooltip already surfaces the CI text.
         silent: true,
         z: 3,
+      },
+      {
+        // Aligned label column, anchored at xAxis.max — independent of each
+        // row's bar/whisker length, so it never collides with the CI overlay.
+        name: 'Étiquettes',
+        type: 'custom',
+        coordinateSystem: 'cartesian2d',
+        renderItem: (_params: any, api: any) => {
+          const categoryIndex = api.value(0)
+          const text = api.value(1)
+          const anchor = api.coord([100, categoryIndex]) // fixed at axis max, not at bar value
+          return {
+            type: 'text',
+            style: {
+              x: anchor[0] + 7, // small constant gap past the 100% gridline
+
+              y: anchor[1],
+              text,
+              fill: '#334155',
+              fontSize: 11,
+              textVerticalAlign: 'middle',
+              textAlign: 'left',
+            },
+          }
+        },
+        data: labelData,
+        encode: { x: 0, y: 0 },
+        silent: true,
+        z: 4,
       },
     ] as any,
   }

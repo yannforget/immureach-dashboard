@@ -13,11 +13,9 @@ export function EcvVaccineBarChart() {
   const selectedProvince = useDashboardStore(s => s.selectedProvince)
   const selectedZoneId = useDashboardStore(s => s.selectedZoneId)
 
-  // One bar per vaccine dose (BCG, Penta1-3, Polio0-3, PCV1-3, ROTA1-3, VPI,
-  // VAR, VAA), each with its 95% CI. Rows without a value are dropped so
-  // missing indicators don't render as 0-bars. Sorted ascending so the
-  // widest bar ends up at the top, matching the dashboard's bar-chart
-  // convention elsewhere.
+  // One bar per vaccine dose (BCG, Penta1-3, Polio0-3, PCV1-3, ROTA1-3, VPI, VAR, VAA), each with its 95% CI. 
+  // Rows without a value are dropped so missing indicators don't render as 0-bars. 
+  // Sorted ascending so the widest bar ends up at the top, matching the dashboard's bar-chart convention.
   const items: EcvBarItem[] = ECV_BAR_METRIC_KEYS
     .map(key => {
       const metric = row?.metrics[key]
