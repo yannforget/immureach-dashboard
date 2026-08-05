@@ -2,7 +2,9 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import * as echarts from 'echarts'
 import { cleanName } from '@/lib/dataUtils'
 import { parseCsv } from '@/lib/csv'
-import type { KeyEcvRow, ProfileData, ProfileScopeLevel, ProvinceRow, Year, ZoneRow } from '@/types'
+// import type { KeyEcvRow, ProfileData, ProfileScopeLevel, ProvinceRow, Year, ZoneRow } from '@/types'
+import { parseEcvVaccCovCsv } from '@/lib/ecvVaccCov'
+import type { EcvVaccCovRow, KeyEcvRow, ProfileData, ProfileScopeLevel, ProvinceRow, Year, ZoneRow } from '@/types'
 
 export type Bbox = [number, number, number, number] // [minLon, minLat, maxLon, maxLat]
 
@@ -11,6 +13,7 @@ interface DataContextType {
   zones: ZoneRow[]
   profile: ProfileData | null
   keyEcv: KeyEcvRow[]
+  ecvVaccCov: EcvVaccCovRow[]
   provinceBboxes: Record<string, Bbox>
   loading: boolean
   error: Error | null
@@ -27,6 +30,7 @@ function parseKeyEcvCsv(text: string): KeyEcvRow[] {
     zone: toStr(r.zone),
     nb_people: toNum(r.nb_people),
     nb_zones: toNum(r.nb_zones),
+    nb_areas: toNum(r.nb_areas),
     penta_cov: toNum(r.penta_cov),
     zdc_cov: toNum(r.zdc_cov),
   }))
@@ -62,6 +66,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [zones, setZones] = useState<ZoneRow[]>([])
   const [profile, setProfile] = useState<ProfileData | null>(null)
   const [keyEcv, setKeyEcv] = useState<KeyEcvRow[]>([])
+  const [ecvVaccCov, setEcvVaccCov] = useState<EcvVaccCovRow[]>([])
   const [provinceBboxes, setProvinceBboxes] = useState<Record<string, Bbox>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
@@ -167,12 +172,24 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         // non-fatally: it's optional/still being populated, so a missing or
         // malformed file shouldn't break the rest of the dashboard.
         try {
-          const keyEcvRes = await fetch('/data/key_ecv.csv')
+          const keyEcvRes = await fetch('/data/output/key_ecv.csv')
           if (keyEcvRes.ok) {
             setKeyEcv(parseKeyEcvCsv(await keyEcvRes.text()))
           }
         } catch (keyEcvErr) {
           console.warn('Failed to load key_ecv.csv:', keyEcvErr)
+        }
+
+        // ecv_vaccination_coverage.csv (health-zone-level EPSK survey, built by
+        // scripts/prepare-ecv-vaccination-coverage.py) is likewise optional and
+        // non-fatal.
+        try {
+          const ecvVaccCovRes = await fetch('/data/ecv_vaccination_coverage.csv')
+          if (ecvVaccCovRes.ok) {
+            setEcvVaccCov(parseEcvVaccCovCsv(await ecvVaccCovRes.text()))
+          }
+        } catch (ecvVaccCovErr) {
+          console.warn('Failed to load ecv_vaccination_coverage.csv:', ecvVaccCovErr)
         }
 
       } catch (err) {
@@ -187,7 +204,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <DataContext.Provider value={{ provinces, zones, profile, keyEcv, provinceBboxes, loading, error }}>
+    // <DataContext.Provider value={{ provinces, zones, profile, keyEcv, provinceBboxes, loading, error }}>
+    <DataContext.Provider value={{ provinces, zones, profile, keyEcv, ecvVaccCov, provinceBboxes, loading, error }}>
       {children}
     </DataContext.Provider>
   )

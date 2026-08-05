@@ -142,7 +142,7 @@ export interface ProfileData {
 
 export type ProfileScopeLevel = 'national' | 'province' | 'zone';
 
-// One row of public/data/key_ecv.csv (columns: year, level, province, zone,
+// One row of /data/output/key_ecv.csv (columns: year, level, province, zone,
 // nb_people, nb_zones, penta_cov, zdc_cov). `province`/`zone` are only
 // populated for the matching `level`; penta_cov/zdc_cov are 0-1 fractions.
 export interface KeyEcvRow {
@@ -152,6 +152,56 @@ export interface KeyEcvRow {
   zone: string | null;
   nb_people: number | null;
   nb_zones: number | null;
+  nb_areas: number | null;
   penta_cov: number | null;
   zdc_cov: number | null;
+}
+
+// A single `<metric>_pct` + `<metric>_95CI` pair from the ECV vaccination
+// coverage survey (public/data/ecv_vaccination_coverage.csv). `pct` is a
+// 0-100 percentage; `ciLow`/`ciHigh` bound its 95% confidence interval. Any
+// of the three can be null when the source cell was empty/unparseable.
+export interface EcvMetricValue {
+  pct: number | null;
+  ciLow: number | null;
+  ciHigh: number | null;
+}
+
+// Keys for the 21 `_pct`/`_95CI` metric pairs in
+// public/data/ecv_vaccination_coverage.csv, matching the snake_case column
+// prefixes written by scripts/prepare-ecv-vaccination-coverage.py.
+export type EcvMetricKey =
+  | 'possession_carte'
+  | 'couverture_de_base'
+  | 'couverture_complete'
+  | 'zero_dose'
+  | 'bcg'
+  | 'penta1'
+  | 'penta2'
+  | 'penta3'
+  | 'polio0'
+  | 'polio1'
+  | 'polio2'
+  | 'polio3'
+  | 'pcv1'
+  | 'pcv2'
+  | 'pcv3'
+  | 'rota1'
+  | 'rota2'
+  | 'rota3'
+  | 'vpi'
+  | 'var'
+  | 'vaa';
+
+// One row of public/data/ecv_vaccination_coverage.csv. `province`/`zone` are
+// only populated for the matching `level`, mirroring KeyEcvRow.
+export interface EcvVaccCovRow {
+  year: number;
+  level: ProfileScopeLevel;
+  province: string | null;
+  zone: string | null;
+  nbrChildren: number | null;
+  nbreAs: number | null;
+  asEnq: number | null;
+  metrics: Record<EcvMetricKey, EcvMetricValue>;
 }

@@ -4,9 +4,10 @@ interface IndicatorCardECVProps {
     label: string
     value: string
     description?: string
+    subtext?: string  // add nb of visited health areas in nb visited zone card 
 }
 
-export function IndicatorCardECV({ label, value, description }: IndicatorCardECVProps) {
+export function IndicatorCardECV({ label, value, description, subtext }: IndicatorCardECVProps) {
     const [showTooltip, setShowTooltip] = useState(false)
 
     return (
@@ -27,7 +28,7 @@ export function IndicatorCardECV({ label, value, description }: IndicatorCardECV
                             className="flex h-4 w-4 cursor-pointer items-center justify-center rounded-full border border-slate-400 leading-none text-slate-400 hover:border-slate-600 hover:text-slate-600"
                             role="button"
                             tabIndex={0}
-                            title="More information"
+                            title="Plus d'informations"
                             style={{ fontSize: '10px', fontWeight: '600' }}
                         >
                             ?
@@ -42,6 +43,9 @@ export function IndicatorCardECV({ label, value, description }: IndicatorCardECV
                 )}
             </div>
             <p className="mt-2 text-2xl font-bold text-slate-900">{value}</p>
+            {subtext && (
+                <p className="mt-1 text-xs text-slate-400">{subtext}</p>
+            )}
         </div>
     )
 }

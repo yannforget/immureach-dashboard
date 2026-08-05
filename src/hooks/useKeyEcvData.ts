@@ -5,8 +5,7 @@ import { useZoneData } from './useZoneData'
 import type { KeyEcvRow } from '@/types'
 
 // Picks the single key_ecv.csv row matching the ribbon's 3 filters
-// (year, province, zone). Falls back progressively: zone -> province ->
-// national, mirroring useTableData's drill-down logic.
+// (year, province, zone). Falls back progressively: zone -> province -> national
 export function useKeyEcvData(): KeyEcvRow | null {
     const { keyEcv } = useData()
     const selectedYear = useDashboardStore(s => s.selectedYear)

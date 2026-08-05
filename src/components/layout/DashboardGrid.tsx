@@ -6,6 +6,8 @@ import { IndicatorCardsZeroDose } from '../IndicatorCardsZeroDose'
 import { IndicatorCardsECV } from '../IndicatorCardsECV'
 import { CoverageMap } from '../charts/CoverageMap'
 import { BarChart } from '../charts/BarChart'
+import { EcvZeroDoseMap } from '../charts/EcvZeroDoseMap'
+import { EcvVaccineBarChart } from '../charts/EcvVaccineBarChart'
 import { DataTable } from '../table/DataTable'
 import { ProfilingPanel } from '../ProfilingPanel'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
@@ -27,10 +29,19 @@ export function DashboardGrid() {
       {activeSection === 'ecv' && (<section className="mb-8">
         {/* Indicator Cards */}
         <IndicatorCardsECV />
+        {/* Charts Grid: zero-dose map (left) + vaccine coverage bar chart (right) */}
+        <section className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div className="h-96 overflow-hidden rounded-lg border border-slate-200 bg-white">
+            <EcvZeroDoseMap />
+          </div>
+          <div className="h-96 overflow-hidden rounded-lg border border-slate-200 bg-white">
+            <EcvVaccineBarChart />
+          </div>
+        </section>
         <div className="mt-6">
           {/* Bottom page notes */}
           <Notes>
-            Données collectées en RDC par l'EPSK, et accessibles{' '}
+            Données collectées en RDC par l'EPSK, et accessibles{' '}.
             <a
               href="https://espkinshasa.net/note-dinformation-enquete-de-couverture-vaccinale-ecv-rdc-2023-01/"
               target="_blank"

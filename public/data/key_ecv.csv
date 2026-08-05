@@ -1,7 +1,531 @@
-year,level,province,zone,nb_people,nb_zones,penta_cov,zdc_cov
-2022,national,,,12000,145,0.71,0.12
-2023,national,,,13500,145,0.75,0.09
-2022,province,Kwilu,,850,12,0.68,0.14
-2023,province,Kwilu,,910,12,0.73,0.10
-2022,zone,Kwilu,Mungindu,60,1,0.65,0.16
-2023,zone,Kwilu,Mungindu,64,1,0.70,0.11
+province,zone,nb_people,nb_areas,nb_areas_tot,penta_cov,zdc_cov,nb_zones,level,year
+Bas Uele,Aketi,88.0,5.0,18.0,22.7,44.5,1.0,zone,2022
+Bas Uele,Ango,94.0,5.0,23.0,51.5,7.1,1.0,zone,2022
+Bas Uele,Bili,95.0,5.0,12.0,23.7,13.8,1.0,zone,2022
+Bas Uele,Bondo,66.0,5.0,15.0,29.9,20.0,1.0,zone,2022
+Bas Uele,Buta,90.0,5.0,16.0,20.3,24.1,1.0,zone,2022
+Bas Uele,Ganga,75.0,5.0,21.0,41.6,37.1,1.0,zone,2022
+Bas Uele,Likati,87.0,5.0,12.0,33.0,34.9,1.0,zone,2022
+Bas Uele,Monga,88.0,5.0,10.0,20.8,27.5,1.0,zone,2022
+Bas Uele,Poko,83.0,5.0,18.0,47.6,36.1,1.0,zone,2022
+Bas Uele,Titule,84.0,5.0,11.0,22.5,15.6,1.0,zone,2022
+Bas Uele,Viadana,93.0,5.0,13.0,41.3,35.8,1.0,zone,2022
+Equateur,Basankusu,113.0,5.0,27.0,75.8,0.0,1.0,zone,2022
+Equateur,Bikoro,107.0,5.0,21.0,65.5,7.6,1.0,zone,2022
+Equateur,Bolenge,122.0,5.0,11.0,53.8,5.8,1.0,zone,2022
+Equateur,Bolomba,108.0,5.0,29.0,33.6,28.4,1.0,zone,2022
+Equateur,Bomongo,110.0,5.0,16.0,52.9,3.6,1.0,zone,2022
+Equateur,Djombo,127.0,5.0,14.0,48.5,4.3,1.0,zone,2022
+Equateur,Iboko,115.0,5.0,15.0,69.0,6.6,1.0,zone,2022
+Equateur,Ingende,129.0,5.0,19.0,64.0,0.0,1.0,zone,2022
+Equateur,Irebu,111.0,5.0,7.0,51.3,5.5,1.0,zone,2022
+Equateur,Lilanga Bobangi,104.0,5.0,12.0,47.2,6.0,1.0,zone,2022
+Equateur,Lotumbe,68.0,5.0,18.0,84.9,2.1,1.0,zone,2022
+Equateur,Lukolela,110.0,5.0,14.0,50.2,6.3,1.0,zone,2022
+Equateur,Makanza,144.0,5.0,17.0,34.3,5.6,1.0,zone,2022
+Equateur,Mampoko,123.0,5.0,13.0,31.4,7.4,1.0,zone,2022
+Equateur,Mbandaka,90.0,5.0,16.0,52.6,28.5,1.0,zone,2022
+Equateur,Monieka,70.0,5.0,12.0,72.6,0.0,1.0,zone,2022
+Equateur,Ntondo,94.0,5.0,14.0,56.6,25.3,1.0,zone,2022
+Equateur,Wangata,88.0,5.0,11.0,77.7,4.3,1.0,zone,2022
+Haut Katanga,Kafubu,81.0,5.0,13.0,69.0,7.5,1.0,zone,2022
+Haut Katanga,Kamalondo,77.0,4.0,4.0,79.4,12.1,1.0,zone,2022
+Haut Katanga,Kambove,89.0,5.0,11.0,48.0,39.4,1.0,zone,2022
+Haut Katanga,Kampemba,82.0,5.0,22.0,64.2,22.8,1.0,zone,2022
+Haut Katanga,Kapolowe,82.0,5.0,16.0,47.0,39.6,1.0,zone,2022
+Haut Katanga,Kasenga,96.0,5.0,13.0,60.4,25.1,1.0,zone,2022
+Haut Katanga,Kashobwe,83.0,5.0,12.0,77.3,8.1,1.0,zone,2022
+Haut Katanga,Katuba,95.0,5.0,15.0,73.8,5.2,1.0,zone,2022
+Haut Katanga,Kenya,87.0,5.0,19.0,49.7,6.5,1.0,zone,2022
+Haut Katanga,Kikula,89.0,5.0,12.0,64.8,25.7,1.0,zone,2022
+Haut Katanga,Kilela Balanda,86.0,5.0,11.0,35.3,43.5,1.0,zone,2022
+Haut Katanga,Kilwa,96.0,5.0,24.0,43.1,17.8,1.0,zone,2022
+Haut Katanga,Kipushi,76.0,5.0,16.0,51.8,39.5,1.0,zone,2022
+Haut Katanga,Kisanga,88.0,5.0,15.0,64.8,4.7,1.0,zone,2022
+Haut Katanga,Kowe,99.0,5.0,6.0,68.9,5.8,1.0,zone,2022
+Haut Katanga,Likasi,110.0,5.0,10.0,61.6,20.9,1.0,zone,2022
+Haut Katanga,Lubumbashi,79.0,5.0,20.0,74.9,11.2,1.0,zone,2022
+Haut Katanga,Lukafu,83.0,5.0,12.0,27.6,39.1,1.0,zone,2022
+Haut Katanga,Mitwaba,94.0,5.0,20.0,43.8,32.6,1.0,zone,2022
+Haut Katanga,Mufunga Sampwe,104.0,5.0,23.0,44.9,23.7,1.0,zone,2022
+Haut Katanga,Mumbunda,71.0,5.0,21.0,71.9,13.3,1.0,zone,2022
+Haut Katanga,Panda,66.0,5.0,9.0,76.5,18.0,1.0,zone,2022
+Haut Katanga,Pweto,93.0,5.0,17.0,57.8,19.3,1.0,zone,2022
+Haut Katanga,Ruashi,74.0,5.0,26.0,61.9,29.7,1.0,zone,2022
+Haut Katanga,Sakania,103.0,5.0,17.0,70.8,22.0,1.0,zone,2022
+Haut Katanga,Tshamilemba,92.0,5.0,15.0,75.9,6.0,1.0,zone,2022
+Haut Katanga,Vangu,88.0,5.0,11.0,75.4,16.5,1.0,zone,2022
+Haut Lomami,Baka,76.0,4.0,4.0,99.0,0.0,1.0,zone,2022
+Haut Lomami,Bukama,108.0,5.0,23.0,97.5,1.2,1.0,zone,2022
+Haut Lomami,Butumba,112.0,5.0,16.0,80.2,11.2,1.0,zone,2022
+Haut Lomami,Kabondo Dianda,107.0,5.0,20.0,96.6,1.1,1.0,zone,2022
+Haut Lomami,Kabongo,112.0,5.0,32.0,93.9,1.4,1.0,zone,2022
+Haut Lomami,Kamina,120.0,5.0,25.0,96.9,0.9,1.0,zone,2022
+Haut Lomami,Kaniama,118.0,5.0,30.0,95.4,2.1,1.0,zone,2022
+Haut Lomami,Kayamba,92.0,5.0,15.0,98.6,0.0,1.0,zone,2022
+Haut Lomami,Kinda,111.0,5.0,14.0,93.0,3.3,1.0,zone,2022
+Haut Lomami,Kinkondja,125.0,5.0,29.0,98.5,0.8,1.0,zone,2022
+Haut Lomami,Kitenge,108.0,5.0,29.0,81.4,9.3,1.0,zone,2022
+Haut Lomami,Lwamba,146.0,5.0,20.0,93.3,1.0,1.0,zone,2022
+Haut Lomami,Malemba Nkulu,101.0,5.0,23.0,97.6,0.7,1.0,zone,2022
+Haut Lomami,Mukanga,92.0,5.0,19.0,97.4,0.0,1.0,zone,2022
+Haut Lomami,Mulongo,133.0,5.0,23.0,99.2,0.0,1.0,zone,2022
+Haut Lomami,Songa,122.0,5.0,29.0,96.5,0.0,1.0,zone,2022
+Haut Uele,Aba,100.0,5.0,16.0,38.7,34.7,1.0,zone,2022
+Haut Uele,Boma Mangbetu,102.0,5.0,14.0,50.6,26.4,1.0,zone,2022
+Haut Uele,Doruma,110.0,5.0,11.0,38.6,38.1,1.0,zone,2022
+Haut Uele,Dungu,93.0,5.0,20.0,54.6,21.4,1.0,zone,2022
+Haut Uele,Faradje,101.0,5.0,18.0,33.7,31.4,1.0,zone,2022
+Haut Uele,Gombari,94.0,5.0,15.0,41.2,36.6,1.0,zone,2022
+Haut Uele,Isiro,107.0,5.0,20.0,46.6,25.5,1.0,zone,2022
+Haut Uele,Makoro,79.0,5.0,15.0,30.0,52.4,1.0,zone,2022
+Haut Uele,Niangara,114.0,5.0,16.0,27.6,45.2,1.0,zone,2022
+Haut Uele,Pawa,86.0,5.0,18.0,54.5,19.2,1.0,zone,2022
+Haut Uele,Rungu,108.0,5.0,14.0,31.5,46.1,1.0,zone,2022
+Haut Uele,Wamba,113.0,5.0,17.0,48.9,24.0,1.0,zone,2022
+Haut Uele,Watsa,95.0,5.0,18.0,51.2,37.6,1.0,zone,2022
+Ituri,Adi,108.0,5.0,19.0,86.9,1.0,1.0,zone,2022
+Ituri,Adja,95.0,5.0,18.0,47.6,8.3,1.0,zone,2022
+Ituri,Angumu,74.0,5.0,22.0,55.3,8.3,1.0,zone,2022
+Ituri,Ariwara,86.0,5.0,22.0,88.9,6.1,1.0,zone,2022
+Ituri,Aru,101.0,5.0,25.0,63.8,3.3,1.0,zone,2022
+Ituri,Biringi,62.0,5.0,19.0,45.9,10.2,1.0,zone,2022
+Ituri,Boga,90.0,5.0,10.0,82.0,4.5,1.0,zone,2022
+Ituri,Bunia,91.0,5.0,23.0,77.8,0.9,1.0,zone,2022
+Ituri,Fataki,55.0,3.0,14.0,64.0,4.4,1.0,zone,2022
+Ituri,Gety,79.0,5.0,18.0,78.0,0.0,1.0,zone,2022
+Ituri,Komanda,79.0,5.0,17.0,65.4,1.9,1.0,zone,2022
+Ituri,Laybo,70.0,5.0,17.0,80.1,1.7,1.0,zone,2022
+Ituri,Linga,33.0,2.0,16.0,79.6,0.0,1.0,zone,2022
+Ituri,Lita,76.0,5.0,14.0,68.7,6.1,1.0,zone,2022
+Ituri,Logo,84.0,5.0,26.0,73.0,0.0,1.0,zone,2022
+Ituri,Mahagi,71.0,5.0,17.0,78.7,3.2,1.0,zone,2022
+Ituri,Mambasa,75.0,5.0,17.0,44.3,8.4,1.0,zone,2022
+Ituri,Mandima,82.0,5.0,18.0,55.6,11.1,1.0,zone,2022
+Ituri,Mangala,86.0,5.0,11.0,34.3,12.1,1.0,zone,2022
+Ituri,Mongbwalu,87.0,5.0,12.0,54.0,9.0,1.0,zone,2022
+Ituri,Nia Nia,116.0,5.0,9.0,28.0,18.2,1.0,zone,2022
+Ituri,Nizi,84.0,5.0,11.0,84.0,2.2,1.0,zone,2022
+Ituri,Nyankunde,73.0,5.0,11.0,80.8,3.6,1.0,zone,2022
+Ituri,Nyarambe,77.0,5.0,23.0,66.2,13.3,1.0,zone,2022
+Ituri,Rethy,50.0,3.0,22.0,79.3,0.0,1.0,zone,2022
+Ituri,Rimba,81.0,5.0,22.0,68.5,2.2,1.0,zone,2022
+Ituri,Rwampara,75.0,5.0,14.0,82.7,1.2,1.0,zone,2022
+Ituri,Tchomia,81.0,5.0,13.0,77.4,5.7,1.0,zone,2022
+Kongo Central,Boko Kivulu,113.0,5.0,20.0,67.6,15.7,1.0,zone,2022
+Kongo Central,Boma Bungu,101.0,5.0,12.0,68.5,10.2,1.0,zone,2022
+Kongo Central,Boma,103.0,5.0,12.0,79.4,2.0,1.0,zone,2022
+Kongo Central,Gombe Matadi,98.0,5.0,15.0,73.3,0.8,1.0,zone,2022
+Kongo Central,Inga,105.0,4.0,10.0,64.0,21.1,1.0,zone,2022
+Kongo Central,Kangu,91.0,5.0,12.0,47.6,16.5,1.0,zone,2022
+Kongo Central,Kibunzi,97.0,5.0,10.0,69.7,13.8,1.0,zone,2022
+Kongo Central,Kimpangu,97.0,5.0,13.0,57.9,24.0,1.0,zone,2022
+Kongo Central,Kimpese,103.0,5.0,20.0,91.0,7.6,1.0,zone,2022
+Kongo Central,Kimvula,98.0,5.0,12.0,56.2,8.6,1.0,zone,2022
+Kongo Central,Kinkonzi,103.0,5.0,11.0,70.4,5.1,1.0,zone,2022
+Kongo Central,Kisantu,109.0,5.0,18.0,65.4,5.6,1.0,zone,2022
+Kongo Central,Kitona,94.0,5.0,6.0,84.3,4.7,1.0,zone,2022
+Kongo Central,Kizu,99.0,5.0,8.0,66.0,6.5,1.0,zone,2022
+Kongo Central,Kuimba,108.0,5.0,11.0,67.1,6.9,1.0,zone,2022
+Kongo Central,Kwilu Ngongo,121.0,5.0,21.0,81.6,15.0,1.0,zone,2022
+Kongo Central,Lukula,111.0,5.0,16.0,56.9,31.5,1.0,zone,2022
+Kongo Central,Luozi,110.0,5.0,12.0,61.6,15.0,1.0,zone,2022
+Kongo Central,Mangembo,106.0,5.0,10.0,93.5,4.9,1.0,zone,2022
+Kongo Central,Massa,105.0,5.0,14.0,69.5,7.0,1.0,zone,2022
+Kongo Central,Matadi,104.0,5.0,12.0,72.8,4.0,1.0,zone,2022
+Kongo Central,Mbanza Ngungu,102.0,5.0,12.0,79.5,6.8,1.0,zone,2022
+Kongo Central,Muanda,92.0,5.0,12.0,81.4,5.2,1.0,zone,2022
+Kongo Central,Ngidinga,114.0,5.0,16.0,69.8,5.4,1.0,zone,2022
+Kongo Central,Nselo,105.0,5.0,11.0,68.5,2.9,1.0,zone,2022
+Kongo Central,Nsona Mpangu,90.0,5.0,21.0,56.0,20.8,1.0,zone,2022
+Kongo Central,Nzanza,101.0,5.0,10.0,72.6,5.7,1.0,zone,2022
+Kongo Central,Seke Banza,108.0,5.0,17.0,68.4,11.5,1.0,zone,2022
+Kongo Central,Sona Bata,108.0,5.0,11.0,64.5,4.5,1.0,zone,2022
+Kongo Central,Tshela,113.0,5.0,10.0,71.2,3.2,1.0,zone,2022
+Kongo Central,Vaku,109.0,5.0,10.0,64.5,18.9,1.0,zone,2022
+Kasai Oriental,Bibanga,95.0,5.0,17.0,36.8,41.8,1.0,zone,2022
+Kasai Oriental,Bipemba,93.0,5.0,20.0,50.2,18.6,1.0,zone,2022
+Kasai Oriental,Bonzola,97.0,5.0,16.0,63.8,17.8,1.0,zone,2022
+Kasai Oriental,Cilundu,81.0,5.0,16.0,69.2,4.7,1.0,zone,2022
+Kasai Oriental,Citenge,85.0,5.0,18.0,62.8,14.3,1.0,zone,2022
+Kasai Oriental,Dibindi,91.0,5.0,13.0,50.1,16.6,1.0,zone,2022
+Kasai Oriental,Diulu,98.0,5.0,19.0,49.8,14.6,1.0,zone,2022
+Kasai Oriental,Kabeya Kamwanga,94.0,5.0,15.0,57.8,13.7,1.0,zone,2022
+Kasai Oriental,Kansele,91.0,5.0,16.0,53.7,12.3,1.0,zone,2022
+Kasai Oriental,Kasansa,97.0,5.0,18.0,51.0,26.4,1.0,zone,2022
+Kasai Oriental,Lubilanji,82.0,5.0,15.0,38.3,26.5,1.0,zone,2022
+Kasai Oriental,Lukelenge,96.0,5.0,20.0,49.2,18.7,1.0,zone,2022
+Kasai Oriental,Miabi,85.0,5.0,14.0,68.9,8.7,1.0,zone,2022
+Kasai Oriental,Mpokolo,99.0,5.0,15.0,39.3,27.0,1.0,zone,2022
+Kasai Oriental,Mukumbi,83.0,5.0,16.0,47.0,26.3,1.0,zone,2022
+Kasai Oriental,Muya,77.0,5.0,19.0,28.4,37.3,1.0,zone,2022
+Kasai Oriental,Nzaba,96.0,5.0,18.0,42.8,21.8,1.0,zone,2022
+Kasai Oriental,Tshilenge,83.0,5.0,21.0,38.8,31.1,1.0,zone,2022
+Kasai Oriental,Tshishimbi,94.0,5.0,19.0,55.4,19.4,1.0,zone,2022
+Kwango,Boko,104.0,5.0,21.0,54.4,23.4,1.0,zone,2022
+Kwango,Feshi,108.0,5.0,18.0,77.7,8.6,1.0,zone,2022
+Kwango,Kahemba,118.0,5.0,28.0,72.0,11.1,1.0,zone,2022
+Kwango,Kajiji,108.0,5.0,20.0,46.5,19.4,1.0,zone,2022
+Kwango,Kasongo Lunda,121.0,5.0,21.0,64.7,8.9,1.0,zone,2022
+Kwango,Kenge,136.0,5.0,29.0,77.4,0.5,1.0,zone,2022
+Kwango,Kimbao,155.0,5.0,24.0,97.6,1.6,1.0,zone,2022
+Kwango,Kisanji,110.0,5.0,16.0,64.3,11.3,1.0,zone,2022
+Kwango,Kitenda,114.0,5.0,23.0,54.5,16.6,1.0,zone,2022
+Kwango,Mwela Lembwa,139.0,5.0,16.0,98.8,0.0,1.0,zone,2022
+Kwango,Panzi,173.0,5.0,25.0,99.4,0.0,1.0,zone,2022
+Kwango,Popokabaka,114.0,5.0,30.0,41.7,29.5,1.0,zone,2022
+Kwango,Tembo,134.0,5.0,15.0,100.0,0.0,1.0,zone,2022
+Kwango,Wamba Lwadi,127.0,5.0,19.0,78.6,6.0,1.0,zone,2022
+Kwilu,Bagata,88.0,5.0,23.0,16.9,15.5,1.0,zone,2022
+Kwilu,Bandundu,88.0,5.0,22.0,47.1,14.3,1.0,zone,2022
+Kwilu,Bulungu,87.0,5.0,30.0,86.3,4.1,1.0,zone,2022
+Kwilu,Djuma,106.0,5.0,35.0,99.3,0.0,1.0,zone,2022
+Kwilu,Gungu,74.0,5.0,31.0,84.2,4.6,1.0,zone,2022
+Kwilu,Idiofa,51.0,5.0,41.0,85.1,0.0,1.0,zone,2022
+Kwilu,Ipamu,65.0,5.0,32.0,100.0,0.0,1.0,zone,2022
+Kwilu,Kikongo,74.0,5.0,24.0,52.5,12.8,1.0,zone,2022
+Kwilu,Kikwit Nord,82.0,5.0,26.0,76.9,5.9,1.0,zone,2022
+Kwilu,Kikwit Sud,92.0,5.0,24.0,62.0,4.7,1.0,zone,2022
+Kwilu,Kimputu,87.0,5.0,28.0,96.9,0.0,1.0,zone,2022
+Kwilu,Kingandu,97.0,5.0,20.0,97.8,1.1,1.0,zone,2022
+Kwilu,Koshibanda,101.0,5.0,29.0,94.9,0.0,1.0,zone,2022
+Kwilu,Lusanga,87.0,5.0,34.0,54.8,13.3,1.0,zone,2022
+Kwilu,Masi Manimba,94.0,5.0,24.0,74.9,7.1,1.0,zone,2022
+Kwilu,Moanza,72.0,5.0,23.0,90.5,4.6,1.0,zone,2022
+Kwilu,Mokala,83.0,5.0,33.0,91.7,2.4,1.0,zone,2022
+Kwilu,Mosango,116.0,5.0,18.0,97.8,0.0,1.0,zone,2022
+Kwilu,Mukedi,119.0,5.0,27.0,92.1,3.2,1.0,zone,2022
+Kwilu,Mungindu,77.0,5.0,24.0,70.9,10.4,1.0,zone,2022
+Kwilu,Pay Kongila,102.0,5.0,23.0,99.1,0.9,1.0,zone,2022
+Kwilu,Sia,87.0,5.0,22.0,36.2,21.9,1.0,zone,2022
+Kwilu,Vanga,136.0,5.0,41.0,98.0,1.4,1.0,zone,2022
+Kwilu,Yasa Bonga,82.0,5.0,27.0,82.2,7.2,1.0,zone,2022
+Kinshasa,Bandalungwa,81.0,5.0,8.0,89.2,1.7,1.0,zone,2022
+Kinshasa,Barumbu,77.0,5.0,10.0,90.9,2.1,1.0,zone,2022
+Kinshasa,Binza Meteo,91.0,5.0,11.0,94.4,3.4,1.0,zone,2022
+Kinshasa,Binza Ozone,76.0,5.0,15.0,77.0,0.0,1.0,zone,2022
+Kinshasa,Biyela,91.0,6.0,11.0,94.1,4.8,1.0,zone,2022
+Kinshasa,Bumbu,99.0,5.0,19.0,95.4,1.2,1.0,zone,2022
+Kinshasa,Gombe,111.0,5.0,10.0,91.8,1.0,1.0,zone,2022
+Kinshasa,Kalamu 1,91.0,5.0,10.0,97.6,0.0,1.0,zone,2022
+Kinshasa,Kalamu 2,84.0,5.0,8.0,96.6,0.0,1.0,zone,2022
+Kinshasa,Kasa Vubu,114.0,5.0,7.0,93.8,1.2,1.0,zone,2022
+Kinshasa,Kikimi,83.0,5.0,9.0,89.8,5.0,1.0,zone,2022
+Kinshasa,Kimbanseke,93.0,5.0,11.0,91.7,2.3,1.0,zone,2022
+Kinshasa,Kingabwa,88.0,5.0,10.0,64.9,2.2,1.0,zone,2022
+Kinshasa,Kingasani,72.0,5.0,8.0,92.9,0.0,1.0,zone,2022
+Kinshasa,Kinshasa,86.0,5.0,7.0,81.1,1.4,1.0,zone,2022
+Kinshasa,Kintambo,93.0,5.0,8.0,67.1,0.8,1.0,zone,2022
+Kinshasa,Kisenso,93.0,5.0,17.0,59.3,7.9,1.0,zone,2022
+Kinshasa,Kokolo,86.0,5.0,24.0,73.1,3.8,1.0,zone,2022
+Kinshasa,Lemba,87.0,5.0,14.0,87.4,4.5,1.0,zone,2022
+Kinshasa,Limete,95.0,5.0,11.0,79.7,6.3,1.0,zone,2022
+Kinshasa,Lingwala,85.0,5.0,8.0,77.5,4.6,1.0,zone,2022
+Kinshasa,Makala,88.0,5.0,14.0,93.9,2.6,1.0,zone,2022
+Kinshasa,Maluku 1,93.0,5.0,17.0,92.5,4.2,1.0,zone,2022
+Kinshasa,Maluku 2,97.0,5.0,12.0,89.0,5.6,1.0,zone,2022
+Kinshasa,Masina 1,60.0,5.0,12.0,98.2,0.0,1.0,zone,2022
+Kinshasa,Masina 2,89.0,5.0,11.0,98.0,1.1,1.0,zone,2022
+Kinshasa,Matete,83.0,5.0,13.0,82.0,0.0,1.0,zone,2022
+Kinshasa,Mont Ngafula 1,95.0,5.0,17.0,65.4,0.0,1.0,zone,2022
+Kinshasa,Mont Ngafula 2,91.0,5.0,14.0,81.1,1.1,1.0,zone,2022
+Kinshasa,Ndjili,63.0,5.0,14.0,88.9,1.1,1.0,zone,2022
+Kinshasa,Ngaba,96.0,5.0,6.0,94.1,3.1,1.0,zone,2022
+Kinshasa,Ngiri Ngiri,92.0,5.0,8.0,80.5,3.3,1.0,zone,2022
+Kinshasa,Nsele,86.0,5.0,14.0,88.2,5.1,1.0,zone,2022
+Kinshasa,Police,91.0,5.0,11.0,86.2,4.8,1.0,zone,2022
+Kinshasa,Selembao,94.0,5.0,18.0,98.3,1.7,1.0,zone,2022
+Kasai Central,Bena Leka,102.0,5.0,25.0,51.9,17.1,1.0,zone,2022
+Kasai Central,Bena Tshadi,82.0,5.0,11.0,64.5,9.6,1.0,zone,2022
+Kasai Central,Bilomba,104.0,5.0,15.0,46.3,10.4,1.0,zone,2022
+Kasai Central,Bobozo,87.0,5.0,9.0,66.9,8.6,1.0,zone,2022
+Kasai Central,Bunkonde,87.0,5.0,14.0,55.1,6.1,1.0,zone,2022
+Kasai Central,Demba,94.0,5.0,26.0,58.3,11.7,1.0,zone,2022
+Kasai Central,Dibaya,85.0,5.0,17.0,76.5,0.0,1.0,zone,2022
+Kasai Central,Kalomba,90.0,5.0,17.0,53.7,3.3,1.0,zone,2022
+Kasai Central,Kananga,106.0,5.0,24.0,72.7,7.9,1.0,zone,2022
+Kasai Central,Katende,88.0,5.0,13.0,81.0,2.3,1.0,zone,2022
+Kasai Central,Katoka,119.0,5.0,10.0,58.5,10.1,1.0,zone,2022
+Kasai Central,Luambo,90.0,5.0,21.0,64.0,3.4,1.0,zone,2022
+Kasai Central,Lubondaie,107.0,5.0,20.0,68.2,5.5,1.0,zone,2022
+Kasai Central,Lubunga,88.0,5.0,12.0,66.0,2.5,1.0,zone,2022
+Kasai Central,Luiza,92.0,5.0,20.0,65.7,5.8,1.0,zone,2022
+Kasai Central,Lukonga,94.0,5.0,19.0,78.5,0.9,1.0,zone,2022
+Kasai Central,Masuika,94.0,5.0,23.0,78.4,4.1,1.0,zone,2022
+Kasai Central,Mikalayi,96.0,5.0,26.0,66.5,2.0,1.0,zone,2022
+Kasai Central,Muetshi,102.0,5.0,12.0,62.8,10.0,1.0,zone,2022
+Kasai Central,Mutoto,97.0,5.0,15.0,52.1,8.8,1.0,zone,2022
+Kasai Central,Ndekesha,78.0,5.0,18.0,70.7,3.4,1.0,zone,2022
+Kasai Central,Ndesha,95.0,5.0,9.0,70.8,4.3,1.0,zone,2022
+Kasai Central,Tshibala,82.0,5.0,24.0,57.8,2.1,1.0,zone,2022
+Kasai Central,Tshikaji,99.0,5.0,14.0,74.4,1.3,1.0,zone,2022
+Kasai Central,Tshikula,99.0,5.0,16.0,51.4,5.8,1.0,zone,2022
+Kasai Central,Yangala,89.0,5.0,29.0,61.1,7.5,1.0,zone,2022
+Kasai,Banga Lubaka,76.0,5.0,18.0,69.9,11.5,1.0,zone,2022
+Kasai,Bulape,98.0,5.0,19.0,35.3,16.1,1.0,zone,2022
+Kasai,Dekese,103.0,5.0,23.0,24.2,35.1,1.0,zone,2022
+Kasai,Ilebo,69.0,5.0,19.0,69.2,6.8,1.0,zone,2022
+Kasai,Kakenge,80.0,5.0,24.0,69.7,5.6,1.0,zone,2022
+Kasai,Kalonda Ouest,83.0,5.0,28.0,36.1,19.9,1.0,zone,2022
+Kasai,Kamonia,105.0,5.0,25.0,44.5,29.1,1.0,zone,2022
+Kasai,Kamwesha,106.0,5.0,28.0,46.7,17.5,1.0,zone,2022
+Kasai,Kanzala,93.0,5.0,17.0,40.9,17.8,1.0,zone,2022
+Kasai,Kitangwa,106.0,5.0,28.0,26.6,33.0,1.0,zone,2022
+Kasai,Luebo,91.0,5.0,26.0,41.2,7.2,1.0,zone,2022
+Kasai,Mikope,96.0,5.0,23.0,76.4,7.4,1.0,zone,2022
+Kasai,Mushenge,119.0,5.0,24.0,52.2,9.6,1.0,zone,2022
+Kasai,Mutena,86.0,5.0,20.0,27.2,32.6,1.0,zone,2022
+Kasai,Mweka,98.0,5.0,28.0,69.3,4.7,1.0,zone,2022
+Kasai,Ndjoko Mpunda,113.0,5.0,20.0,34.9,15.9,1.0,zone,2022
+Kasai,Nyanga,97.0,5.0,12.0,70.3,17.6,1.0,zone,2022
+Kasai,Tshikapa,84.0,5.0,24.0,39.3,33.0,1.0,zone,2022
+Lualaba,Bunkeya,86.0,5.0,8.0,78.6,2.0,1.0,zone,2022
+Lualaba,Dilala,76.0,5.0,13.0,77.6,10.2,1.0,zone,2022
+Lualaba,Dilolo,125.0,5.0,23.0,57.8,15.9,1.0,zone,2022
+Lualaba,Fungurume,90.0,5.0,18.0,35.7,33.5,1.0,zone,2022
+Lualaba,Kafakumba,95.0,5.0,16.0,33.2,28.5,1.0,zone,2022
+Lualaba,Kalamba,89.0,5.0,18.0,70.1,18.9,1.0,zone,2022
+Lualaba,Kanzenze,79.0,5.0,17.0,70.7,8.0,1.0,zone,2022
+Lualaba,Kapanga,96.0,5.0,24.0,60.8,24.2,1.0,zone,2022
+Lualaba,Kasaji,105.0,5.0,26.0,68.7,11.4,1.0,zone,2022
+Lualaba,Lualaba,103.0,5.0,14.0,55.7,17.6,1.0,zone,2022
+Lualaba,Lubudi,101.0,5.0,16.0,93.8,0.0,1.0,zone,2022
+Lualaba,Manika,94.0,5.0,13.0,73.0,10.5,1.0,zone,2022
+Lualaba,Mutshatsha,87.0,5.0,13.0,61.1,10.3,1.0,zone,2022
+Lualaba,Sandoa,108.0,5.0,25.0,51.2,24.5,1.0,zone,2022
+Lomami,Kabinda,91.0,6.0,26.0,73.7,5.9,1.0,zone,2022
+Lomami,Kalambayi Kabanga,93.0,5.0,16.0,58.1,11.1,1.0,zone,2022
+Lomami,Kalenda,89.0,5.0,28.0,73.8,8.6,1.0,zone,2022
+Lomami,Kalonda Est,82.0,5.0,22.0,56.6,17.0,1.0,zone,2022
+Lomami,Kamana,109.0,5.0,23.0,66.8,6.2,1.0,zone,2022
+Lomami,Kamiji,92.0,5.0,12.0,73.3,6.3,1.0,zone,2022
+Lomami,Kanda Kanda,83.0,5.0,18.0,46.1,10.0,1.0,zone,2022
+Lomami,Lubao,107.0,5.0,15.0,73.6,8.8,1.0,zone,2022
+Lomami,Ludimbi Lukula,90.0,5.0,15.0,70.6,6.9,1.0,zone,2022
+Lomami,Luputa,79.0,5.0,30.0,67.1,13.0,1.0,zone,2022
+Lomami,Makota,90.0,5.0,17.0,61.7,10.0,1.0,zone,2022
+Lomami,Mulumba,79.0,5.0,19.0,65.9,8.8,1.0,zone,2022
+Lomami,Mweneditu,84.0,5.0,23.0,60.6,16.3,1.0,zone,2022
+Lomami,NGandajika,97.0,5.0,19.0,98.2,0.0,1.0,zone,2022
+Lomami,Tshofa,107.0,5.0,17.0,62.8,14.3,1.0,zone,2022
+Lomami,Wikong,76.0,5.0,16.0,91.9,0.0,1.0,zone,2022
+Maindombe,Banzow Moke,118.0,5.0,18.0,59.8,20.1,1.0,zone,2022
+Maindombe,Bokoro,158.0,5.0,26.0,87.1,12.1,1.0,zone,2022
+Maindombe,Bolobo,133.0,5.0,25.0,92.5,7.5,1.0,zone,2022
+Maindombe,Bosobe,127.0,5.0,20.0,69.9,19.8,1.0,zone,2022
+Maindombe,Inongo,114.0,5.0,34.0,59.9,30.6,1.0,zone,2022
+Maindombe,Kiri,102.0,5.0,26.0,54.0,38.1,1.0,zone,2022
+Maindombe,Kwamouth,98.0,2.0,23.0,80.2,17.8,1.0,zone,2022
+Maindombe,Mimia,122.0,5.0,14.0,52.2,36.9,1.0,zone,2022
+Maindombe,Mushie,138.0,5.0,21.0,94.2,5.8,1.0,zone,2022
+Maindombe,Nioki,112.0,5.0,23.0,68.1,16.3,1.0,zone,2022
+Maindombe,Ntandembelo,125.0,5.0,19.0,61.5,23.7,1.0,zone,2022
+Maindombe,Oshwe,121.0,5.0,28.0,44.7,36.9,1.0,zone,2022
+Maindombe,Pendjwa,102.0,5.0,16.0,39.9,57.0,1.0,zone,2022
+Maindombe,Yumbi,129.0,5.0,18.0,79.8,17.0,1.0,zone,2022
+Mongala,Binga,83.0,5.0,32.0,5.1,75.1,1.0,zone,2022
+Mongala,Bongandanga,106.0,5.0,24.0,31.4,16.9,1.0,zone,2022
+Mongala,Boso Manzi,74.0,5.0,17.0,9.2,63.7,1.0,zone,2022
+Mongala,Boso Mondanda,107.0,5.0,17.0,29.0,21.1,1.0,zone,2022
+Mongala,Bosondjo,95.0,5.0,25.0,30.3,17.8,1.0,zone,2022
+Mongala,Bumba,82.0,5.0,16.0,24.7,31.5,1.0,zone,2022
+Mongala,Lisala,88.0,5.0,34.0,21.4,46.0,1.0,zone,2022
+Mongala,Lolo,100.0,5.0,21.0,25.3,27.5,1.0,zone,2022
+Mongala,Pimu,99.0,5.0,25.0,29.7,16.3,1.0,zone,2022
+Mongala,Yamaluka,100.0,5.0,22.0,8.6,50.4,1.0,zone,2022
+Mongala,Yambuku,68.0,5.0,40.0,5.4,82.3,1.0,zone,2022
+Mongala,Yamongili,102.0,5.0,22.0,9.4,42.3,1.0,zone,2022
+Maniema,Alunguli,95.0,5.0,8.0,12.6,76.4,1.0,zone,2022
+Maniema,Ferekeni,97.0,5.0,10.0,7.0,52.6,1.0,zone,2022
+Maniema,Kabambare,65.0,4.0,13.0,22.7,29.8,1.0,zone,2022
+Maniema,Kailo,78.0,5.0,18.0,8.4,60.4,1.0,zone,2022
+Maniema,Kalima,90.0,5.0,19.0,22.4,37.0,1.0,zone,2022
+Maniema,Kampene,95.0,5.0,18.0,0.8,77.1,1.0,zone,2022
+Maniema,Kasongo,88.0,5.0,21.0,32.9,37.0,1.0,zone,2022
+Maniema,Kibombo,95.0,5.0,13.0,7.4,66.4,1.0,zone,2022
+Maniema,Kindu,109.0,5.0,11.0,29.7,36.3,1.0,zone,2022
+Maniema,Kunda,92.0,5.0,30.0,21.6,43.1,1.0,zone,2022
+Maniema,Lubutu,101.0,5.0,20.0,25.0,28.4,1.0,zone,2022
+Maniema,Lusangi,88.0,5.0,18.0,23.3,32.9,1.0,zone,2022
+Maniema,Obokote,91.0,5.0,11.0,43.1,22.6,1.0,zone,2022
+Maniema,Pangi,86.0,5.0,16.0,3.9,48.2,1.0,zone,2022
+Maniema,Punia,92.0,5.0,17.0,17.6,42.5,1.0,zone,2022
+Maniema,Samba,99.0,5.0,12.0,16.1,53.9,1.0,zone,2022
+Maniema,Saramabila,87.0,5.0,18.0,13.8,44.2,1.0,zone,2022
+Maniema,Tunda,95.0,5.0,11.0,14.3,48.6,1.0,zone,2022
+Nord Kivu,Alimbongo,88.0,5.0,21.0,98.1,1.1,1.0,zone,2022
+Nord Kivu,Beni,98.0,5.0,22.0,74.7,7.5,1.0,zone,2022
+Nord Kivu,Biena,92.0,5.0,16.0,85.2,2.6,1.0,zone,2022
+Nord Kivu,Butembo,94.0,5.0,16.0,81.4,1.7,1.0,zone,2022
+Nord Kivu,Goma,83.0,5.0,11.0,80.4,1.0,1.0,zone,2022
+Nord Kivu,Itebero,105.0,5.0,30.0,58.5,5.7,1.0,zone,2022
+Nord Kivu,Kalunguta,119.0,5.0,18.0,89.0,0.0,1.0,zone,2022
+Nord Kivu,Kamango,71.0,5.0,14.0,71.4,8.1,1.0,zone,2022
+Nord Kivu,Karisimbi,95.0,5.0,19.0,84.1,1.1,1.0,zone,2022
+Nord Kivu,Katwa,86.0,5.0,20.0,94.4,2.2,1.0,zone,2022
+Nord Kivu,Kayna,74.0,5.0,23.0,91.6,3.0,1.0,zone,2022
+Nord Kivu,Kibua,68.0,5.0,19.0,69.2,4.5,1.0,zone,2022
+Nord Kivu,Kirotshe,85.0,4.0,31.0,99.6,0.0,1.0,zone,2022
+Nord Kivu,Kyondo,124.0,5.0,23.0,94.5,0.9,1.0,zone,2022
+Nord Kivu,Lubero,76.0,5.0,21.0,100.0,0.0,1.0,zone,2022
+Nord Kivu,Mabalako,171.0,6.0,16.0,88.1,0.7,1.0,zone,2022
+Nord Kivu,Manguredjipa,85.0,5.0,10.0,49.0,3.6,1.0,zone,2022
+Nord Kivu,Masereka,133.0,5.0,16.0,93.1,2.3,1.0,zone,2022
+Nord Kivu,Masisi,66.0,5.0,26.0,43.7,3.1,1.0,zone,2022
+Nord Kivu,Musienene,69.0,5.0,20.0,88.9,3.2,1.0,zone,2022
+Nord Kivu,Mutwanga,86.0,5.0,20.0,79.3,3.4,1.0,zone,2022
+Nord Kivu,Nyiragongo,72.0,5.0,11.0,90.3,2.4,1.0,zone,2022
+Nord Kivu,Oicha,187.0,6.0,27.0,88.8,0.0,1.0,zone,2022
+Nord Kivu,Pinga,87.0,5.0,19.0,59.6,0.9,1.0,zone,2022
+Nord Kivu,Vuhovi,96.0,5.0,13.0,98.3,0.0,1.0,zone,2022
+Nord Kivu,Walikale,85.0,5.0,18.0,57.1,8.1,1.0,zone,2022
+Nord Ubangi,Abuzi,86.0,5.0,14.0,65.2,1.3,1.0,zone,2022
+Nord Ubangi,Bili,83.0,5.0,19.0,31.5,13.4,1.0,zone,2022
+Nord Ubangi,Bosobolo,74.0,5.0,20.0,46.0,4.8,1.0,zone,2022
+Nord Ubangi,Businga,79.0,5.0,13.0,92.5,4.7,1.0,zone,2022
+Nord Ubangi,Gbadolite,88.0,5.0,16.0,75.5,5.6,1.0,zone,2022
+Nord Ubangi,Karawa,79.0,5.0,24.0,97.1,0.0,1.0,zone,2022
+Nord Ubangi,Loko,78.0,5.0,15.0,95.9,1.5,1.0,zone,2022
+Nord Ubangi,Mobayi Mbongo,73.0,5.0,18.0,51.9,20.1,1.0,zone,2022
+Nord Ubangi,Wapinda,81.0,5.0,12.0,85.3,0.0,1.0,zone,2022
+Nord Ubangi,Wasolo,79.0,5.0,14.0,67.3,1.3,1.0,zone,2022
+Nord Ubangi,Yakoma,96.0,5.0,13.0,72.9,2.1,1.0,zone,2022
+Sud Kivu,Bagira,100.0,5.0,8.0,77.0,17.2,1.0,zone,2022
+Sud Kivu,Bunyakiri,101.0,5.0,26.0,59.1,10.2,1.0,zone,2022
+Sud Kivu,Fizi,80.0,5.0,31.0,48.1,13.9,1.0,zone,2022
+Sud Kivu,Haut Plateau,87.0,4.0,23.0,51.1,18.6,1.0,zone,2022
+Sud Kivu,Ibanda,83.0,5.0,17.0,70.1,1.7,1.0,zone,2022
+Sud Kivu,Idjwi,85.0,5.0,21.0,61.5,20.5,1.0,zone,2022
+Sud Kivu,Itombwe,69.0,5.0,18.0,65.5,6.4,1.0,zone,2022
+Sud Kivu,Kabare,114.0,5.0,16.0,85.7,0.8,1.0,zone,2022
+Sud Kivu,Kadutu,82.0,5.0,14.0,77.6,5.8,1.0,zone,2022
+Sud Kivu,Kalehe,93.0,5.0,16.0,47.3,10.7,1.0,zone,2022
+Sud Kivu,Kalole,64.0,5.0,24.0,70.7,0.0,1.0,zone,2022
+Sud Kivu,Kalonge,131.0,5.0,18.0,59.7,1.3,1.0,zone,2022
+Sud Kivu,Kamituga,114.0,5.0,23.0,42.2,8.0,1.0,zone,2022
+Sud Kivu,Kaniola,117.0,5.0,16.0,89.5,4.9,1.0,zone,2022
+Sud Kivu,Katana,92.0,5.0,20.0,76.1,8.3,1.0,zone,2022
+Sud Kivu,Kaziba,110.0,5.0,16.0,70.7,4.8,1.0,zone,2022
+Sud Kivu,Kimbi Lulenge,90.0,5.0,24.0,12.1,34.8,1.0,zone,2022
+Sud Kivu,Kitutu,114.0,6.0,22.0,46.2,22.6,1.0,zone,2022
+Sud Kivu,Lemera,84.0,4.0,26.0,78.7,9.5,1.0,zone,2022
+Sud Kivu,Lulingu,105.0,5.0,21.0,88.7,5.7,1.0,zone,2022
+Sud Kivu,Minembwe,84.0,5.0,18.0,43.2,8.2,1.0,zone,2022
+Sud Kivu,Minova,100.0,5.0,21.0,78.9,4.3,1.0,zone,2022
+Sud Kivu,Miti Murhesa,124.0,5.0,20.0,72.3,13.1,1.0,zone,2022
+Sud Kivu,Mubumbano,90.0,5.0,16.0,67.3,10.9,1.0,zone,2022
+Sud Kivu,Mulungu,94.0,5.0,20.0,67.8,13.3,1.0,zone,2022
+Sud Kivu,Mwana,107.0,5.0,15.0,60.6,8.5,1.0,zone,2022
+Sud Kivu,Mwenga,117.0,5.0,18.0,58.5,21.5,1.0,zone,2022
+Sud Kivu,Nundu,80.0,5.0,21.0,61.2,7.3,1.0,zone,2022
+Sud Kivu,Nyangezi,136.0,5.0,12.0,84.2,6.2,1.0,zone,2022
+Sud Kivu,Nyantende,95.0,5.0,11.0,87.5,5.4,1.0,zone,2022
+Sud Kivu,Ruzizi,78.0,5.0,23.0,49.8,10.4,1.0,zone,2022
+Sud Kivu,Shabunda,99.0,5.0,23.0,82.7,3.7,1.0,zone,2022
+Sud Kivu,Uvira,88.0,5.0,22.0,65.7,11.5,1.0,zone,2022
+Sud Kivu,Walungu,78.0,5.0,23.0,92.1,0.0,1.0,zone,2022
+Sankuru,Bena Dibele,78.0,5.0,13.0,22.7,57.5,1.0,zone,2022
+Sankuru,Dikungu,114.0,5.0,17.0,22.9,39.5,1.0,zone,2022
+Sankuru,Djalo Ndjeka,109.0,5.0,14.0,24.3,32.7,1.0,zone,2022
+Sankuru,Katako Kombe,115.0,5.0,17.0,43.6,38.6,1.0,zone,2022
+Sankuru,Kole,98.0,5.0,12.0,26.8,51.5,1.0,zone,2022
+Sankuru,Lodja,106.0,5.0,23.0,11.5,47.1,1.0,zone,2022
+Sankuru,Lomela,107.0,5.0,19.0,32.2,14.7,1.0,zone,2022
+Sankuru,Lusambo,95.0,5.0,13.0,10.7,27.5,1.0,zone,2022
+Sankuru,Minga,105.0,5.0,19.0,13.2,31.4,1.0,zone,2022
+Sankuru,Omendjadi,102.0,5.0,18.0,31.7,28.1,1.0,zone,2022
+Sankuru,Ototo,102.0,5.0,17.0,16.9,66.9,1.0,zone,2022
+Sankuru,Pania Mutombo,105.0,5.0,10.0,17.3,32.6,1.0,zone,2022
+Sankuru,Tshudi Loto,109.0,5.0,11.0,9.2,63.0,1.0,zone,2022
+Sankuru,Tshumbe,113.0,5.0,14.0,31.9,31.9,1.0,zone,2022
+Sankuru,Vanga Kete,127.0,5.0,17.0,16.4,49.9,1.0,zone,2022
+Sankuru,Wembo Nyama,104.0,5.0,15.0,50.6,27.3,1.0,zone,2022
+Sud Ubangi,Bangabola,77.0,5.0,17.0,49.4,18.6,1.0,zone,2022
+Sud Ubangi,Bogosenubea,87.0,5.0,21.0,37.5,3.5,1.0,zone,2022
+Sud Ubangi,Bokonzi,108.0,5.0,24.0,20.8,17.6,1.0,zone,2022
+Sud Ubangi,Bominenge,40.0,5.0,13.0,21.3,35.6,1.0,zone,2022
+Sud Ubangi,Boto,97.0,5.0,22.0,31.9,12.6,1.0,zone,2022
+Sud Ubangi,Budjala,63.0,5.0,16.0,60.5,5.9,1.0,zone,2022
+Sud Ubangi,Bulu,116.0,5.0,18.0,29.6,15.6,1.0,zone,2022
+Sud Ubangi,Bwamanda,76.0,5.0,21.0,49.0,1.8,1.0,zone,2022
+Sud Ubangi,Gemena,95.0,5.0,31.0,50.4,9.2,1.0,zone,2022
+Sud Ubangi,Kungu,98.0,5.0,21.0,11.5,24.1,1.0,zone,2022
+Sud Ubangi,Libenge,69.0,5.0,20.0,25.5,11.4,1.0,zone,2022
+Sud Ubangi,Mawuya,64.0,5.0,18.0,54.0,8.6,1.0,zone,2022
+Sud Ubangi,Mbaya,85.0,5.0,11.0,58.0,11.3,1.0,zone,2022
+Sud Ubangi,Ndage,58.0,5.0,22.0,43.2,12.4,1.0,zone,2022
+Sud Ubangi,Tandala,68.0,5.0,18.0,47.2,10.1,1.0,zone,2022
+Sud Ubangi,Zongo,94.0,5.0,15.0,33.0,9.6,1.0,zone,2022
+Tanganyika,Ankoro,92.0,5.0,25.0,82.9,4.8,1.0,zone,2022
+Tanganyika,Kabalo,109.0,5.0,25.0,50.4,5.1,1.0,zone,2022
+Tanganyika,Kalemie,80.0,5.0,27.0,67.8,7.1,1.0,zone,2022
+Tanganyika,Kansimba,68.0,5.0,21.0,8.5,60.3,1.0,zone,2022
+Tanganyika,Kiambi,102.0,5.0,26.0,61.3,8.0,1.0,zone,2022
+Tanganyika,Kongolo,85.0,5.0,25.0,59.7,1.4,1.0,zone,2022
+Tanganyika,Manono,76.0,5.0,27.0,73.5,13.0,1.0,zone,2022
+Tanganyika,Mbulula,108.0,5.0,21.0,40.7,1.6,1.0,zone,2022
+Tanganyika,Moba,138.0,5.0,25.0,28.5,12.6,1.0,zone,2022
+Tanganyika,Nyemba,98.0,5.0,21.0,60.6,6.5,1.0,zone,2022
+Tanganyika,Nyunzu,95.0,5.0,25.0,15.5,32.1,1.0,zone,2022
+Tshopo,Bafwagbogbo,82.0,5.0,18.0,9.3,59.8,1.0,zone,2022
+Tshopo,Bafwasende,105.0,5.0,14.0,17.2,50.0,1.0,zone,2022
+Tshopo,Banalia,83.0,5.0,20.0,4.7,75.4,1.0,zone,2022
+Tshopo,Basali,90.0,5.0,14.0,2.2,90.9,1.0,zone,2022
+Tshopo,Basoko,83.0,5.0,21.0,7.4,71.7,1.0,zone,2022
+Tshopo,Bengamisa,73.0,5.0,17.0,3.4,67.8,1.0,zone,2022
+Tshopo,Isangi,74.0,5.0,23.0,20.1,49.0,1.0,zone,2022
+Tshopo,Kabondo,91.0,5.0,16.0,33.0,39.9,1.0,zone,2022
+Tshopo,Lowa,89.0,5.0,17.0,6.8,56.3,1.0,zone,2022
+Tshopo,Lubunga,99.0,5.0,18.0,18.3,61.0,1.0,zone,2022
+Tshopo,Makiso Kisangani,89.0,5.0,21.0,25.0,44.7,1.0,zone,2022
+Tshopo,Mangobo,79.0,5.0,18.0,41.6,31.9,1.0,zone,2022
+Tshopo,Opala,95.0,5.0,23.0,6.5,77.8,1.0,zone,2022
+Tshopo,Opienge,103.0,5.0,15.0,9.9,50.4,1.0,zone,2022
+Tshopo,Tshopo,97.0,5.0,16.0,19.0,49.8,1.0,zone,2022
+Tshopo,Ubundu,82.0,5.0,17.0,7.6,50.6,1.0,zone,2022
+Tshopo,Wanierukula,98.0,5.0,14.0,11.6,45.8,1.0,zone,2022
+Tshopo,Yabaondo,64.0,5.0,23.0,9.1,71.7,1.0,zone,2022
+Tshopo,Yahisuli,95.0,5.0,17.0,2.9,87.7,1.0,zone,2022
+Tshopo,Yahuma,73.0,5.0,27.0,9.7,84.5,1.0,zone,2022
+Tshopo,Yakusu,82.0,5.0,22.0,20.5,46.1,1.0,zone,2022
+Tshopo,Yaleko,87.0,5.0,21.0,5.3,69.2,1.0,zone,2022
+Tshopo,Yalimbongo,86.0,5.0,17.0,5.0,64.3,1.0,zone,2022
+Tshuapa,Befale,93.0,5.0,22.0,10.9,23.8,1.0,zone,2022
+Tshuapa,Boende,102.0,5.0,37.0,11.2,21.2,1.0,zone,2022
+Tshuapa,Bokungu,121.0,5.0,24.0,35.5,7.0,1.0,zone,2022
+Tshuapa,Busanga,110.0,5.0,16.0,13.1,55.8,1.0,zone,2022
+Tshuapa,Djolu,124.0,5.0,28.0,1.6,38.6,1.0,zone,2022
+Tshuapa,Ikela,109.0,5.0,28.0,53.3,9.8,1.0,zone,2022
+Tshuapa,Lingomo,107.0,5.0,19.0,0.7,38.5,1.0,zone,2022
+Tshuapa,Mompono,116.0,5.0,15.0,11.8,33.0,1.0,zone,2022
+Tshuapa,Mondombe,101.0,5.0,22.0,24.6,13.3,1.0,zone,2022
+Tshuapa,Monkoto,100.0,5.0,25.0,21.9,25.4,1.0,zone,2022
+Tshuapa,Wema,114.0,5.0,20.0,2.6,52.6,1.0,zone,2022
+Tshuapa,Yalifafu,114.0,5.0,21.0,14.5,37.2,1.0,zone,2022
+Bas Uele,,943.0,55.0,169.0,32.230752916224816,26.785047720042414,11.0,province,2022
+Equateur,,1933.0,90.0,286.0,55.152353854112775,7.965649249870667,18.0,province,2022
+Haut Katanga,,2363.0,134.0,410.0,60.44617012272534,20.475751163774863,27.0,province,2022
+Haut Lomami,,1783.0,79.0,351.0,94.60420639371846,2.0761076836791923,16.0,province,2022
+Haut Uele,,1302.0,65.0,212.0,41.945314900153605,33.71021505376344,13.0,province,2022
+Ituri,,2221.0,133.0,480.0,66.74119765871228,5.5679423683025675,28.0,province,2022
+Kasai,,1703.0,90.0,406.0,47.76717557251909,18.055196711685262,18.0,province,2022
+Kasai Central,,2446.0,130.0,459.0,64.18536385936223,6.104006541291906,26.0,province,2022
+Kasai Oriental,,1717.0,95.0,325.0,50.22620850320326,20.8889341875364,19.0,province,2022
+Kinshasa,,3094.0,176.0,417.0,86.2753716871364,2.5657078215901747,35.0,province,2022
+Kongo Central,,3218.0,154.0,405.0,69.79729645742698,10.063859540087009,31.0,province,2022
+Kwango,,1761.0,70.0,305.0,75.75337876206702,8.75678591709256,14.0,province,2022
+Kwilu,,2147.0,120.0,661.0,79.71993479273405,5.404750815090824,24.0,province,2022
+Lomami,,1448.0,81.0,316.0,68.90849447513813,8.907527624309392,16.0,province,2022
+Lualaba,,1334.0,70.0,244.0,62.999925037481255,15.617241379310343,14.0,province,2022
+Maindombe,,1699.0,67.0,311.0,68.65779870512067,23.235373749264273,14.0,province,2022
+Maniema,,1643.0,89.0,284.0,17.971089470480827,46.757577601947645,18.0,province,2022
+Mongala,,1104.0,60.0,295.0,19.908423913043475,38.61675724637681,12.0,province,2022
+Nord Kivu,,2495.0,131.0,500.0,82.29603206412824,2.3285370741482967,26.0,province,2022
+Nord Ubangi,,896.0,55.0,178.0,71.13995535714285,4.834709821428572,11.0,province,2022
+Sankuru,,1689.0,80.0,249.0,23.95713439905269,39.83096506808763,16.0,province,2022
+Sud Kivu,,3285.0,169.0,663.0,66.5710197869102,9.725631659056317,34.0,province,2022
+Sud Ubangi,,1295.0,80.0,308.0,37.91953667953668,12.697683397683397,16.0,province,2022
+Tanganyika,,1051.0,55.0,268.0,49.26298763082779,12.547098001902949,11.0,province,2022
+Tshopo,,1999.0,115.0,429.0,12.914507253626812,60.41415707853926,23.0,province,2022
+Tshuapa,,1311.0,60.0,277.0,16.756979405034325,29.964454614797866,12.0,province,2022
+,,47880.0,2503.0,9208.0,58.49855054302423,16.491284461152883,501.0,national,2022

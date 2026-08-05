@@ -3,7 +3,7 @@ import { IndicatorCardECV } from './IndicatorCardECV'
 import { useKeyEcvData } from '@/hooks/useKeyEcvData'
 
 const formatNumber = (v: number | null): string => (v == null ? '—' : Math.round(v).toLocaleString())
-const formatPercent = (v: number | null): string => (v == null ? '—' : `${Math.round(v * 100)}%`)
+const formatPercent = (v: number | null): string => (v == null ? '—' : `${Math.round(v)}%`)
 
 export function IndicatorCardsECV() {
     const row = useKeyEcvData()
@@ -12,15 +12,16 @@ export function IndicatorCardsECV() {
         () => [
             {
                 key: 'nb_people',
-                label: 'Personnes enquêtées',
+                label: 'Enfants enquêtés',
                 value: formatNumber(row?.nb_people ?? null),
-                description: "Nombre de personnes couvertes par l'enquête ECV pour la sélection courante (année, province, zone).",
+                description: "Nombre d'enfants couverts par l'enquête ECV pour la sélection courante (année, province, zone).",
             },
             {
                 key: 'nb_zones',
                 label: 'Zones de santé enquêtées',
                 value: formatNumber(row?.nb_zones ?? null),
                 description: "Nombre de zones de santé couvertes par l'enquête ECV pour la sélection courante.",
+                subtext: row?.nb_areas != null ? `${formatNumber(row.nb_areas)} aires de santé enquêtées` : undefined,
             },
             {
                 key: 'penta_cov',
@@ -43,7 +44,7 @@ export function IndicatorCardsECV() {
             <h2 className="text-sm font-semibold text-slate-700">Chiffres clés ECV</h2>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {cards.map(c => (
-                    <IndicatorCardECV key={c.key} label={c.label} value={c.value} description={c.description} />
+                    <IndicatorCardECV key={c.key} label={c.label} value={c.value} description={c.description} subtext={c.subtext} />
                 ))}
             </div>
             {!row && (
