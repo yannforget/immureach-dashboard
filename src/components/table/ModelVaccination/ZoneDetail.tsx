@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { METRIC_KEYS, METRIC_META } from '@/lib/dataUtils'
+import { MODEL_METRIC_KEYS, MODEL_METRIC_META } from '@/lib/utils/constants'
 import { useProvinceData } from '@/hooks/useProvinceData'
 import type { MetricKey, ProvinceRow, ZoneRow } from '@/types'
 
@@ -128,7 +128,7 @@ function MetricCard({
   nationalValue,
   zoneCount,
 }: MetricCardProps) {
-  const meta = METRIC_META[metricKey]
+  const meta = MODEL_METRIC_META[metricKey]
   const zoneAccent = meta.isZeroDose ? 'bg-red-500' : 'bg-teal-600'
   const otherAccent = 'bg-slate-300'
 
@@ -191,8 +191,8 @@ export function ZoneDetail({ row, zoneName }: ZoneDetailProps) {
   // pred_*_count / pop_6_24mo, mirroring the IndicatorCards logic.
   const nationalByMetric = useMemo(() => {
     const result: Record<MetricKey, number | null> = {} as any
-    METRIC_KEYS.forEach(key => {
-      const meta = METRIC_META[key]
+    MODEL_METRIC_KEYS.forEach(key => {
+      const meta = MODEL_METRIC_META[key]
       let countSum = 0
       let popSum = 0
       provinces.forEach((p: ProvinceRow) => {
@@ -275,8 +275,8 @@ export function ZoneDetail({ row, zoneName }: ZoneDetailProps) {
           <span className="text-xs text-slate-500">% des enfants âgés de 6 à 24 mois</span>
         </div>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          {METRIC_KEYS.map(key => {
-            const meta = METRIC_META[key]
+          {MODEL_METRIC_KEYS.map(key => {
+            const meta = MODEL_METRIC_META[key]
             const rawZone = props[key]
             const rawProvince = province
               ? (province.properties as any)[key]

@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import * as echarts from 'echarts'
-import { cleanName } from '@/lib/dataUtils'
-import { parseCsv } from '@/lib/csv'
+import { cleanName } from '@/lib/utils/dataUtils'
+import { parseCsv } from '@/lib/utils/csv'
 // import type { KeyEcvRow, ProfileData, ProfileScopeLevel, ProvinceRow, Year, ZoneRow } from '@/types'
-import { parseEcvVaccCovCsv } from '@/lib/ecvVaccCov'
+import { parseEcvVaccCovCsv } from '@/lib/utils/ecvVaccCov'
 import type { EcvVaccCovRow, KeyEcvRow, ProfileData, ProfileScopeLevel, ProvinceRow, Year, ZoneRow } from '@/types'
 
 export type Bbox = [number, number, number, number] // [minLon, minLat, maxLon, maxLat]
@@ -78,9 +78,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
         // Fetch GeoJSON files + the profiling sidecar in parallel.
         const [provincesRes, zonesRes, profileRes] = await Promise.all([
-          fetch('/data/provinces.geojson'),
-          fetch('/data/zones.geojson'),
-          fetch('/data/profile.json'),
+          fetch('public/data/provinces.geojson'),
+          fetch('public/data/zones.geojson'),
+          fetch('public/data/profile.json'),
         ])
 
         if (!provincesRes.ok || !zonesRes.ok || !profileRes.ok) {
@@ -168,11 +168,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         echarts.registerMap('drc-provinces', provincesWithNames as any)
         echarts.registerMap('drc-zones', zonesWithNames as any)
 
-        // key_ecv.csv (ECV tab key figures) is fetched separately and
-        // non-fatally: it's optional/still being populated, so a missing or
-        // malformed file shouldn't break the rest of the dashboard.
+        // key_ecv.csv (ECV tab key figures) is fetched separately and non-fatally: 
+        // it's optional/still being populated, so a missing or malformed file shouldn't break the rest of the dashboard.
         try {
-          const keyEcvRes = await fetch('/data/output/key_ecv.csv')
+          const keyEcvRes = await fetch('public/data/key_ecv.csv')
           if (keyEcvRes.ok) {
             setKeyEcv(parseKeyEcvCsv(await keyEcvRes.text()))
           }

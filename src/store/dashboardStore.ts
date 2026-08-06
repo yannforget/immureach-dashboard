@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { DashboardSection, MetricKey, ViewMode, Year } from '@/types';
-import { METRIC_KEYS } from '@/lib/dataUtils';
+import { MODEL_METRIC_KEYS } from '@/lib/utils/constants';
 
 interface DashboardState {
   // Top-level ribbon tab.
@@ -32,7 +32,7 @@ interface DashboardState {
 
 export const useDashboardStore = create<DashboardState>((set) => ({
   activeSection: 'ecv',
-  selectedMetric: METRIC_KEYS[0],
+  selectedMetric: MODEL_METRIC_KEYS[0],
   selectedProvince: null,
   selectedZoneId: null,
   hoveredZoneId: null,

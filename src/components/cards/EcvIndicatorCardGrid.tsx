@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
-import { IndicatorCardECV } from './IndicatorCardECV'
-import { useKeyEcvData } from '@/hooks/useKeyEcvData'
+import { EcvIndicatorCard } from './EcvIndicatorCard'
+import { useKeyEcvData } from '@/hooks/ecv/useKeyEcvData'
 
 const formatNumber = (v: number | null): string => (v == null ? '—' : Math.round(v).toLocaleString())
 const formatPercent = (v: number | null): string => (v == null ? '—' : `${Math.round(v)}%`)
@@ -44,7 +44,7 @@ export function IndicatorCardsECV() {
             <h2 className="text-sm font-semibold text-slate-700">Chiffres clés ECV</h2>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {cards.map(c => (
-                    <IndicatorCardECV key={c.key} label={c.label} value={c.value} description={c.description} subtext={c.subtext} />
+                    <EcvIndicatorCard key={c.key} label={c.label} value={c.value} description={c.description} subtext={c.subtext} />
                 ))}
             </div>
             {!row && (

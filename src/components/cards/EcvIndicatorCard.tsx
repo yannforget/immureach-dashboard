@@ -1,13 +1,13 @@
 import { useState } from 'react'
 
-interface IndicatorCardECVProps {
+interface EcvIndicatorCardProps {
     label: string
     value: string
     description?: string
     subtext?: string  // add nb of visited health areas in nb visited zone card 
 }
 
-export function IndicatorCardECV({ label, value, description, subtext }: IndicatorCardECVProps) {
+export function EcvIndicatorCard({ label, value, description, subtext }: EcvIndicatorCardProps) {
     const [showTooltip, setShowTooltip] = useState(false)
 
     return (

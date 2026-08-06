@@ -1,6 +1,7 @@
 import type { EChartsOption } from 'echarts'
 import type { ProvinceRow, ZoneRow, MetricKey, AntenneGroup } from '@/types'
-import { METRIC_META, getColorScaleBounds } from '@/lib/dataUtils'
+import { MODEL_METRIC_META } from '@/lib/utils/constants'
+import { getColorScaleBounds } from '@/lib/utils/dataUtils'
 
 interface MapConfig {
   features: (ZoneRow | ProvinceRow)[]
@@ -33,7 +34,7 @@ export function buildMapOptions(config: MapConfig): EChartsOption {
     }
   }
 
-  const metricMeta = METRIC_META[metric]
+  const metricMeta = MODEL_METRIC_META[metric]
 
   // Collect numeric coverage values for colorscale bounds. Null predictions
   // (ungauged zones) are excluded so they don't drag the scale.

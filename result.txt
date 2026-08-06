@@ -1,0 +1,130 @@
+.
+├── CLAUDE.md
+├── data
+│   ├── columns.json
+│   ├── input
+│   │   ├── dhs
+│   │   ├── espk
+│   │   │   ├── ECV2022_vacc_cov_ZS.csv
+│   │   │   └── ECV_2022_Couvertures-vaccinales.xlsx
+│   │   ├── grid3
+│   │   │   └── COD_population_v4_4_gridded
+│   │   └── immureach
+│   │       └── indicators_households_complete.csv
+│   ├── output
+│   │   ├── accessibility
+│   │   ├── boundaries
+│   │   ├── indicators
+│   │   ├── key_ecv.csv
+│   │   └── population
+│   ├── provinces.geojson
+│   └── zones.geojson
+├── docs
+│   ├── dashboard.md
+│   └── data.md
+├── index.html
+├── node_modules
+│   ├── @alloc
+│   │   └── quick-lru
+│   │       ├── index.d.ts
+│   │       ├── index.js
+│   │       ├── license
+│   │       ├── package.json
+│   │       └── readme.md
+├── package-lock.json
+├── package.json
+├── postcss.config.js
+├── public
+│   └── data
+│       ├── ecv_vaccination_coverage.csv
+│       ├── key_ecv.csv
+│       ├── profile.json
+│       ├── provinces.geojson
+│       └── zones.geojson
+├── pyproject.toml
+├── result.txt
+├── scripts
+│   ├── aggregate-accessibility.py
+│   ├── aggregate-indicators.py
+│   ├── aggregate-population.py
+│   ├── build-dashboard-geojson.py
+│   ├── build-profile-json.py
+│   ├── generate-boundaries.py
+│   ├── prepare-ecv-keys.py
+│   ├── prepare-ecv-vaccination-coverage.py
+│   └── prepare-predictions.py
+├── src
+│   ├── App.tsx
+│   ├── components
+│   │   ├── Breadcrumb.tsx
+│   │   ├── IndicatorCardECV.tsx
+│   │   ├── IndicatorCardZeroDose.tsx
+│   │   ├── IndicatorCardsECV.tsx
+│   │   ├── IndicatorCardsZeroDose.tsx
+│   │   ├── Notes.tsx
+│   │   ├── PlaceholderPanel.tsx
+│   │   ├── ProfilingPanel.tsx
+│   │   ├── Ribbon.tsx
+│   │   ├── YearSelector.tsx
+│   │   ├── charts
+│   │   │   ├── AccessibilityChart.tsx
+│   │   │   ├── BarChart.tsx
+│   │   │   ├── CoverageMap.tsx
+│   │   │   ├── DumbbellChart.tsx
+│   │   │   ├── EcvVaccineBarChart.tsx
+│   │   │   └── EcvZeroDoseMap.tsx
+│   │   ├── layout
+│   │   │   ├── DashboardGrid.tsx
+│   │   │   └── Header.tsx
+│   │   ├── table
+│   │   │   ├── DataTable.tsx
+│   │   │   ├── ProvinceTable.tsx
+│   │   │   ├── ZoneDetail.tsx
+│   │   │   └── ZoneTable.tsx
+│   │   └── ui
+│   │       ├── button.tsx
+│   │       ├── savebutton.tsx
+│   │       ├── table.tsx
+│   │       ├── tabs.tsx
+│   │       └── toggle.tsx
+│   ├── context
+│   │   └── DataContext.tsx
+│   ├── hooks
+│   │   ├── useAccessibilityProfile.ts
+│   │   ├── useEcvVaccCovRow.ts
+│   │   ├── useEcvZeroDoseMapData.ts
+│   │   ├── useIndicatorComparison.ts
+│   │   ├── useKeyEcvData.ts
+│   │   ├── useProvinceAntennes.ts
+│   │   ├── useProvinceData.ts
+│   │   ├── useTableData.ts
+│   │   └── useZoneData.ts
+│   ├── index.css
+│   ├── lib
+│   │   ├── charts
+│   │   │   ├── accessibilityOptions.ts
+│   │   │   ├── barOptions.ts
+│   │   │   ├── dumbbellOptions.ts
+│   │   │   ├── ecvBarOptions.ts
+│   │   │   ├── ecvMapOptions.ts
+│   │   │   ├── mapOptions.ts
+│   │   │   └── theme.ts
+│   │   ├── csv.ts
+│   │   ├── dataUtils.ts
+│   │   ├── ecvVaccCov.ts
+│   │   └── utils.ts
+│   ├── main.tsx
+│   ├── store
+│   │   └── dashboardStore.ts
+│   ├── types
+│   │   └── index.ts
+│   └── vite-env.d.ts
+├── tailwind.config.ts
+├── tsconfig.json
+├── tsconfig.node.json
+├── tsconfig.node.tsbuildinfo
+├── tsconfig.tsbuildinfo
+├── uv.lock
+├── vite.config.d.ts
+├── vite.config.js
+└── vite.config.ts

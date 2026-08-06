@@ -2,8 +2,9 @@ import { useRef } from 'react'
 import EChartsReact from 'echarts-for-react'
 import { useDashboardStore } from '@/store/dashboardStore'
 import { useData } from '@/context/DataContext'
-import { useEcvVaccCovRow } from '@/hooks/useEcvVaccCovRow'
-import { ECV_BAR_METRIC_KEYS, ECV_METRIC_META } from '@/lib/ecvVaccCov'
+import { useEcvVaccCovRow } from '@/hooks/ecv/useEcvVaccCovRow'
+import { ECV_BAR_METRIC_KEYS } from '@/lib/utils/constants'
+import { ECV_METRIC_META } from '@/lib/utils/constants'
 import { buildEcvVaccineBarOptions, type EcvBarItem } from '@/lib/charts/ecvBarOptions'
 
 export function EcvVaccineBarChart() {

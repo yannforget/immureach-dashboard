@@ -5,7 +5,7 @@ import { useProvinceData } from '@/hooks/useProvinceData'
 import { useZoneData } from '@/hooks/useZoneData'
 import { useProvinceAntennes } from '@/hooks/useProvinceAntennes'
 import { useData } from '@/context/DataContext'
-import { METRIC_META } from '@/lib/dataUtils'
+import { MODEL_METRIC_META } from '@/lib/utils/constants'
 import { buildMapOptions } from '@/lib/charts/mapOptions'
 import { Toggle } from '@/components/ui/toggle'
 
@@ -25,7 +25,7 @@ export function CoverageMap() {
 
   const features = selectedProvince ? zones : provinces
   const mapName = selectedProvince ? 'drc-zones' : 'drc-provinces'
-  const metricMeta = METRIC_META[selectedMetric]
+  const metricMeta = MODEL_METRIC_META[selectedMetric]
 
   // Zoom into the selected province's bbox. Zone drill-down does not zoom
   // further — max zoom is the province level.

@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 import { useDashboardStore } from '@/store/dashboardStore'
 import { useData } from '@/context/DataContext'
-import { normalizeAreaName } from '@/lib/ecvVaccCov'
-import { useZoneData } from './useZoneData'
+import { normalizeAreaName } from '@/lib/utils/ecvVaccCov'
+import { useZoneData } from '../useZoneData'
 import type { EcvVaccCovRow } from '@/types'
 
 // Picks the single ecv_vaccination_coverage.csv row matching the ribbon's

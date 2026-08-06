@@ -4,7 +4,7 @@ import { useDashboardStore } from '@/store/dashboardStore'
 import { useProvinceData } from '@/hooks/useProvinceData'
 import { useZoneData } from '@/hooks/useZoneData'
 import { useData } from '@/context/DataContext'
-import { METRIC_META } from '@/lib/dataUtils'
+import { MODEL_METRIC_META } from '@/lib/utils/constants'
 import { buildBarOptions } from '@/lib/charts/barOptions'
 
 type BarDataType = 'coverage' | 'children' | 'births'
@@ -23,7 +23,7 @@ export function BarChart() {
   const zones = useZoneData(selectedProvince)
 
   const rows = selectedProvince ? zones : provinces
-  const metricMeta = METRIC_META[selectedMetric]
+  const metricMeta = MODEL_METRIC_META[selectedMetric]
 
   // Determine suffix and data column based on barDataType
   let suffix = '%'

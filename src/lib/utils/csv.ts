@@ -1,5 +1,4 @@
-// Minimal CSV parser: handles quoted fields (with escaped "" and embedded
-// commas), no external dependency needed for our simple tabular data files.
+// Minimal CSV parser: handles quoted fields (with escaped "" and embedded commas), no external dependency needed for our simple tabular data files.
 // Not built to handle multi-line quoted fields.
 function parseCsvLine(line: string): string[] {
     const cells: string[] = []

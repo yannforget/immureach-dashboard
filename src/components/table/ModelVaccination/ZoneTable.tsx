@@ -8,7 +8,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useDashboardStore } from '@/store/dashboardStore'
-import { METRIC_KEYS, METRIC_META } from '@/lib/dataUtils'
+import { MODEL_METRIC_KEYS, MODEL_METRIC_META } from '@/lib/utils/constants'
 import type { ZoneRow } from '@/types'
 
 interface ZoneTableProps {
@@ -86,8 +86,8 @@ export function ZoneTable({ rows }: ZoneTableProps) {
               >
                 Births/Year{sortKey === 'births' ? (sortDirection === 'asc' ? ' ▲' : ' ▼') : null}
               </TableHead>
-              {METRIC_KEYS.map(key => {
-                const meta = METRIC_META[key]
+              {MODEL_METRIC_KEYS.map(key => {
+                const meta = MODEL_METRIC_META[key]
                 return (
                   <TableHead
                     key={key}
@@ -126,8 +126,8 @@ export function ZoneTable({ rows }: ZoneTableProps) {
                       : '—'}
                   </div>
                 </TableCell>
-                {METRIC_KEYS.map(key => {
-                  const meta = METRIC_META[key]
+                {MODEL_METRIC_KEYS.map(key => {
+                  const meta = MODEL_METRIC_META[key]
                   const value = (row.properties as any)[key]
                   const countValue = (row.properties as any)[meta.countKey]
                   const displayValue = typeof value === 'number'
