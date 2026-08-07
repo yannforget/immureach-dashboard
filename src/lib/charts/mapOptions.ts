@@ -16,6 +16,7 @@ interface MapConfig {
   antenneOverlay?: AntenneGroup[]
 }
 
+type MetricProperties = Partial<Record<MetricKey, number | null>>
 export function buildMapOptions(config: MapConfig): EChartsOption {
   const { features, metric, isZeroDose, mapName, boundingCoords, antenneOverlay } = config
 
@@ -39,18 +40,20 @@ export function buildMapOptions(config: MapConfig): EChartsOption {
   // Collect numeric coverage values for colorscale bounds. Null predictions
   // (ungauged zones) are excluded so they don't drag the scale.
   const values = features
-    .map(f => (f.properties as any)[metric])
+    .map(f => (f.properties as MetricProperties)[metric])
     .filter((v): v is number => typeof v === 'number')
     .map(v => v * 100)
 
-  let { min, max } = getColorScaleBounds(values)
+  const bounds = getColorScaleBounds(values)
+  const min = bounds.min
+  let max = bounds.max
 
   if (isZeroDose && max < 10) {
     max = 10
   }
 
   const dataSeries = features.map(f => {
-    const rawValue = (f.properties as any)[metric]
+    const rawValue = (f.properties as MetricProperties)[metric]
     const value = typeof rawValue === 'number' ? rawValue * 100 : null
     // mapKey matches the registered map shape (raw province-prefixed name),
     // so two zones with the same cleaned name (e.g. "Bili") stay distinct.
@@ -108,8 +111,7 @@ export function buildMapOptions(config: MapConfig): EChartsOption {
   // SVG path for the antenne head marker: a small broadcast-tower silhouette
   // (triangular body, two crossbars, antenna spike). Drawn in the group's
   // colour so the marker, label, and zone fill all read as one cluster.
-  const ANTENNE_ICON =
-    'path://M0,-12 L-8,10 L8,10 Z M-4,3 L4,3 M-2,-4 L2,-4 M0,-12 L0,-16'
+  const ANTENNE_ICON = 'path://M0,-12 L-8,10 L8,10 Z M-4,3 L4,3 M-2,-4 L2,-4 M0,-12 L0,-16'
 
   if (antenneOverlay) {
     const markerData = antenneOverlay
@@ -226,8 +228,8 @@ export function buildMapOptions(config: MapConfig): EChartsOption {
       emphasis: { label: { show: false } },
       ...(geoRegions ? { regions: geoRegions } : {}),
       ...(boundingCoords ? { boundingCoords } : {}),
-    } as any,
-    series: series as any,
+    } as EChartsOption['geo'],
+    series, //: series as any,
   }
 
   return option

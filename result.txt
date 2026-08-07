@@ -11,32 +11,21 @@
 │   │   │   └── COD_population_v4_4_gridded
 │   │   └── immureach
 │   │       └── indicators_households_complete.csv
-│   ├── output
-│   │   ├── accessibility
-│   │   ├── boundaries
-│   │   ├── indicators
-│   │   ├── key_ecv.csv
-│   │   └── population
 │   ├── provinces.geojson
 │   └── zones.geojson
 ├── docs
 │   ├── dashboard.md
 │   └── data.md
+├── eslint.config.ts
 ├── index.html
 ├── node_modules
-│   ├── @alloc
-│   │   └── quick-lru
-│   │       ├── index.d.ts
-│   │       ├── index.js
-│   │       ├── license
-│   │       ├── package.json
-│   │       └── readme.md
 ├── package-lock.json
 ├── package.json
 ├── postcss.config.js
 ├── public
 │   └── data
 │       ├── ecv_vaccination_coverage.csv
+│       ├── indicators
 │       ├── key_ecv.csv
 │       ├── profile.json
 │       ├── provinces.geojson
@@ -57,44 +46,49 @@
 │   ├── App.tsx
 │   ├── components
 │   │   ├── Breadcrumb.tsx
-│   │   ├── IndicatorCardECV.tsx
-│   │   ├── IndicatorCardZeroDose.tsx
-│   │   ├── IndicatorCardsECV.tsx
-│   │   ├── IndicatorCardsZeroDose.tsx
 │   │   ├── Notes.tsx
 │   │   ├── PlaceholderPanel.tsx
 │   │   ├── ProfilingPanel.tsx
 │   │   ├── Ribbon.tsx
 │   │   ├── YearSelector.tsx
+│   │   ├── cards
+│   │   │   ├── EcvIndicatorCard.tsx
+│   │   │   ├── EcvIndicatorCardGrid.tsx
+│   │   │   ├── ModelIndicatorCard.tsx
+│   │   │   ├── ModelIndicatorCardGrid.tsx
+│   │   │   └── constants.ts
 │   │   ├── charts
 │   │   │   ├── AccessibilityChart.tsx
 │   │   │   ├── BarChart.tsx
-│   │   │   ├── CoverageMap.tsx
 │   │   │   ├── DumbbellChart.tsx
-│   │   │   ├── EcvVaccineBarChart.tsx
-│   │   │   └── EcvZeroDoseMap.tsx
+│   │   │   └── EcvVaccineBarChart.tsx
 │   │   ├── layout
 │   │   │   ├── DashboardGrid.tsx
 │   │   │   └── Header.tsx
+│   │   ├── maps
+│   │   │   ├── CoverageMap.tsx
+│   │   │   └── EcvZeroDoseMap.tsx
 │   │   ├── table
-│   │   │   ├── DataTable.tsx
-│   │   │   ├── ProvinceTable.tsx
-│   │   │   ├── ZoneDetail.tsx
-│   │   │   └── ZoneTable.tsx
+│   │   │   ├── EcvVaccination
+│   │   │   └── ModelVaccination
+│   │   │       ├── ModelVaccinationDataTable.tsx
+│   │   │       ├── ProvinceTable.tsx
+│   │   │       ├── ZoneDetail.tsx
+│   │   │       └── ZoneTable.tsx
 │   │   └── ui
 │   │       ├── button.tsx
-│   │       ├── savebutton.tsx
 │   │       ├── table.tsx
 │   │       ├── tabs.tsx
 │   │       └── toggle.tsx
 │   ├── context
 │   │   └── DataContext.tsx
 │   ├── hooks
+│   │   ├── ecv
+│   │   │   ├── useEcvVaccCovRow.ts
+│   │   │   ├── useEcvZeroDoseMapData.ts
+│   │   │   └── useKeyEcvData.ts
 │   │   ├── useAccessibilityProfile.ts
-│   │   ├── useEcvVaccCovRow.ts
-│   │   ├── useEcvZeroDoseMapData.ts
 │   │   ├── useIndicatorComparison.ts
-│   │   ├── useKeyEcvData.ts
 │   │   ├── useProvinceAntennes.ts
 │   │   ├── useProvinceData.ts
 │   │   ├── useTableData.ts
@@ -109,10 +103,12 @@
 │   │   │   ├── ecvMapOptions.ts
 │   │   │   ├── mapOptions.ts
 │   │   │   └── theme.ts
-│   │   ├── csv.ts
-│   │   ├── dataUtils.ts
-│   │   ├── ecvVaccCov.ts
-│   │   └── utils.ts
+│   │   └── utils
+│   │       ├── constants.ts
+│   │       ├── csv.ts
+│   │       ├── dataUtils.ts
+│   │       ├── ecvVaccCov.ts
+│   │       └── utils.ts
 │   ├── main.tsx
 │   ├── store
 │   │   └── dashboardStore.ts

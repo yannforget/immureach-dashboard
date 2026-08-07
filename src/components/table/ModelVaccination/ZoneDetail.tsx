@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { MODEL_METRIC_KEYS, MODEL_METRIC_META } from '@/lib/utils/constants'
 import { useProvinceData } from '@/hooks/useProvinceData'
 import type { MetricKey, ProvinceRow, ZoneRow } from '@/types'

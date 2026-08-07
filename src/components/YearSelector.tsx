@@ -1,3 +1,4 @@
+import React from 'react'
 import { useDashboardStore } from '@/store/dashboardStore'
 import { useData } from '@/context/DataContext'
 import type { Year } from '@/types'
@@ -17,11 +18,10 @@ export function YearSelector() {
           <button
             key={y}
             onClick={() => setSelectedYear(y)}
-            className={`px-3 py-1 text-xs font-medium rounded-sm transition-colors ${
-              selectedYear === y
+            className={`px-3 py-1 text-xs font-medium rounded-sm transition-colors ${selectedYear === y
                 ? 'bg-white text-teal-700 shadow-sm'
                 : 'text-slate-600 hover:text-slate-900'
-            }`}
+              }`}
           >
             {y}
           </button>

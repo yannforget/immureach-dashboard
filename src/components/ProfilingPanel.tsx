@@ -1,3 +1,4 @@
+import React from 'react';
 import { AccessibilityChart } from './charts/AccessibilityChart'
 import { DumbbellChart } from './charts/DumbbellChart'
 

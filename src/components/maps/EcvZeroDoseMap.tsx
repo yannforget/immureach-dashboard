@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import React, { useRef } from 'react'
 import EChartsReact from 'echarts-for-react'
 import { useDashboardStore } from '@/store/dashboardStore'
 import { useData } from '@/context/DataContext'

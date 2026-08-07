@@ -1,4 +1,5 @@
 // import { Breadcrumb } from '../Breadcrumb'
+import React from 'react'
 import { Ribbon } from '../Ribbon'
 import { Notes } from '../Notes'
 import { PlaceholderPanel } from '../PlaceholderPanel'

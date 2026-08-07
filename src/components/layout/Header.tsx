@@ -1,3 +1,4 @@
+import React from 'react'
 export function Header() {
   return (
     <header className="border-b border-slate-200 bg-white shadow-sm">

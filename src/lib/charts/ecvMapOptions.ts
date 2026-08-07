@@ -16,7 +16,9 @@ export function buildEcvZeroDoseMapOptions(config: EcvMapConfig): EChartsOption 
   const byMapKey = new Map(values.map(v => [v.mapKey, v]))
 
   const numeric = values.map(v => v.pct).filter((v): v is number => typeof v === 'number')
-  let { min, max } = getColorScaleBounds(numeric)
+  const bounds = getColorScaleBounds(numeric)
+  const min = bounds.min
+  let max = bounds.max
   // Zero-dose rates are usually low single digits to low double digits — keep
   // a minimum spread so the scale doesn't collapse to a single color.
   if (max < 10) max = 10

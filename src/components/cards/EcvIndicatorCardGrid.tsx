@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { EcvIndicatorCard } from './EcvIndicatorCard'
 import { useKeyEcvData } from '@/hooks/ecv/useKeyEcvData'
 

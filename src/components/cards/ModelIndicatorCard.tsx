@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { useDashboardStore } from '@/store/dashboardStore'
 import type { MetricKey } from '@/types'
 import { PRED_VACCINE_DESCRIPTIONS } from './constants'

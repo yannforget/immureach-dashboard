@@ -1,3 +1,4 @@
+import React from 'react'
 import { DataProvider } from './context/DataContext'
 import { Header } from './components/layout/Header'
 import { DashboardGrid } from './components/layout/DashboardGrid'

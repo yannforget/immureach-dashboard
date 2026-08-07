@@ -114,15 +114,15 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         // Bas Uele and Nord Ubangi).
         const processedZones = (zonesGeo.features as any[]).map(
           (feature: any, index: number) => {
-            const props = feature.properties as any
-            const provinceName = cleanName(props.q101 || '')
+            const zoneProps = feature.properties as any
+            const provinceName = cleanName(zoneProps.q101 || '')
             return {
               id: `zone-${index}`,
-              displayName: cleanName(props.q103 || ''),
-              mapKey: props.q103 || '',
+              displayName: cleanName(zoneProps.q103 || ''),
+              mapKey: zoneProps.q103 || '',
               provinceId: provinceName,
               centroid: bboxCenter(computeBbox(feature.geometry)),
-              properties: props,
+              properties: zoneProps,
             }
           }
         )
