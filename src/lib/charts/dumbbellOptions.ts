@@ -1,5 +1,5 @@
 import type { EChartsOption } from 'echarts'
-import type { IndicatorRow } from '@/hooks/useIndicatorComparison'
+import type { IndicatorRow } from '@/hooks/model/useIndicatorComparison'
 
 interface DumbbellConfig {
   items: IndicatorRow[]

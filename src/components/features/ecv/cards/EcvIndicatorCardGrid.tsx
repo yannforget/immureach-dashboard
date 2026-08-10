@@ -5,7 +5,7 @@ import { useKeyEcvData } from '@/hooks/ecv/useKeyEcvData'
 const formatNumber = (v: number | null): string => (v == null ? '—' : Math.round(v).toLocaleString())
 const formatPercent = (v: number | null): string => (v == null ? '—' : `${Math.round(v)}%`)
 
-export function IndicatorCardsECV() {
+export function EcvIndicatorCardGrid() {
     const row = useKeyEcvData()
 
     const cards = useMemo(

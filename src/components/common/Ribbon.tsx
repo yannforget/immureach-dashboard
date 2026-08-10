@@ -1,9 +1,9 @@
 import React from 'react'
 import { useDashboardStore } from '@/store/dashboardStore'
 import { useData } from '@/context/DataContext'
-import { useProvinceData } from '@/hooks/useProvinceData'
-import { useZoneData } from '@/hooks/useZoneData'
-import { Tabs, TabsList, TabsTrigger } from '../components/ui/tabs'
+import { useProvinceData } from '@/hooks/common/useProvinceData'
+import { useZoneData } from '@/hooks/common/useZoneData'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { DashboardSection, Year } from '@/types'
 
 const SECTIONS: { value: DashboardSection; label: string }[] = [

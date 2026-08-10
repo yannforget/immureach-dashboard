@@ -2,8 +2,8 @@ import { useMemo } from 'react'
 import { useData } from '@/context/DataContext'
 import { useDashboardStore } from '@/store/dashboardStore'
 import { normalizeAreaName } from '@/lib/utils/ecvVaccCov'
-import { useProvinceData } from '../useProvinceData'
-import { useZoneData } from '../useZoneData'
+import { useProvinceData } from '../common/useProvinceData'
+import { useZoneData } from '../common/useZoneData'
 import type { ProvinceRow, ZoneRow } from '@/types'
 
 export interface EcvMapFeatureValue {

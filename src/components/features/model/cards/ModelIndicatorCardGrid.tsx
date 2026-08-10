@@ -1,11 +1,11 @@
 import React, { useMemo } from 'react'
 import { ModelIndicatorCard } from './ModelIndicatorCard'
 import { useDashboardStore } from '@/store/dashboardStore'
-import { useProvinceData } from '@/hooks/useProvinceData'
-import { useZoneData } from '@/hooks/useZoneData'
+import { useProvinceData } from '@/hooks/common/useProvinceData'
+import { useZoneData } from '@/hooks/common/useZoneData'
 import { MODEL_METRIC_KEYS, MODEL_METRIC_META } from '@/lib/utils/constants'
 
-export function IndicatorCardsZeroDose() {
+export function ModelIndicatorCardGrid() {
   const selectedProvince = useDashboardStore(s => s.selectedProvince)
   const selectedZoneId = useDashboardStore(s => s.selectedZoneId)
   const provinces = useProvinceData()

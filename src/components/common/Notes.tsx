@@ -5,8 +5,7 @@ interface NoteProps {
 }
 
 /**
- * Small attribution card, styled to match the Ribbon
- * (rounded-lg border border-slate-200 bg-white shadow-sm) and full width.
+ * Small attribution card, styled to match the Ribbon (rounded-lg border border-slate-200 bg-white shadow-sm) and full width.
  */
 export function Notes({ children }: NoteProps) {
     return (

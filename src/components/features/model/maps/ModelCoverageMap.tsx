@@ -1,15 +1,15 @@
 import React, { useRef } from 'react'
 import EChartsReact from 'echarts-for-react'
 import { useDashboardStore } from '@/store/dashboardStore'
-import { useProvinceData } from '@/hooks/useProvinceData'
-import { useZoneData } from '@/hooks/useZoneData'
-import { useProvinceAntennes } from '@/hooks/useProvinceAntennes'
+import { useProvinceData } from '@/hooks/common/useProvinceData'
+import { useZoneData } from '@/hooks/common/useZoneData'
+import { useProvinceAntennes } from '@/hooks/common/useProvinceAntennes'
 import { useData } from '@/context/DataContext'
 import { MODEL_METRIC_META } from '@/lib/utils/constants'
 import { buildMapOptions } from '@/lib/charts/mapOptions'
 import { Toggle } from '@/components/ui/toggle'
 
-export function CoverageMap() {
+export function ModelCoverageMap() {
   const chartRef = useRef<EChartsReact>(null)
   const selectedProvince = useDashboardStore(s => s.selectedProvince)
   const selectedMetric = useDashboardStore(s => s.selectedMetric)

@@ -1,10 +1,10 @@
 import React from 'react'
-import { useTableData } from '@/hooks/useTableData'
+import { useTableData } from '@/hooks/common/useTableData'
 import { ProvinceTable } from './ProvinceTable'
 import { ZoneTable } from './ZoneTable'
 import { ZoneDetail } from './ZoneDetail'
 
-export function DataTable() {
+export function ModelVaccinationDataTable() {
   const { mode, rows, selectedZoneName } = useTableData()
 
   if (mode === 'province') {

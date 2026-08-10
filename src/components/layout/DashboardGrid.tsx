@@ -1,16 +1,9 @@
-// import { Breadcrumb } from '../Breadcrumb'
 import React from 'react'
-import { Ribbon } from '../Ribbon'
-import { Notes } from '../Notes'
-import { PlaceholderPanel } from '../PlaceholderPanel'
-import { IndicatorCardsZeroDose } from '../cards/ModelIndicatorCardGrid'
-import { IndicatorCardsECV } from '../cards/EcvIndicatorCardGrid'
-import { CoverageMap } from '../maps/CoverageMap'
-import { BarChart } from '../charts/BarChart'
-import { EcvZeroDoseMap } from '../maps/EcvZeroDoseMap'
-import { EcvVaccineBarChart } from '../charts/EcvVaccineBarChart'
-import { DataTable } from '../table/ModelVaccination/ModelVaccinationDataTable'
-import { ProfilingPanel } from '../ProfilingPanel'
+import { Ribbon } from '../common/Ribbon'
+import { Notes } from '../common/Notes'
+import { PlaceholderPanel } from '../common/PlaceholderPanel'
+import { EcvIndicatorCardGrid, EcvZeroDoseMap, EcvVaccineBarChart } from '@/components/features/ecv'
+import { ModelIndicatorCardGrid, ModelCoverageMap, ModelBarChart, ModelVaccinationDataTable, ProfilingPanel } from '@/components/features/model'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
 import { useDashboardStore } from '@/store/dashboardStore'
 import type { ViewMode } from '@/types'
@@ -29,7 +22,7 @@ export function DashboardGrid() {
 
       {activeSection === 'ecv' && (<section className="mb-8">
         {/* Indicator Cards */}
-        <IndicatorCardsECV />
+        <EcvIndicatorCardGrid />
         {/* Charts Grid: zero-dose map (left) + vaccine coverage bar chart (right) */}
         <section className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
           <div className="h-96 overflow-hidden rounded-lg border border-slate-200 bg-white">
@@ -62,15 +55,15 @@ export function DashboardGrid() {
         <>
           {/* Indicator Cards */}
           <section className="mb-8">
-            <IndicatorCardsZeroDose />
+            <ModelIndicatorCardGrid />
           </section>
           {/* Charts Grid */}
           <section className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
             <div className="h-96 overflow-hidden rounded-lg border border-slate-200 bg-white">
-              <CoverageMap />
+              <ModelCoverageMap />
             </div>
             <div className="h-96 overflow-hidden rounded-lg border border-slate-200 bg-white">
-              <BarChart />
+              <ModelBarChart />
             </div>
           </section>
 
@@ -85,7 +78,7 @@ export function DashboardGrid() {
               </div>
               <TabsContent value="data">
                 <div className="rounded-lg border border-slate-200 bg-white">
-                  <DataTable />
+                  <ModelVaccinationDataTable />
                 </div>
               </TabsContent>
               <TabsContent value="profiling">

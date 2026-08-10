@@ -1,15 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react'
 import EChartsReact from 'echarts-for-react'
 import { useDashboardStore } from '@/store/dashboardStore'
-import { useProvinceData } from '@/hooks/useProvinceData'
-import { useZoneData } from '@/hooks/useZoneData'
+import { useProvinceData } from '@/hooks/common/useProvinceData'
+import { useZoneData } from '@/hooks/common/useZoneData'
 import { useData } from '@/context/DataContext'
 import { MODEL_METRIC_META } from '@/lib/utils/constants'
 import { buildBarOptions } from '@/lib/charts/barOptions'
 
 type BarDataType = 'coverage' | 'children' | 'births'
 
-export function BarChart() {
+export function ModelBarChart() {
   const [barDataType, setBarDataType] = useState<BarDataType>('coverage')
   const chartRef = useRef<EChartsReact>(null)
   const selectedProvince = useDashboardStore(s => s.selectedProvince)

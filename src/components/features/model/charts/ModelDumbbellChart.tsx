@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react'
 import EChartsReact from 'echarts-for-react'
-import { useIndicatorComparison } from '@/hooks/useIndicatorComparison'
+import { useIndicatorComparison } from '@/hooks/model/useIndicatorComparison'
 import { buildDumbbellOptions } from '@/lib/charts/dumbbellOptions'
 
-export function DumbbellChart() {
+export function ModelDumbbellChart() {
   const comparison = useIndicatorComparison()
 
   const options = useMemo(() => {

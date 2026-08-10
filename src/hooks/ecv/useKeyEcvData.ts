@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useDashboardStore } from '@/store/dashboardStore'
 import { useData } from '@/context/DataContext'
-import { useZoneData } from '../useZoneData'
+import { useZoneData } from '../common/useZoneData'
 import type { KeyEcvRow } from '@/types'
 
 // Picks the single key_ecv.csv row matching the ribbon's 3 filters
