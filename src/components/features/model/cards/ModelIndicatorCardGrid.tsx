@@ -16,9 +16,7 @@ export function ModelIndicatorCardGrid() {
   // pre-computed pred_*_count columns (count / pop_6_24mo).
   const cards = useMemo(() => {
     const zoneRow = selectedZoneId ? zones.find(z => z.id === selectedZoneId) : undefined
-    const provinceRow = selectedProvince
-      ? provinces.find(p => p.displayName === selectedProvince)
-      : undefined
+    const provinceRow = selectedProvince ? provinces.find(p => p.displayName === selectedProvince) : undefined
     const scopeRow = zoneRow ?? provinceRow
 
     return MODEL_METRIC_KEYS.map(metricKey => {

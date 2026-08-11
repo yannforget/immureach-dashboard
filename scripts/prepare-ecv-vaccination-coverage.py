@@ -115,7 +115,7 @@ def process_file(csv_path: Path) -> pd.DataFrame:
                 {
                     "nb_children": g["nb_children"].sum(),
                     **{
-                        col: weighted_mean(g[col], g["nb_children"])
+                        col: weighted_mean(g[col], g["nb_children"]).round(1)
                         for col in weighted_cols
                     },
                 }
@@ -134,7 +134,7 @@ def process_file(csv_path: Path) -> pd.DataFrame:
                 "zone": None,
                 "nb_children": df["nb_children"].sum(),
                 **{
-                    col: weighted_mean(df[col], df["nb_children"])
+                    col: weighted_mean(df[col], df["nb_children"]).round(1)
                     for col in weighted_cols
                 },
                 "level": "national",

@@ -126,6 +126,13 @@ export const ECV_METRIC_META: Record<EcvMetricKey, EcvMetricMeta> = {
 // indicators (possession_carte, couverture_de_base, couverture_complete).
 
 export const ECV_BAR_METRIC_KEYS: EcvMetricKey[] = ECV_METRIC_KEYS.filter(
-    k => !['zero_dose', 'possession_carte', 'couverture_de_base', 'couverture_complete'].includes(k)
+    k => !['possession_carte', 'couverture_de_base', 'couverture_complete'].includes(k)
 )
+
+// Variables offered on the ECV evolution line chart: every vaccine-dose
+// indicator plus zero-dose (the metrics the user cares about), reusing
+// ECV_BAR_METRIC_KEYS' exclusion of the summary/possession indicators.
+export const ECV_LINE_METRIC_KEYS: EcvMetricKey[] = [
+    ...ECV_BAR_METRIC_KEYS,
+];
 

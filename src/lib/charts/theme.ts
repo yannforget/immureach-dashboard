@@ -2,6 +2,25 @@
 // province in the current data has more than ~6 antennes, so 8 is plenty.
 // Avoids teal (the dashboard accent) and red (zero-dose) to keep the
 // overlay readable against the rest of the UI.
+export const ECV_LINE_PALETTE: string[] = [
+  '#0d9488', // teal-600
+  '#f59e0b', // amber-500
+  '#2563eb', // blue-600
+  '#f43f5e', // rose-500
+  '#7c3aed', // violet-600
+  '#059669', // emerald-600
+  '#db2777', // pink-600
+  '#0891b2', // cyan-600
+  '#d97706', // amber-700
+  '#4f46e5', // indigo-600
+  '#65a30d', // lime-600
+  '#c026d3', // fuchsia-600
+];
+
+// Zero-dose is the dashboard's headline indicator — always red on the ECV
+// evolution line chart, never overridden by the categorical palette.
+export const ZERO_DOSE_COLOR = '#dc2626'; // red-600
+
 export const ANTENNE_PALETTE: string[] = [
   '#6366f1', // indigo-500
   '#f59e0b', // amber-500

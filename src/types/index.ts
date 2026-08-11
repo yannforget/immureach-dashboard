@@ -39,8 +39,7 @@ export interface ProvinceProperties {
 
 export interface ZoneProperties extends ProvinceProperties {
   q103: string;
-  // PEV/EPI antenne (operational hub) the zone reports to. Only a few
-  // provinces have antenne assignments — null elsewhere.
+  // PEV/EPI antenne (operational hub) the zone reports to. Only a few provinces have antenne assignments — null elsewhere.
   antenne: string | null;
 }
 

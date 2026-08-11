@@ -37,8 +37,8 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   selectedZoneId: null,
   hoveredZoneId: null,
   viewMode: 'data',
-  selectedYear: 2023,
-  showAntenne: false,
+  selectedYear: 2022,
+  showAntenne: true,
 
   setActiveSection: (section) => set({ activeSection: section }),
 

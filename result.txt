@@ -6,7 +6,7 @@
 │   │   ├── dhs
 │   │   ├── espk
 │   │   │   ├── ECV2022_vacc_cov_ZS.csv
-│   │   │   └── ECV_2022_Couvertures-vaccinales.xlsx
+│   │   │   └── RAW_ECV_2022_Couvertures-vaccinales.xlsx
 │   │   ├── grid3
 │   │   │   └── COD_population_v4_4_gridded
 │   │   └── immureach
@@ -18,7 +18,6 @@
 │   └── data.md
 ├── eslint.config.ts
 ├── index.html
-├── node_modules
 ├── package-lock.json
 ├── package.json
 ├── postcss.config.js
@@ -33,6 +32,7 @@
 ├── pyproject.toml
 ├── result.txt
 ├── scripts
+│   ├── add-2023-ecv-vaccination-coverage.py
 │   ├── aggregate-accessibility.py
 │   ├── aggregate-indicators.py
 │   ├── aggregate-population.py
@@ -45,36 +45,43 @@
 ├── src
 │   ├── App.tsx
 │   ├── components
-│   │   ├── Breadcrumb.tsx
-│   │   ├── Notes.tsx
-│   │   ├── PlaceholderPanel.tsx
-│   │   ├── ProfilingPanel.tsx
-│   │   ├── Ribbon.tsx
-│   │   ├── YearSelector.tsx
-│   │   ├── cards
-│   │   │   ├── EcvIndicatorCard.tsx
-│   │   │   ├── EcvIndicatorCardGrid.tsx
-│   │   │   ├── ModelIndicatorCard.tsx
-│   │   │   ├── ModelIndicatorCardGrid.tsx
-│   │   │   └── constants.ts
-│   │   ├── charts
-│   │   │   ├── AccessibilityChart.tsx
-│   │   │   ├── BarChart.tsx
-│   │   │   ├── DumbbellChart.tsx
-│   │   │   └── EcvVaccineBarChart.tsx
+│   │   ├── common
+│   │   │   ├── Notes.tsx
+│   │   │   ├── PlaceholderPanel.tsx
+│   │   │   ├── Ribbon.tsx
+│   │   │   └── YearSelector.tsx
+│   │   ├── features
+│   │   │   ├── ecv
+│   │   │   │   ├── cards
+│   │   │   │   │   ├── EcvIndicatorCard.tsx
+│   │   │   │   │   └── EcvIndicatorCardGrid.tsx
+│   │   │   │   ├── charts
+│   │   │   │   │   └── EcvVaccineBarChart.tsx
+│   │   │   │   ├── index.ts
+│   │   │   │   ├── maps
+│   │   │   │   │   └── EcvZeroDoseMap.tsx
+│   │   │   │   └── tables
+│   │   │   └── model
+│   │   │       ├── ProfilingPanel.tsx
+│   │   │       ├── cards
+│   │   │       │   ├── ModelIndicatorCard.tsx
+│   │   │       │   ├── ModelIndicatorCardGrid.tsx
+│   │   │       │   └── constants.ts
+│   │   │       ├── charts
+│   │   │       │   ├── ModelAccessibilityChart.tsx
+│   │   │       │   ├── ModelBarChart.tsx
+│   │   │       │   └── ModelDumbbellChart.tsx
+│   │   │       ├── index.ts
+│   │   │       ├── maps
+│   │   │       │   └── ModelCoverageMap.tsx
+│   │   │       └── tables
+│   │   │           ├── ModelVaccinationDataTable.tsx
+│   │   │           ├── ProvinceTable.tsx
+│   │   │           ├── ZoneDetail.tsx
+│   │   │           └── ZoneTable.tsx
 │   │   ├── layout
 │   │   │   ├── DashboardGrid.tsx
 │   │   │   └── Header.tsx
-│   │   ├── maps
-│   │   │   ├── CoverageMap.tsx
-│   │   │   └── EcvZeroDoseMap.tsx
-│   │   ├── table
-│   │   │   ├── EcvVaccination
-│   │   │   └── ModelVaccination
-│   │   │       ├── ModelVaccinationDataTable.tsx
-│   │   │       ├── ProvinceTable.tsx
-│   │   │       ├── ZoneDetail.tsx
-│   │   │       └── ZoneTable.tsx
 │   │   └── ui
 │   │       ├── button.tsx
 │   │       ├── table.tsx
@@ -83,16 +90,18 @@
 │   ├── context
 │   │   └── DataContext.tsx
 │   ├── hooks
+│   │   ├── common
+│   │   │   ├── useProvinceAntennes.ts
+│   │   │   ├── useProvinceData.ts
+│   │   │   ├── useTableData.ts
+│   │   │   └── useZoneData.ts
 │   │   ├── ecv
 │   │   │   ├── useEcvVaccCovRow.ts
 │   │   │   ├── useEcvZeroDoseMapData.ts
 │   │   │   └── useKeyEcvData.ts
-│   │   ├── useAccessibilityProfile.ts
-│   │   ├── useIndicatorComparison.ts
-│   │   ├── useProvinceAntennes.ts
-│   │   ├── useProvinceData.ts
-│   │   ├── useTableData.ts
-│   │   └── useZoneData.ts
+│   │   └── model
+│   │       ├── useAccessibilityProfile.ts
+│   │       └── useIndicatorComparison.ts
 │   ├── index.css
 │   ├── lib
 │   │   ├── charts
