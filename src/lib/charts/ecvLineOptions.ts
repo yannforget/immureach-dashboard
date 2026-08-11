@@ -1,13 +1,9 @@
 import type {
   EChartsOption,
   TooltipComponentFormatterCallbackParams,
-  CustomSeriesRenderItem,
-  CustomSeriesRenderItemAPI,
-  CustomSeriesRenderItemParams,
   LineSeriesOption,
-  CustomSeriesOption,
 } from 'echarts'
-import { ECV_LINE_PALETTE, ZERO_DOSE_COLOR } from './theme'
+import { ECV_LINE_COLORS, ECV_LINE_PALETTE } from './theme'
 import type { EcvLineSeries } from '@/hooks/ecv/useEcvEvolutionLineData'
 
 interface EcvLineConfig {
@@ -17,76 +13,70 @@ interface EcvLineConfig {
   scopeLabel: string
 }
 
-// Picks a series colour: zero-dose is always red (headline indicator), while
-// every other variable cycles the categorical palette. Palette slots are
-// counted over non-zero-dose series only, so zero-dose's red can never collide
-// with a palette colour regardless of selection order.
+// Picks a series colour from ECV_LINE_COLORS. Unknown metric keys cycle the fallback palette.
 function seriesColor(series: EcvLineSeries[], index: number): string {
-  if (series[index].key === 'zero_dose') return ZERO_DOSE_COLOR
-  const paletteIndex = series.slice(0, index).filter(s => s.key !== 'zero_dose').length
-  return ECV_LINE_PALETTE[paletteIndex % ECV_LINE_PALETTE.length]
+  const key = series[index].key
+  return ECV_LINE_COLORS[key] ?? ECV_LINE_PALETTE[index % ECV_LINE_PALETTE.length]
 }
 
-// Vertical 95%-CI whisker drawn with a `custom` series — ECharts has no
-// built-in error-bar series for line charts, so this mirrors the ECV bar
-// chart's CI overlay (a line + two end caps per point).
-const renderErrorBar: CustomSeriesRenderItem = (
-  _params: CustomSeriesRenderItemParams,
-  api: CustomSeriesRenderItemAPI,
-) => {
-  const categoryIndex = api.value(0)
-  const low = api.value(1)
-  const high = api.value(2)
-  if (low == null || high == null) return null
-
-  const lowPoint = api.coord([categoryIndex as number, low as number])
-  const highPoint = api.coord([categoryIndex as number, high as number])
-  const halfWidth = 5
-  const style = api.style({
-    stroke: api.visual('color') as string,
-    fill: undefined,
-    lineWidth: 1.5,
+// The 95% CI is drawn as a continuous band rather than one bar per year.
+// ECharts has no built-in band, so we fake it with two stacked line series
+// sharing a per-metric stack name: the first spans 0 → ciLow (transparent),
+// the second spans ciLow → ciHigh and carries the visible, translucent fill.
+// A missing CI bound collapses to the point value itself, so the band thins
+// to the line instead of drawing from/to 0. Both series share the line's name
+// so the legend toggles line + band together, and are silenced/excluded from
+// the tooltip.
+function buildBandSeries(
+  s: EcvLineSeries,
+  color: string,
+): [LineSeriesOption, LineSeriesOption] {
+  const lowerData = s.values.map((v, i) => s.ciLow[i] ?? v)
+  const upperData = s.values.map((v, i) => {
+    const low = s.ciLow[i] ?? v
+    const high = s.ciHigh[i] ?? v
+    if (low == null || high == null) return null
+    return high - low
   })
 
-  return {
-    type: 'group',
-    children: [
-      {
-        type: 'line',
-        shape: { x1: lowPoint[0], y1: lowPoint[1], x2: highPoint[0], y2: highPoint[1] },
-        style,
-      },
-      {
-        type: 'line',
-        shape: { x1: lowPoint[0] - halfWidth, y1: lowPoint[1], x2: lowPoint[0] + halfWidth, y2: lowPoint[1] },
-        style,
-      },
-      {
-        type: 'line',
-        shape: { x1: highPoint[0] - halfWidth, y1: highPoint[1], x2: highPoint[0] + halfWidth, y2: highPoint[1] },
-        style,
-      },
-    ],
+  const base: LineSeriesOption = {
+    name: s.name,
+    type: 'line',
+    stack: `ci-${s.key}`,
+    connectNulls: false,
+    symbol: 'none',
+    silent: true,
+    tooltip: { show: false },
+    z: 1,
+    itemStyle: { opacity: 0 },
+    lineStyle: { opacity: 0 },
   }
+
+  return [
+    {
+      ...base,
+      data: lowerData,
+      areaStyle: { opacity: 0 },
+    },
+    {
+      ...base,
+      data: upperData,
+      areaStyle: { color, opacity: 0.18 },
+    },
+  ]
 }
 
 // Line chart of ECV coverage rates across survey years — one line per
-// selected variable, each overlaid with a 95%-CI whisker per year. Nulls
-// create gaps (connectNulls: false) rather than drawing a 0. A dashed
+// selected variable, each overlaid with a translucent 95%-CI band. 
+// Nulls create gaps (connectNulls: false) rather than drawing a 0. A dashed
 // vertical markLine highlights the ribbon's selected year, so the single-year
 // filter still reads as the "current" point.
 export function buildEcvEvolutionLineOptions(config: EcvLineConfig): EChartsOption {
   const { years, series, selectedYear } = config
 
-  const chartSeries: (LineSeriesOption | CustomSeriesOption)[] = series.flatMap((s, i) => {
+  const chartSeries: LineSeriesOption[] = series.flatMap((s, i) => {
     const color = seriesColor(series, i)
-    // Falls back to the point value itself when a CI bound is missing, so the
-    // whisker collapses to a point instead of drawing from/to 0.
-    const errorBarData = s.values.map((v, yearIndex) => [
-      yearIndex,
-      s.ciLow[yearIndex] ?? v,
-      s.ciHigh[yearIndex] ?? v,
-    ])
+    const [ciLowSeries, ciHighSeries] = buildBandSeries(s, color)
 
     const lineSeries: LineSeriesOption = {
       name: s.name,
@@ -98,6 +88,7 @@ export function buildEcvEvolutionLineOptions(config: EcvLineConfig): EChartsOpti
       lineStyle: { width: 2 },
       itemStyle: { color },
       emphasis: { itemStyle: { color: '#fbbf24' } },
+      z: 2,
     }
     if (i === 0) {
       lineSeries.markLine = {
@@ -109,20 +100,10 @@ export function buildEcvEvolutionLineOptions(config: EcvLineConfig): EChartsOpti
       }
     }
 
-    const errorBarSeries: CustomSeriesOption = {
-      name: s.name,
-      type: 'custom',
-      coordinateSystem: 'cartesian2d',
-      renderItem: renderErrorBar,
-      data: errorBarData,
-      encode: { x: 0, y: [1, 2] },
-      itemStyle: { color },
-      tooltip: { show: false },
-      silent: true,
-      z: 3,
-    }
-
-    return [lineSeries, errorBarSeries]
+    // Line series must come first: the legend derives each item's colour from
+    // the first series sharing that name (getSeriesByName(name)[0]), and the
+    // transparent band series would otherwise make the legend icon invisible.
+    return [lineSeries, ciLowSeries, ciHighSeries]
   })
 
   const option: EChartsOption = {
