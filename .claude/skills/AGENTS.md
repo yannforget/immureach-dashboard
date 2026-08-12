@@ -8,7 +8,7 @@ This is a React + TypeScript web application.
 - Prefer existing components and utilities.
 - Avoid adding dependencies unless necessary.
 - Use TypeScript.
-- Never use npm or curl.
+- Never use npm or curl. Don't try to deploy the app.
 
 ## Skills
 
