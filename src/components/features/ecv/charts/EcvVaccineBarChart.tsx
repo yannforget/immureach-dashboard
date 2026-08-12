@@ -25,6 +25,7 @@ export function EcvVaccineBarChart() {
         value: metric?.pct ?? null,
         ciLow: metric?.ciLow ?? null,
         ciHigh: metric?.ciHigh ?? null,
+        color: key === 'zero_dose' ? '#822121' : undefined,
       }
     })
     .filter((item): item is EcvBarItem => item.value !== null)

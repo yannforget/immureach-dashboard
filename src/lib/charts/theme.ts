@@ -6,7 +6,7 @@ export const ECV_LINE_COLORS: Record<EcvMetricKey, string> = {
   possession_carte: '#0d9488',
   couverture_de_base: '#2563eb',
   couverture_complete: '#7c3aed',
-  zero_dose: '#dc2626',
+  zero_dose: '#822121',
   bcg: '#059669',
   penta1: '#f59e0b',
   penta2: '#ea580c',
