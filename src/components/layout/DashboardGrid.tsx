@@ -40,7 +40,7 @@ export function DashboardGrid() {
         <div className="mt-6">
           {/* Bottom page notes */}
           <Notes>
-            Données collectées en RDC par l'EPSK, et accessibles{' '}.
+            Données collectées en RDC par l'EPSK, et accessibles{' '}
             <a
               href="https://espkinshasa.net/note-dinformation-enquete-de-couverture-vaccinale-ecv-rdc-2023-01/"
               target="_blank"
@@ -49,6 +49,7 @@ export function DashboardGrid() {
             >
               ici
             </a>
+            .
           </Notes>
         </div>
       </section>

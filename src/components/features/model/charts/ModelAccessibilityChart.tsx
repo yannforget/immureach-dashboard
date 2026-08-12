@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import EChartsReact from 'echarts-for-react'
-import { useAccessibilityProfile } from '@/hooks/model/useAccessibilityProfile'
+import { useAccessibilityProfile } from '@/hooks'
 import { buildAccessibilityOptions } from '@/lib/charts/accessibilityOptions'
 
 export function ModelAccessibilityChart() {

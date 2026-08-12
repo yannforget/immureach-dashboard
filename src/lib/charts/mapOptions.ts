@@ -210,10 +210,7 @@ export function buildMapOptions(config: MapConfig): EChartsOption {
           outOfRange: {
             color: '#e5e7eb', // neutral grey for null / out-of-range values
           },
-          textStyle: {
-            color: '#475569',
-            fontSize: 12,
-          },
+          textStyle: { color: '#475569', fontSize: 12, },
           bottom: 20,
           left: 20,
           orient: 'vertical',

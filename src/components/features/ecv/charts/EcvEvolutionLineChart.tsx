@@ -3,8 +3,7 @@ import EChartsReact from 'echarts-for-react'
 import { ChevronDown, Download } from 'lucide-react'
 import { useDashboardStore } from '@/store/dashboardStore'
 import { useData } from '@/context/DataContext'
-import { useEcvEvolutionLineData } from '@/hooks/ecv/useEcvEvolutionLineData'
-import { useZoneData } from '@/hooks/common/useZoneData'
+import { useEcvEvolutionLineData, useZoneData } from '@/hooks'
 import { ECV_LINE_METRIC_KEYS, ECV_METRIC_META } from '@/lib/utils/constants'
 import { buildEcvEvolutionLineOptions } from '@/lib/charts/ecvLineOptions'
 import { buildEcvEvolutionCsv, buildScopeSlug, downloadDataUrl, downloadText } from '@/lib/utils/download'
@@ -150,6 +149,7 @@ export function EcvEvolutionLineChart() {
               option={options}
               theme="dashboard"
               style={{ width: '100%', height: '100%' }}
+              notMerge
               key={`ecv-line-${selectedProvince}-${selectedZoneId}`}
             />
           )}

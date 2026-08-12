@@ -1,6 +1,6 @@
 import type { EChartsOption } from 'echarts'
 import { getColorScaleBounds } from '@/lib/utils/dataUtils'
-import type { EcvMapFeatureValue } from '@/hooks/ecv/useEcvZeroDoseMapData'
+import type { EcvMapFeatureValue } from '@/hooks'
 
 interface EcvMapConfig {
   values: EcvMapFeatureValue[]

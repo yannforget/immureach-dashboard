@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import type { AntenneGroup, ZoneRow } from '@/types'
-import { useZoneData } from '@/hooks/common/useZoneData'
+import { useZoneData } from '@/hooks'
 import { ANTENNE_PALETTE } from '@/lib/charts/theme'
 
 // Returns the antenne groupings for the given province, or null if the

@@ -4,7 +4,7 @@ import type {
   LineSeriesOption,
 } from 'echarts'
 import { ECV_LINE_COLORS, ECV_LINE_PALETTE } from './theme'
-import type { EcvLineSeries } from '@/hooks/ecv/useEcvEvolutionLineData'
+import type { EcvLineSeries } from '@/hooks'
 
 interface EcvLineConfig {
   years: number[]

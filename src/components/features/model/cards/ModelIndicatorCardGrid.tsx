@@ -1,8 +1,7 @@
 import React, { useMemo } from 'react'
 import { ModelIndicatorCard } from './ModelIndicatorCard'
 import { useDashboardStore } from '@/store/dashboardStore'
-import { useProvinceData } from '@/hooks/common/useProvinceData'
-import { useZoneData } from '@/hooks/common/useZoneData'
+import { useProvinceData, useZoneData } from '@/hooks'
 import { MODEL_METRIC_KEYS, MODEL_METRIC_META } from '@/lib/utils/constants'
 
 export function ModelIndicatorCardGrid() {

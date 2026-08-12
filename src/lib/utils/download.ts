@@ -1,4 +1,4 @@
-import type { EcvLineData } from '@/hooks/ecv/useEcvEvolutionLineData'
+import type { EcvLineData } from '@/hooks'
 import type { EcvVaccCovRow, ZoneRow } from '@/types'
 import { normalizeAreaName } from '@/lib/utils/ecvVaccCov'
 

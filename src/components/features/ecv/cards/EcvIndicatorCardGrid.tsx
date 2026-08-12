@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import { EcvIndicatorCard } from './EcvIndicatorCard'
-import { useKeyEcvData } from '@/hooks/ecv/useKeyEcvData'
+import { useKeyEcvData } from '@/hooks'
 
 const formatNumber = (v: number | null): string => (v == null ? '—' : Math.round(v).toLocaleString())
 const formatPercent = (v: number | null): string => (v == null ? '—' : `${Math.round(v)}%`)

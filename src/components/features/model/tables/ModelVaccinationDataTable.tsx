@@ -1,5 +1,5 @@
 import React from 'react'
-import { useTableData } from '@/hooks/common/useTableData'
+import { useTableData } from '@/hooks'
 import { ProvinceTable } from './ProvinceTable'
 import { ZoneTable } from './ZoneTable'
 import { ZoneDetail } from './ZoneDetail'
