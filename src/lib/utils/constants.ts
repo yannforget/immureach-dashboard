@@ -136,3 +136,22 @@ export const ECV_LINE_METRIC_KEYS: EcvMetricKey[] = [
     ...ECV_BAR_METRIC_KEYS,
 ];
 
+// ECV CARACTERISTICS //
+
+// Human-readable French labels for the variable roots of
+// ecv_caracteristics.csv (`<root>_pct/_low/_high` column families). Roots
+// missing from this map fall back to the humanized column name in the hook.
+export const ECV_CARACTERISTIC_VARIABLE_LABELS: Record<string, string> = {
+    possession_carte: 'Possession de carte',
+    mere: 'Mère',
+    gardienne: 'Gardienne',
+};
+
+// Variables that belong to the *same* chart tab. Each entry is one tab:
+// "mere" and "gardienne" are two answers to the same question, so they are
+// grouped and drawn as stacked bars; every other variable (now and any
+// `<root>_pct` column added later) gets its own single-series tab.
+export const ECV_CARACTERISTIC_GROUPS: Record<string, { label: string; variables: string[] }> = {
+    mere_gardienne: { label: 'Mère / Gardienne', variables: ['mere', 'gardienne'] },
+};
+

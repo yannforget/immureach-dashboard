@@ -204,3 +204,25 @@ export interface EcvVaccCovRow {
   asEnq: number | null;
   metrics: Record<EcvMetricKey, EcvMetricValue>;
 }
+
+// A single `<root>_pct` value from the ECV household characteristics survey
+// (public/data/ecv_caracteristics.csv), with its optional 95% CI bounds.
+// Any of the three can be null when the source cell was empty/unparseable.
+export interface EcvCaracteristicValue {
+  pct: number | null;
+  low: number | null;
+  high: number | null;
+}
+
+// One row of public/data/ecv_caracteristics.csv. `province`/`zone` are only
+// populated for the matching `level`, mirroring KeyEcvRow. `values` is keyed
+// by the variable root (e.g. "possession_carte", "mere", "gardienne") so new
+// `<root>_pct/_low/_high` columns are picked up without type changes.
+export interface EcvCaracteristicsRow {
+  year: number;
+  level: ProfileScopeLevel;
+  province: string | null;
+  zone: string | null;
+  nbChildren: number | null;
+  values: Record<string, EcvCaracteristicValue>;
+}

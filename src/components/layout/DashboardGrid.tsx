@@ -2,7 +2,7 @@ import React from 'react'
 import { Ribbon } from '../common/Ribbon'
 import { Notes } from '../common/Notes'
 import { PlaceholderPanel } from '../common/PlaceholderPanel'
-import { EcvIndicatorCardGrid, EcvZeroDoseMap, EcvVaccineBarChart, EcvEvolutionLineChart } from '@/components/features/ecv'
+import { EcvIndicatorCardGrid, EcvZeroDoseMap, EcvVaccineBarChart, EcvEvolutionLineChart, EcvCaracteristicsChart } from '@/components/features/ecv'
 import { ModelIndicatorCardGrid, ModelCoverageMap, ModelBarChart, ModelVaccinationDataTable, ProfilingPanel } from '@/components/features/model'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
 import { useDashboardStore } from '@/store/dashboardStore'
@@ -33,8 +33,13 @@ export function DashboardGrid() {
               <EcvEvolutionLineChart />
             </div>
           </div>
-          <div className="h-96 overflow-hidden rounded-lg border border-slate-200 bg-white">
-            <EcvVaccineBarChart />
+          <div className="flex flex-col gap-6">
+            <div className="h-96 overflow-hidden rounded-lg border border-slate-200 bg-white">
+              <EcvVaccineBarChart />
+            </div>
+            <div className="h-96 overflow-hidden rounded-lg border border-slate-200 bg-white">
+              <EcvCaracteristicsChart />
+            </div>
           </div>
         </section>
         <div className="mt-6">

@@ -4,7 +4,8 @@ import { cleanName } from '@/lib/utils/dataUtils'
 import { parseCsv } from '@/lib/utils/csv'
 // import type { KeyEcvRow, ProfileData, ProfileScopeLevel, ProvinceRow, Year, ZoneRow } from '@/types'
 import { parseEcvVaccCovCsv } from '@/lib/utils/ecvVaccCov'
-import type { EcvVaccCovRow, KeyEcvRow, ProfileData, ProfileScopeLevel, ProvinceRow, Year, ZoneRow } from '@/types'
+import { parseEcvCaracteristicsCsv } from '@/lib/utils/ecvCaracteristics'
+import type { EcvCaracteristicsRow, EcvVaccCovRow, KeyEcvRow, ProfileData, ProfileScopeLevel, ProvinceRow, Year, ZoneRow } from '@/types'
 
 export type Bbox = [number, number, number, number] // [minLon, minLat, maxLon, maxLat]
 
@@ -14,6 +15,7 @@ interface DataContextType {
   profile: ProfileData | null
   keyEcv: KeyEcvRow[]
   ecvVaccCov: EcvVaccCovRow[]
+  ecvCaracteristics: EcvCaracteristicsRow[]
   provinceBboxes: Record<string, Bbox>
   loading: boolean
   error: Error | null
@@ -67,6 +69,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<ProfileData | null>(null)
   const [keyEcv, setKeyEcv] = useState<KeyEcvRow[]>([])
   const [ecvVaccCov, setEcvVaccCov] = useState<EcvVaccCovRow[]>([])
+  const [ecvCaracteristics, setEcvCaracteristics] = useState<EcvCaracteristicsRow[]>([])
   const [provinceBboxes, setProvinceBboxes] = useState<Record<string, Bbox>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
@@ -191,6 +194,18 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           console.warn('Failed to load ecv_vaccination_coverage.csv:', ecvVaccCovErr)
         }
 
+        // ecv_caracteristics.csv (health-zone-level EPSK household-characteristics
+        // survey, built by scripts/prepare-ecv-caracteristics.py) is likewise
+        // optional and non-fatal.
+        try {
+          const ecvCaractRes = await fetch('/data/ecv_caracteristics.csv')
+          if (ecvCaractRes.ok) {
+            setEcvCaracteristics(parseEcvCaracteristicsCsv(await ecvCaractRes.text()))
+          }
+        } catch (ecvCaractErr) {
+          console.warn('Failed to load ecv_caracteristics.csv:', ecvCaractErr)
+        }
+
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Unknown error'))
         console.error('Failed to load data:', err)
@@ -204,7 +219,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   return (
     // <DataContext.Provider value={{ provinces, zones, profile, keyEcv, provinceBboxes, loading, error }}>
-    <DataContext.Provider value={{ provinces, zones, profile, keyEcv, ecvVaccCov, provinceBboxes, loading, error }}>
+    <DataContext.Provider value={{ provinces, zones, profile, keyEcv, ecvVaccCov, ecvCaracteristics, provinceBboxes, loading, error }}>
       {children}
     </DataContext.Provider>
   )
