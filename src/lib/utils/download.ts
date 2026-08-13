@@ -1,4 +1,4 @@
-import type { EcvLineData } from '@/hooks'
+import type { EcvCaracteristicBar, EcvCaracteristicGroup, EcvLineData } from '@/hooks'
 import type { EcvVaccCovRow, ZoneRow } from '@/types'
 import { normalizeAreaName } from '@/lib/utils/ecvVaccCov'
 
@@ -100,6 +100,27 @@ export function buildEcvEvolutionCsv(
       lines.push(zoneCells.join(','))
     }
   })
+
+  return lines.join('\n')
+}
+
+export function buildEcvCaracteristicsCsv(
+  group: EcvCaracteristicGroup,
+  areas: EcvCaracteristicBar[],
+): string {
+  const header = ['area']
+  for (const s of group.series) {
+    header.push(`${s.label} (%)`)
+  }
+
+  const lines = [header.map(csvCell).join(',')]
+  for (const area of areas) {
+    const cells = [csvCell(area.name)]
+    for (const s of group.series) {
+      cells.push(csvNumber(area.values[s.key]))
+    }
+    lines.push(cells.join(','))
+  }
 
   return lines.join('\n')
 }
