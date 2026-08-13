@@ -15,7 +15,12 @@ export function buildEcvZeroDoseMapOptions(config: EcvMapConfig): EChartsOption 
 
   const byMapKey = new Map(values.map(v => [v.mapKey, v]))
 
-  const numeric = values.map(v => v.pct).filter((v): v is number => typeof v === 'number')
+  // Only in-province zones drive the color scale; dimmed (out-of-province)
+  // zones keep their tooltip data but must not stretch the bounds.
+  const numeric = values
+    .filter(v => !v.dimmed)
+    .map(v => v.pct)
+    .filter((v): v is number => typeof v === 'number')
   const bounds = getColorScaleBounds(numeric)
   const min = bounds.min
   let max = bounds.max
@@ -23,7 +28,19 @@ export function buildEcvZeroDoseMapOptions(config: EcvMapConfig): EChartsOption 
   // a minimum spread so the scale doesn't collapse to a single color.
   if (max < 10) max = 10
 
-  const dataSeries = values.map(v => ({ name: v.mapKey, value: v.pct }))
+  const dataSeries = values.map(v => ({
+    name: v.mapKey,
+    value: v.dimmed ? null : v.pct,
+    ...(v.dimmed
+      ? {
+          itemStyle: {
+            areaColor: '#e5e7eb',
+            borderColor: '#cbd5e1',
+            borderWidth: 0.5,
+          },
+        }
+      : {}),
+  }))
 
   const option: EChartsOption = {
     tooltip: {
