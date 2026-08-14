@@ -122,19 +122,19 @@ export const ECV_METRIC_META: Record<EcvMetricKey, EcvMetricMeta> = {
     vaa: { key: 'vaa', label: 'VAA (fièvre jaune)' },
 };
 // The metrics shown on the ECV bar chart: every vaccine-dose indicator
-// *except* zero-dose (which drives the map) and the three summary/possession
+// except zero-dose (which drives the map) and the three summary/possession
 // indicators (possession_carte, couverture_de_base, couverture_complete).
 
 export const ECV_BAR_METRIC_KEYS: EcvMetricKey[] = ECV_METRIC_KEYS.filter(
-    k => !['possession_carte', 'couverture_de_base', 'couverture_complete'].includes(k)
+    k => !['possession_carte', 'couverture_de_base', 'couverture_complete', 'zero_dose'].includes(k)
 )
 
-// Variables offered on the ECV evolution line chart: every vaccine-dose
-// indicator plus zero-dose (the metrics the user cares about), reusing
-// ECV_BAR_METRIC_KEYS' exclusion of the summary/possession indicators.
-export const ECV_LINE_METRIC_KEYS: EcvMetricKey[] = [
-    ...ECV_BAR_METRIC_KEYS,
-];
+// Variables offered on the ECV evolution line chart: every ECV metric
+// except the summary/possession indicators. Zero-dose stays available here
+// even though it is absent from the bar chart.
+export const ECV_LINE_METRIC_KEYS: EcvMetricKey[] = ECV_METRIC_KEYS.filter(
+    k => !['possession_carte', 'couverture_de_base', 'couverture_complete'].includes(k)
+);
 
 // ECV CARACTERISTICS //
 

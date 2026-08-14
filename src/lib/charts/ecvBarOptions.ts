@@ -5,24 +5,10 @@ export interface EcvBarItem {
   value: number | null
   ciLow: number | null
   ciHigh: number | null
-  color: string | undefined
 }
 
 interface EcvBarConfig {
   items: EcvBarItem[]
-}
-
-const BAR_COLOR = '#0d9488'
-
-// Darken a hex colour by multiplying its RGB channels by (1 - amount).
-function darken(hex: string, amount: number): string {
-  const h = hex.replace('#', '')
-  const r = parseInt(h.slice(0, 2), 16)
-  const g = parseInt(h.slice(2, 4), 16)
-  const b = parseInt(h.slice(4, 6), 16)
-  const f = 1 - amount
-  const ch = (v: number) => Math.max(0, Math.round(v * f)).toString(16).padStart(2, '0')
-  return `#${ch(r)}${ch(g)}${ch(b)}`
 }
 
 // Horizontal bar chart of ECV vaccine-coverage percentages with a 95%-CI whisker overlaid on each bar. 
@@ -33,15 +19,14 @@ export function buildEcvVaccineBarOptions(config: EcvBarConfig): EChartsOption {
   const { items } = config
 
   const names = items.map(item => item.name)
+  const values = items.map(item => item.value ?? 0)
 
   // [categoryIndex, ciLow, ciHigh] — falls back to the bar value itself when
   // a CI bound is missing, so the whisker collapses to a point rather than drawing from/to 0.
-  // The whisker stroke is the bar's colour darkened by 50% so it stays readable against it.
   const errorBarData = items.map((item, i) => [
     i,
     item.ciLow ?? item.value ?? 0,
     item.ciHigh ?? item.value ?? 0,
-    darken(item.color ?? BAR_COLOR, 0.5),
   ])
 
   // Fixed anchor for the percentage label column: always the axis max, never the bar's own value.
@@ -93,13 +78,9 @@ export function buildEcvVaccineBarOptions(config: EcvBarConfig): EChartsOption {
       {
         name: 'Couverture',
         type: 'bar',
-        data: items.map(item =>
-          item.color
-            ? { value: item.value ?? 0, itemStyle: { color: item.color } }
-            : item.value ?? 0
-        ),   // values,
+        data: values,
         barWidth: '55%',
-        itemStyle: { color: BAR_COLOR },
+        itemStyle: { color: '#0d9488' },
         emphasis: { itemStyle: { color: '#fbbf24' } },
         z: 2,
       },
@@ -113,7 +94,7 @@ export function buildEcvVaccineBarOptions(config: EcvBarConfig): EChartsOption {
           const highPoint = api.coord([api.value(2), categoryIndex])
           const halfWidth = 5
           const style = api.style({
-            stroke: api.value(3) ?? darken(BAR_COLOR, 0.5),
+            stroke: '#1f4d43',
             fill: undefined,
             lineWidth: 1,
           })
