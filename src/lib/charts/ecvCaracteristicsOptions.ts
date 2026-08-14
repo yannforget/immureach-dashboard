@@ -82,7 +82,7 @@ export function buildEcvCaracteristicsOptions(config: EcvCaracteristicsConfig): 
       stack: 'total',
       barMaxWidth: 26,
       data: areas.map(a => ({
-        value: a.values[series.key] ?? null,
+        value: a.values[series.key]?.pct ?? null,
         itemStyle: a.highlighted
           ? { color: ECV_HIGHLIGHT_RAMP[i % ECV_HIGHLIGHT_RAMP.length] }
           : undefined,

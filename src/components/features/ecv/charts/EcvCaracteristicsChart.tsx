@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import EChartsReact from 'echarts-for-react'
-import { ChevronDown, ChevronLeft, ChevronRight, Download } from 'lucide-react'
+import { ChevronDown, Download } from 'lucide-react'
 import { useDashboardStore } from '@/store/dashboardStore'
 import { useData } from '@/context/DataContext'
 import { useEcvCaracteristicsData, useZoneData } from '@/hooks'
@@ -116,28 +116,21 @@ export function EcvCaracteristicsChart() {
               </>
             )}
           </div>
-          {hasTabs && (
-            <div className="flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-1 py-0.5">
-              <button
-                type="button"
-                onClick={() => setGroupIndex(i => (i - 1 + groups.length) % groups.length)}
-                aria-label="Variable précédente"
-                className="flex h-5 w-5 items-center justify-center rounded text-slate-600 hover:bg-slate-200"
-              >
-                <ChevronLeft className="h-3.5 w-3.5" />
-              </button>
-              <span className="min-w-24 px-1 text-center text-xs font-medium text-slate-700">
-                {activeGroup?.label ?? '—'}
-              </span>
-              <button
-                type="button"
-                onClick={() => setGroupIndex(i => (i + 1) % groups.length)}
-                aria-label="Variable suivante"
-                className="flex h-5 w-5 items-center justify-center rounded text-slate-600 hover:bg-slate-200"
-              >
-                <ChevronRight className="h-3.5 w-3.5" />
-              </button>
-            </div>
+          {hasTabs ? (
+            <select
+              value={activeGroup?.key ?? ''}
+              onChange={e => setGroupIndex(groups.findIndex(g => g.key === e.target.value))}
+              aria-label="Variable"
+              className="max-w-56 rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+            >
+              {groups.map(g => (
+                <option key={g.key} value={g.key}>
+                  {g.label}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <span className="text-xs font-medium text-slate-700">{activeGroup?.label ?? '—'}</span>
           )}
         </div>
       </div>

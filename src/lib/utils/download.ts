@@ -110,14 +110,19 @@ export function buildEcvCaracteristicsCsv(
 ): string {
   const header = ['area']
   for (const s of group.series) {
-    header.push(`${s.label} (%)`)
+    header.push(
+      `${s.label} (%)`,
+      `${s.label} (IC 95% bas)`,
+      `${s.label} (IC 95% haut)`,
+    )
   }
 
   const lines = [header.map(csvCell).join(',')]
   for (const area of areas) {
     const cells = [csvCell(area.name)]
     for (const s of group.series) {
-      cells.push(csvNumber(area.values[s.key]))
+      const v = area.values[s.key]
+      cells.push(csvNumber(v?.pct ?? null), csvNumber(v?.low ?? null), csvNumber(v?.high ?? null))
     }
     lines.push(cells.join(','))
   }

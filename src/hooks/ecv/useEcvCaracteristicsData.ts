@@ -7,7 +7,7 @@ import {
   ECV_CARACTERISTIC_GROUPS,
   ECV_CARACTERISTIC_VARIABLE_LABELS,
 } from '@/lib/utils/constants'
-import type { EcvCaracteristicsRow } from '@/types'
+import type { EcvCaracteristicValue, EcvCaracteristicsRow } from '@/types'
 
 export interface EcvCaracteristicSeries {
   key: string
@@ -22,8 +22,9 @@ export interface EcvCaracteristicGroup {
 
 export interface EcvCaracteristicBar {
   name: string
-  // Variable root -> pct (null when the source cell was empty).
-  values: Record<string, number | null>
+  // Variable root -> pct with its optional 95% CI bounds (null when the
+  // source cell was empty).
+  values: Record<string, EcvCaracteristicValue>
   // True for the bar matching the ribbon's selected zone, so charts can
   // highlight it (e.g. yellow) while still showing every province zone.
   highlighted?: boolean
@@ -103,9 +104,9 @@ export function useEcvCaracteristicsData(): EcvCaracteristicsData {
     const rows = ecvCaracteristics.filter(r => r.year === selectedYear)
 
     const toBar = (row: EcvCaracteristicsRow, name: string, highlighted = false): EcvCaracteristicBar => {
-      const values: Record<string, number | null> = {}
+      const values: Record<string, EcvCaracteristicValue> = {}
       for (const variable of variables) {
-        values[variable] = row.values[variable]?.pct ?? null
+        values[variable] = row.values[variable] ?? { pct: null, low: null, high: null }
       }
       return { name, values, highlighted }
     }
