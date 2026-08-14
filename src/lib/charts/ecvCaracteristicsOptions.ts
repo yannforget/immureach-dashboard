@@ -62,7 +62,7 @@ export function buildEcvCaracteristicsOptions(config: EcvCaracteristicsConfig): 
         color: '#475569',
         fontSize: 10,
         interval: 0,
-        rotate: names.length > 12 ? 35 : 0,
+        rotate: names.length > 10 ? 35 : 0,
       },
     },
     yAxis: {

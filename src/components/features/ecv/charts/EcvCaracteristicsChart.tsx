@@ -105,13 +105,6 @@ export function EcvCaracteristicsChart() {
               <>
                 <div className="fixed inset-0 z-10" onClick={() => setDownloadOpen(false)} />
                 <div className="absolute right-0 top-full z-20 mt-1 w-52 overflow-hidden rounded-md border border-slate-200 bg-white py-1 shadow-lg">
-                  {/* <button
-                    type="button"
-                    onClick={handleDownloadPng}
-                    className="flex w-full items-center px-3 py-2 text-left text-xs text-slate-700 hover:bg-slate-100"
-                  >
-                    Graphique (PNG)
-                  </button> */}
                   <button
                     type="button"
                     onClick={handleDownloadCsv}
