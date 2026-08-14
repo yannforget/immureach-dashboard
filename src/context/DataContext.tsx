@@ -81,9 +81,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
         // Fetch GeoJSON files + the profiling sidecar in parallel.
         const [provincesRes, zonesRes, profileRes] = await Promise.all([
-          fetch('public/data/provinces.geojson'),
-          fetch('public/data/zones.geojson'),
-          fetch('public/data/profile.json'),
+          fetch('data/provinces.geojson'),
+          fetch('data/zones.geojson'),
+          fetch('data/profile.json'),
         ])
 
         if (!provincesRes.ok || !zonesRes.ok || !profileRes.ok) {
@@ -174,7 +174,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         // key_ecv.csv (ECV tab key figures) is fetched separately and non-fatally: 
         // it's optional/still being populated, so a missing or malformed file shouldn't break the rest of the dashboard.
         try {
-          const keyEcvRes = await fetch('public/data/key_ecv.csv')
+          const keyEcvRes = await fetch('data/key_ecv.csv')
           if (keyEcvRes.ok) {
             setKeyEcv(parseKeyEcvCsv(await keyEcvRes.text()))
           }
