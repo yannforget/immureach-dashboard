@@ -1,4 +1,3 @@
-import React from 'react';
 import { ModelAccessibilityChart } from './charts/ModelAccessibilityChart'
 import { ModelDumbbellChart } from './charts/ModelDumbbellChart'
 

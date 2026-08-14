@@ -1,4 +1,3 @@
-import React from 'react'
 interface PlaceholderPanelProps { title: string }
 
 export function PlaceholderPanel({ title }: PlaceholderPanelProps) {

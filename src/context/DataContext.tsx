@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 import * as echarts from 'echarts'
 import { cleanName } from '@/lib/utils/dataUtils'
 import { parseCsv } from '@/lib/utils/csv'

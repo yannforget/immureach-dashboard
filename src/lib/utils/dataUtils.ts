@@ -1,5 +1,3 @@
-import type { MetricKey, MetricMeta } from '@/types';
-
 /**
  * Clean display name: remove prefix, " Province" and " Zone de Santé" suffixes
  * e.g., "kl Kwilu Province" -> "Kwilu"

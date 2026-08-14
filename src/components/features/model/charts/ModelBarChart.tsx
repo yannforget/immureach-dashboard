@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import EChartsReact from 'echarts-for-react'
 import { useDashboardStore } from '@/store/dashboardStore'
 import { useProvinceData, useZoneData } from '@/hooks'

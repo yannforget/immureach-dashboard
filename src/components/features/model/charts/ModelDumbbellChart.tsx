@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 import EChartsReact from 'echarts-for-react'
 import { useIndicatorComparison } from '@/hooks'
 import { buildDumbbellOptions } from '@/lib/charts/dumbbellOptions'

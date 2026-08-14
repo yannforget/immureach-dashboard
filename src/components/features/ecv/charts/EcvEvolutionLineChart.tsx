@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import EChartsReact from 'echarts-for-react'
 import { ChevronDown, Download } from 'lucide-react'
 import { useDashboardStore } from '@/store/dashboardStore'

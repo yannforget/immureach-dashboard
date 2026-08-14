@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 import { ModelIndicatorCard } from './ModelIndicatorCard'
 import { useDashboardStore } from '@/store/dashboardStore'
 import { useProvinceData, useZoneData } from '@/hooks'

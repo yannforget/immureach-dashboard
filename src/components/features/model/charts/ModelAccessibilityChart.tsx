@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 import EChartsReact from 'echarts-for-react'
 import { useAccessibilityProfile } from '@/hooks'
 import { buildAccessibilityOptions } from '@/lib/charts/accessibilityOptions'

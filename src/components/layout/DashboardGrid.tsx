@@ -1,4 +1,3 @@
-import React from 'react'
 import { Ribbon } from '../common/Ribbon'
 import { Notes } from '../common/Notes'
 import { PlaceholderPanel } from '../common/PlaceholderPanel'
