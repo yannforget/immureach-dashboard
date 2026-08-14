@@ -26,13 +26,12 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "baseUrl": ".",
     "paths": {
       "@/*": [
-        "src/*"
+        "./src/*"
       ],
       "@data/*": [
-        "data/*"
+        "./data/*"
       ]
     },
     // "ignoreDeprecations": "6.0",
