@@ -35,6 +35,10 @@ function parseKeyEcvCsv(text: string): KeyEcvRow[] {
     nb_areas: toNum(r.nb_areas),
     penta_cov: toNum(r.penta_cov),
     zdc_cov: toNum(r.zdc_cov),
+    penta_cov_low: toNum(r.penta_cov_low),
+    penta_cov_high: toNum(r.penta_cov_high),
+    zdc_cov_low: toNum(r.zdc_cov_low),
+    zdc_cov_high: toNum(r.zdc_cov_high),
   }))
 }
 

@@ -142,8 +142,10 @@ export interface ProfileData {
 export type ProfileScopeLevel = 'national' | 'province' | 'zone';
 
 // One row of public/data/key_ecv.csv (columns: year, level, province, zone,
-// nb_people, nb_zones, penta_cov, zdc_cov). `province`/`zone` are only
-// populated for the matching `level`; penta_cov/zdc_cov are 0-1 fractions.
+// nb_people, nb_zones, penta_cov, zdc_cov, penta_cov_low/high,
+// zdc_cov_low/high). `province`/`zone` are only populated for the matching
+// `level`; penta_cov/zdc_cov and the *_low/_high pairs bound their 95%
+// confidence interval, all as 0-100 percentages.
 export interface KeyEcvRow {
   year: Year;
   level: ProfileScopeLevel;
@@ -154,6 +156,10 @@ export interface KeyEcvRow {
   nb_areas: number | null;
   penta_cov: number | null;
   zdc_cov: number | null;
+  penta_cov_low: number | null;
+  penta_cov_high: number | null;
+  zdc_cov_low: number | null;
+  zdc_cov_high: number | null;
 }
 
 // A single `<metric>_pct` + `<metric>_95CI` pair from the ECV vaccination

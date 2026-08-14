@@ -5,9 +5,10 @@ interface EcvIndicatorCardProps {
     value: string
     description?: string
     subtext?: string  // add nb of visited health areas in nb visited zone card 
+    confidenceInterval?: string  // 95% CI displayed lightly next to the value
 }
 
-export function EcvIndicatorCard({ label, value, description, subtext }: EcvIndicatorCardProps) {
+export function EcvIndicatorCard({ label, value, description, subtext, confidenceInterval }: EcvIndicatorCardProps) {
     const [showTooltip, setShowTooltip] = useState(false)
 
     return (
@@ -43,6 +44,9 @@ export function EcvIndicatorCard({ label, value, description, subtext }: EcvIndi
                 )}
             </div>
             <p className="mt-2 text-2xl font-bold text-slate-900">{value}</p>
+            {confidenceInterval && (
+                <p className="mt-0.5 text-sm font-normal text-slate-400">{confidenceInterval}</p>
+            )}
             {subtext && (
                 <p className="mt-1 text-xs text-slate-400">{subtext}</p>
             )}

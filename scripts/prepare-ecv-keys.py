@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 import pandas as pd
@@ -13,6 +14,22 @@ def weighted_mean(values, weights):
     if weights.sum() == 0:
         return None
     return (values * weights).sum() / weights.sum()
+
+
+def parse_ci(values) -> tuple[pd.Series, pd.Series]:
+    """
+    Parse 95%-CI cells shaped like "[13,0-36,6]" into low/high numeric Series
+    (comma decimal separator, dash separator), mirroring
+    prepare-ecv-vaccination-coverage.py.
+    """
+    split = (
+        values.astype(str)
+        .str.replace(r"[\[\]]", "", regex=True)
+        .str.split("-", expand=True)
+    )
+    low = pd.to_numeric(split[0].str.replace(",", ".", regex=False), errors="coerce")
+    high = pd.to_numeric(split[1].str.replace(",", ".", regex=False), errors="coerce")
+    return low, high
 
 
 def process_file(csv_path: Path) -> pd.DataFrame:
@@ -33,6 +50,13 @@ def process_file(csv_path: Path) -> pd.DataFrame:
         lambda col: col.str.strip()
     )
 
+    penta_low, penta_high = parse_ci(df["Penta3_95CI"])
+    zdc_low, zdc_high = parse_ci(df["Zero_dose_95CI"])
+    df["penta_cov_low"] = penta_low
+    df["penta_cov_high"] = penta_high
+    df["zdc_cov_low"] = zdc_low
+    df["zdc_cov_high"] = zdc_high
+
     zone = df[
         [
             "province",
@@ -42,6 +66,10 @@ def process_file(csv_path: Path) -> pd.DataFrame:
             "nb_areas_tot",
             "penta_cov",
             "zdc_cov",
+            "penta_cov_low",
+            "penta_cov_high",
+            "zdc_cov_low",
+            "zdc_cov_high",
         ]
     ].copy()
     zone["nb_zones"] = 1
@@ -59,6 +87,10 @@ def process_file(csv_path: Path) -> pd.DataFrame:
                     "nb_areas_tot": g["nb_areas_tot"].sum(),
                     "penta_cov": weighted_mean(g["penta_cov"], g["nb_people"]),
                     "zdc_cov": weighted_mean(g["zdc_cov"], g["nb_people"]),
+                    "penta_cov_low": weighted_mean(g["penta_cov_low"], g["nb_people"]),
+                    "penta_cov_high": weighted_mean(g["penta_cov_high"], g["nb_people"]),
+                    "zdc_cov_low": weighted_mean(g["zdc_cov_low"], g["nb_people"]),
+                    "zdc_cov_high": weighted_mean(g["zdc_cov_high"], g["nb_people"]),
                 }
             )
         )
@@ -79,6 +111,10 @@ def process_file(csv_path: Path) -> pd.DataFrame:
                 "nb_areas_tot": df["nb_areas_tot"].sum(),
                 "penta_cov": weighted_mean(df["penta_cov"], df["nb_people"]),
                 "zdc_cov": weighted_mean(df["zdc_cov"], df["nb_people"]),
+                "penta_cov_low": weighted_mean(df["penta_cov_low"], df["nb_people"]),
+                "penta_cov_high": weighted_mean(df["penta_cov_high"], df["nb_people"]),
+                "zdc_cov_low": weighted_mean(df["zdc_cov_low"], df["nb_people"]),
+                "zdc_cov_high": weighted_mean(df["zdc_cov_high"], df["nb_people"]),
                 "level": "national",
                 "year": year,
             }
