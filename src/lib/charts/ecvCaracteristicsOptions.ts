@@ -1,5 +1,5 @@
 import type { EChartsOption, TooltipComponentFormatterCallbackParams } from 'echarts'
-import { ECV_LINE_PALETTE } from './theme'
+import { ECV_HIGHLIGHT_RAMP, ECV_LINE_PALETTE } from './theme'
 import type { EcvCaracteristicBar, EcvCaracteristicGroup } from '@/hooks'
 
 export interface EcvCaracteristicsConfig {
@@ -11,7 +11,9 @@ export interface EcvCaracteristicsConfig {
 // One bar per area (province or zone); within the group, each variable is one
 // stack segment (mere + gardienne sit on top of each other, summing to the
 // total). Only `_pct` values are drawn — the `_low`/`_high` CI columns are
-// intentionally ignored.
+// intentionally ignored. Bars flagged as `highlighted` (the selected zone) are
+// drawn in ECV_HIGHLIGHT_COLOR nuances (one shade per stack segment) while
+// every other bar keeps its palette color.
 export function buildEcvCaracteristicsOptions(config: EcvCaracteristicsConfig): EChartsOption {
   const { group, areas } = config
   const names = areas.map(a => a.name)
@@ -79,9 +81,14 @@ export function buildEcvCaracteristicsOptions(config: EcvCaracteristicsConfig): 
       type: 'bar',
       stack: 'total',
       barMaxWidth: 26,
-      data: areas.map(a => a.values[series.key] ?? null),
+      data: areas.map(a => ({
+        value: a.values[series.key] ?? null,
+        itemStyle: a.highlighted
+          ? { color: ECV_HIGHLIGHT_RAMP[i % ECV_HIGHLIGHT_RAMP.length] }
+          : undefined,
+      })),
       itemStyle: { color: ECV_LINE_PALETTE[i % ECV_LINE_PALETTE.length] },
-      emphasis: { itemStyle: { color: '#fbbf24' } },
+      emphasis: { itemStyle: { color: ECV_HIGHLIGHT_RAMP[0] } },
     })),
   }
 

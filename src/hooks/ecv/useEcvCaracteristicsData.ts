@@ -24,6 +24,9 @@ export interface EcvCaracteristicBar {
   name: string
   // Variable root -> pct (null when the source cell was empty).
   values: Record<string, number | null>
+  // True for the bar matching the ribbon's selected zone, so charts can
+  // highlight it (e.g. yellow) while still showing every province zone.
+  highlighted?: boolean
 }
 
 export interface EcvCaracteristicsData {
@@ -75,9 +78,11 @@ function buildGroups(variables: string[]): EcvCaracteristicGroup[] {
 }
 
 // Feeds the ECV characteristics chart from public/data/ecv_caracteristics.csv.
-// Resolves rows for the scope implied by the ribbon (zone -> province ->
-// national), filtered to the selected year, and projects them onto one bar
-// per area with the pct of each variable rooted in `values`.
+// Resolves rows for the scope implied by the ribbon (province zones -> province
+// rows -> national), filtered to the selected year, and projects them onto one
+// bar per area with the pct of each variable rooted in `values`. When a zone
+// is selected, all of its province's zones are still shown, with the selected
+// zone's bar flagged as `highlighted`.
 export function useEcvCaracteristicsData(): EcvCaracteristicsData {
   const { ecvCaracteristics } = useData()
   const selectedYear = useDashboardStore(s => s.selectedYear)
@@ -97,37 +102,33 @@ export function useEcvCaracteristicsData(): EcvCaracteristicsData {
 
     const rows = ecvCaracteristics.filter(r => r.year === selectedYear)
 
-    const toBar = (row: EcvCaracteristicsRow, name: string): EcvCaracteristicBar => {
+    const toBar = (row: EcvCaracteristicsRow, name: string, highlighted = false): EcvCaracteristicBar => {
       const values: Record<string, number | null> = {}
       for (const variable of variables) {
         values[variable] = row.values[variable]?.pct ?? null
       }
-      return { name, values }
+      return { name, values, highlighted }
     }
 
     let areaRows: EcvCaracteristicsRow[] = []
     let scopeLabel = 'national'
 
-    if (zoneKey) {
-      scopeLabel = 'zone sélectionnée'
-      const row = rows.find(
-        r =>
-          r.level === 'zone' &&
-          normalizeAreaName(r.zone) === zoneKey &&
-          (!provinceKey || normalizeAreaName(r.province) === provinceKey),
-      )
-      if (row) areaRows = [row]
-    } else if (provinceKey) {
-      scopeLabel = selectedProvince ?? ''
+    if (provinceKey) {
+      scopeLabel = zoneKey ? 'zone sélectionnée' : selectedProvince ?? ''
       areaRows = rows.filter(
         r => r.level === 'zone' && normalizeAreaName(r.province) === provinceKey,
       )
     } else {
+      scopeLabel = 'national'
       areaRows = rows.filter(r => r.level === 'province')
     }
 
     const areas = areaRows.map(row =>
-      toBar(row, (row.zone ?? row.province) as string),
+      toBar(
+        row,
+        (row.zone ?? row.province) as string,
+        !!zoneKey && row.level === 'zone' && normalizeAreaName(row.zone) === zoneKey,
+      ),
     )
 
     return { groups, areas, scopeLabel }

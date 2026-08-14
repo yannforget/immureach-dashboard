@@ -26,6 +26,32 @@ export const ECV_LINE_COLORS: Record<EcvMetricKey, string> = {
   vaa: '#f97316',
 };
 
+// Amber used to highlight the currently selected area/zone across charts
+// (map selection, bar emphasis, ECV characteristics selected bar).
+export const ECV_HIGHLIGHT_COLOR = '#ffdf33'
+
+// Blends two hex colors: ratio 0 -> base, 1 -> target.
+function mixHex(base: string, target: string, ratio: number): string {
+  const parse = (hex: string) => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16))
+  const [br, bg, bb] = parse(base)
+  const [tr, tg, tb] = parse(target)
+  const ch = (b: number, t: number) => Math.round(b + (t - b) * ratio).toString(16).padStart(2, '0')
+  return `#${ch(br, tr)}${ch(bg, tg)}${ch(bb, tb)}`
+}
+
+// Nuances of the highlight color used for the selected bar's stacked segments,
+// so the segment split stays visible even when the whole bar is highlighted.
+// Derived from ECV_HIGHLIGHT_COLOR so the shades always harmonize; series
+// index picks a shade (index 0 = ECV_HIGHLIGHT_COLOR) and larger groups cycle
+// through the ramp.
+export const ECV_HIGHLIGHT_RAMP: string[] = [
+  ECV_HIGHLIGHT_COLOR,
+  mixHex(ECV_HIGHLIGHT_COLOR, '#000000', 0.2), // darker
+  mixHex(ECV_HIGHLIGHT_COLOR, '#ffffff', 0.45), // lighter
+  mixHex(ECV_HIGHLIGHT_COLOR, '#000000', 0.35), // much darker
+  mixHex(ECV_HIGHLIGHT_COLOR, '#ffffff', 0.7), // much lighter
+]
+
 // Fallback categorical palette used only for metric keys missing from ECV_LINE_COLORS.
 export const ECV_LINE_PALETTE: string[] = [
   '#0d9488',
