@@ -154,6 +154,7 @@ export interface KeyEcvRow {
   nb_people: number | null;
   nb_zones: number | null;
   nb_areas: number | null;
+  nb_areas_tot: number | null;
   penta_cov: number | null;
   zdc_cov: number | null;
   penta_cov_low: number | null;

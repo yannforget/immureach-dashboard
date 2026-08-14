@@ -1,4 +1,4 @@
-import re
+# import re
 from pathlib import Path
 
 import pandas as pd
@@ -88,7 +88,9 @@ def process_file(csv_path: Path) -> pd.DataFrame:
                     "penta_cov": weighted_mean(g["penta_cov"], g["nb_people"]),
                     "zdc_cov": weighted_mean(g["zdc_cov"], g["nb_people"]),
                     "penta_cov_low": weighted_mean(g["penta_cov_low"], g["nb_people"]),
-                    "penta_cov_high": weighted_mean(g["penta_cov_high"], g["nb_people"]),
+                    "penta_cov_high": weighted_mean(
+                        g["penta_cov_high"], g["nb_people"]
+                    ),
                     "zdc_cov_low": weighted_mean(g["zdc_cov_low"], g["nb_people"]),
                     "zdc_cov_high": weighted_mean(g["zdc_cov_high"], g["nb_people"]),
                 }

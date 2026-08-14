@@ -21,11 +21,19 @@ export function EcvIndicatorCardGrid() {
             },
             {
                 key: 'nb_zones',
-                label: 'Zones de santé enquêtées',
-                value: formatNumber(row?.nb_zones ?? null),
+                label: row?.level === 'zone' ? 'Aires de santé enquêtées' : 'Zones de santé enquêtées',
+                value:
+                    row?.level === 'zone'
+                        ? formatNumber(row.nb_areas ?? null)
+                        : formatNumber(row?.nb_zones ?? null),
                 confidenceInterval: undefined,
                 description: "Nombre de zones de santé couvertes par l'enquête ECV pour la sélection courante.",
-                subtext: row?.nb_areas != null ? `${formatNumber(row.nb_areas)} aires de santé enquêtées` : undefined,
+                subtext:
+                    row?.nb_areas != null && row.nb_areas_tot != null
+                        ? `${formatNumber(row.nb_areas)} / ${formatNumber(row.nb_areas_tot)} aires de santé enquêtées`
+                        : row?.nb_areas != null
+                          ? `${formatNumber(row.nb_areas)} aires de santé enquêtées`
+                          : undefined,
             },
             {
                 key: 'penta_cov',
