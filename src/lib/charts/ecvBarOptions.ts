@@ -33,7 +33,6 @@ export function buildEcvVaccineBarOptions(config: EcvBarConfig): EChartsOption {
   const { items } = config
 
   const names = items.map(item => item.name)
-  const values = items.map(item => item.value ?? 0)
 
   // [categoryIndex, ciLow, ciHigh] — falls back to the bar value itself when
   // a CI bound is missing, so the whisker collapses to a point rather than drawing from/to 0.

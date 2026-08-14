@@ -5,7 +5,7 @@ import { useDashboardStore } from '@/store/dashboardStore'
 import { useData } from '@/context/DataContext'
 import { useEcvCaracteristicsData, useZoneData } from '@/hooks'
 import { buildEcvCaracteristicsOptions } from '@/lib/charts/ecvCaracteristicsOptions'
-import { buildEcvCaracteristicsCsv, buildScopeSlug, downloadDataUrl, downloadText } from '@/lib/utils/download'
+import { buildEcvCaracteristicsCsv, buildScopeSlug, downloadText } from '@/lib/utils/download'
 import { Button } from '@/components/ui/button'
 
 export function EcvCaracteristicsChart() {
