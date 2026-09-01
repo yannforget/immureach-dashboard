@@ -42,6 +42,7 @@ def _clean_name(name: str) -> str:
     out = re.sub(r" Zone de Santé$", "", out)
     return out
 
+
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 ACCESS_DIR = PROJECT_ROOT / "data" / "output" / "accessibility"
 INDIC_DIR = PROJECT_ROOT / "data" / "output" / "indicators"
@@ -67,29 +68,44 @@ INDICATORS = [
     "is_max_ethnic_group",
 ]
 
-# One-line plain-English explanation of each composite index, shown to
-# decision-makers in the Profiling-mode dumbbell tooltip. Sourced from the
-# "Household - details" sheet of data/input/immureach/details_models.xlsx
-# (Variable / Theoretical domain / Composite index columns).
+INDICATORS_LABEL = {
+    "trust_in_hcw": "Confiance personnels santé",
+    "affordability": "Abordabilité",
+    "missed_opportunities": "Opportunités manquées",
+    "ease_to_vaccinate_children": "Facilité de vaccination",
+    "outreach": "Sensibilisation",
+    "community_norms": "Normes communautaires",
+    "fear_side_effects": "Peur effets secondaires",
+    "fear_diseases": "Peur maladies",
+    "opinion_on_vaccines": "Opinion sur les vaccins",
+    "self_efficacy": "Confiance propre capacité",
+    "knowledge_diseases": "Connaissance maladies",
+    "knowledge_vaccines": "Connaissance vaccins",
+    "household_travel_ohe": "Déplacements ménages",
+    "is_max_ethnic_group": "Alignement culturel",
+}
+
 INDICATOR_DESCRIPTIONS = {
-    "trust_in_hcw": "Perceived welcome and quality of interaction at the health centre during the last visit.",
-    "affordability": "Out-of-pocket costs households face for vaccination (e.g. paying for the vaccination card).",
-    "missed_opportunities": "Past instances where a child was brought to a health centre for vaccination but not vaccinated.",
-    "ease_to_vaccinate_children": "Perceived ease of obtaining vaccination services for one's child.",
-    "outreach": "Frequency of home visits from community outreach workers.",
-    "community_norms": "Belief that most parents in the community vaccinate their children.",
-    "fear_side_effects": "Reported awareness of children who experienced side effects (e.g. abscess) after vaccination.",
-    "fear_diseases": "Perceived seriousness of vaccine-preventable diseases.",
-    "opinion_on_vaccines": "Perceived importance of vaccines for the child's health.",
-    "self_efficacy": "Caregiver's confidence in their ability to bring the child to scheduled vaccination sessions.",
-    "knowledge_diseases": "Knowledge of which childhood illnesses can be prevented by vaccination.",
-    "knowledge_vaccines": "Knowledge of vaccination logistics — campaigns, dates, target age groups.",
-    "household_travel_ohe": "Whether household members lived or travelled away from home in the past year.",
-    "is_max_ethnic_group": "Cultural alignment between the respondent's ethnic group and the dominant group of the zone.",
+    "trust_in_hcw": "Accueil perçu et qualité des échanges au centre de santé lors de la dernière visite.",
+    "affordability": "Frais à la charge des ménages liés à la vaccination (par exemple, le coût du carnet de vaccination).",
+    "missed_opportunities": "Cas antérieurs où un enfant a été amené dans un centre de santé pour être vacciné, mais n'a pas été vacciné.",
+    "ease_to_vaccinate_children": "Perception de la facilité d'accès aux services de vaccination pour son enfant.",
+    "outreach": "Fréquence des visites à domicile effectuées par les intervenants de vaccination de proximité.",
+    "community_norms": "Conviction selon laquelle la plupart des parents de la communauté font vacciner leurs enfants.",
+    "fear_side_effects": "Cas signalés d'enfants ayant présenté des effets indésirables (par exemple, un abcès) après la vaccination.",
+    "fear_diseases": "Perception de la gravité des maladies évitables par la vaccination.",
+    "opinion_on_vaccines": "Importance perçue des vaccins pour la santé de l'enfant.",
+    "self_efficacy": "Confiance des personnes qui s'occupent de l'enfant dans leur capacité à l'amener aux séances de vaccination prévues.",
+    "knowledge_diseases": "Connaissance des maladies infantiles qui peuvent être évitées grâce à la vaccination.",
+    "knowledge_vaccines": "Connaissance de la vaccination : campagnes, dates, tranches d'âge cibles.",
+    "household_travel_ohe": "Si les membres du foyer ont vécu ou voyagé loin de chez eux au cours de l'année écoulée.",
+    "is_max_ethnic_group": "Alignement culturel entre le groupe ethnique de la personne interrogée et le groupe dominant de la zone.",
 }
 
 
 def _label(key: str) -> str:
+    if key in INDICATORS_LABEL:
+        return INDICATORS_LABEL[key]
     return key.replace("_", " ").capitalize()
 
 
@@ -206,9 +222,7 @@ def build_indicators() -> dict:
         zone_df = pd.read_csv(INDIC_DIR / f"zone_{year}.csv")
 
         national_groups = _split_zero_dose(national_df, None)["_national_"]
-        national = _indicator_entries(
-            national_groups.get(1), national_groups.get(0)
-        )
+        national = _indicator_entries(national_groups.get(1), national_groups.get(0))
 
         provinces: dict = {}
         for area, rows in _split_zero_dose(province_df, "province").items():
@@ -240,7 +254,9 @@ def main() -> None:
     with OUT_PATH.open("w", encoding="utf-8") as f:
         # allow_nan=False guards against any sneaky NaN slipping through into
         # invalid JSON that the browser would fail to parse.
-        json.dump(payload, f, ensure_ascii=False, separators=(",", ":"), allow_nan=False)
+        json.dump(
+            payload, f, ensure_ascii=False, separators=(",", ":"), allow_nan=False
+        )
 
     size_kb = OUT_PATH.stat().st_size / 1024
     n_provinces = len(payload["accessibility"][str(YEARS[-1])]["provinces"])

@@ -1,8 +1,11 @@
 import { create } from 'zustand';
-import type { MetricKey, ViewMode, Year } from '@/types';
-import { METRIC_KEYS } from '@/lib/dataUtils';
+import type { DashboardSection, MetricKey, ViewMode, Year } from '@/types';
+import { MODEL_METRIC_KEYS } from '@/lib/utils/constants';
 
 interface DashboardState {
+  // Top-level ribbon tab.
+  activeSection: DashboardSection;
+
   // Selection state
   selectedMetric: MetricKey;
   selectedProvince: string | null;
@@ -17,6 +20,7 @@ interface DashboardState {
   showAntenne: boolean;
 
   // Actions
+  setActiveSection: (section: DashboardSection) => void;
   setMetric: (metric: MetricKey) => void;
   setProvince: (province: string | null) => void;
   setSelectedZone: (zoneId: string | null) => void;
@@ -27,13 +31,16 @@ interface DashboardState {
 }
 
 export const useDashboardStore = create<DashboardState>((set) => ({
-  selectedMetric: METRIC_KEYS[0],
+  activeSection: 'ecv',
+  selectedMetric: MODEL_METRIC_KEYS[0],
   selectedProvince: null,
   selectedZoneId: null,
   hoveredZoneId: null,
   viewMode: 'data',
-  selectedYear: 2023,
-  showAntenne: false,
+  selectedYear: 2022,
+  showAntenne: true,
+
+  setActiveSection: (section) => set({ activeSection: section }),
 
   setMetric: (metric) => set({ selectedMetric: metric }),
 

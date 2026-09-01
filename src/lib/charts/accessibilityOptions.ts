@@ -25,8 +25,8 @@ export function buildAccessibilityOptions(config: AccessibilityConfig): EChartsO
         const tot = Math.round(total).toLocaleString()
         return (
           `<strong>${categories[i]}</strong><br/>` +
-          `${pct}% of 0-dose children<br/>` +
-          `(${reached} of ${tot})`
+          `${pct}% d'enfants 0-dose<br/>` +
+          `(${reached} sur ${tot})`
         )
       },
     },

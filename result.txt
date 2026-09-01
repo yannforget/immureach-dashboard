@@ -1,0 +1,135 @@
+.
+├── CLAUDE.md
+├── data
+│   ├── columns.json
+│   ├── input
+│   │   ├── dhs
+│   │   ├── espk
+│   │   │   ├── ECV2022_vacc_cov_ZS.csv
+│   │   │   └── RAW_ECV_2022_Couvertures-vaccinales.xlsx
+│   │   ├── grid3
+│   │   │   └── COD_population_v4_4_gridded
+│   │   └── immureach
+│   │       └── indicators_households_complete.csv
+│   ├── provinces.geojson
+│   └── zones.geojson
+├── docs
+│   ├── dashboard.md
+│   └── data.md
+├── eslint.config.ts
+├── index.html
+├── package-lock.json
+├── package.json
+├── postcss.config.js
+├── public
+│   └── data
+│       ├── ecv_vaccination_coverage.csv
+│       ├── indicators
+│       ├── key_ecv.csv
+│       ├── profile.json
+│       ├── provinces.geojson
+│       └── zones.geojson
+├── pyproject.toml
+├── result.txt
+├── scripts
+│   ├── add-2023-ecv-vaccination-coverage.py
+│   ├── aggregate-accessibility.py
+│   ├── aggregate-indicators.py
+│   ├── aggregate-population.py
+│   ├── build-dashboard-geojson.py
+│   ├── build-profile-json.py
+│   ├── generate-boundaries.py
+│   ├── prepare-ecv-keys.py
+│   ├── prepare-ecv-vaccination-coverage.py
+│   └── prepare-predictions.py
+├── src
+│   ├── App.tsx
+│   ├── components
+│   │   ├── common
+│   │   │   ├── Notes.tsx
+│   │   │   ├── PlaceholderPanel.tsx
+│   │   │   ├── Ribbon.tsx
+│   │   │   └── YearSelector.tsx
+│   │   ├── features
+│   │   │   ├── ecv
+│   │   │   │   ├── cards
+│   │   │   │   │   ├── EcvIndicatorCard.tsx
+│   │   │   │   │   └── EcvIndicatorCardGrid.tsx
+│   │   │   │   ├── charts
+│   │   │   │   │   └── EcvVaccineBarChart.tsx
+│   │   │   │   ├── index.ts
+│   │   │   │   ├── maps
+│   │   │   │   │   └── EcvZeroDoseMap.tsx
+│   │   │   │   └── tables
+│   │   │   └── model
+│   │   │       ├── ProfilingPanel.tsx
+│   │   │       ├── cards
+│   │   │       │   ├── ModelIndicatorCard.tsx
+│   │   │       │   ├── ModelIndicatorCardGrid.tsx
+│   │   │       │   └── constants.ts
+│   │   │       ├── charts
+│   │   │       │   ├── ModelAccessibilityChart.tsx
+│   │   │       │   ├── ModelBarChart.tsx
+│   │   │       │   └── ModelDumbbellChart.tsx
+│   │   │       ├── index.ts
+│   │   │       ├── maps
+│   │   │       │   └── ModelCoverageMap.tsx
+│   │   │       └── tables
+│   │   │           ├── ModelVaccinationDataTable.tsx
+│   │   │           ├── ProvinceTable.tsx
+│   │   │           ├── ZoneDetail.tsx
+│   │   │           └── ZoneTable.tsx
+│   │   ├── layout
+│   │   │   ├── DashboardGrid.tsx
+│   │   │   └── Header.tsx
+│   │   └── ui
+│   │       ├── button.tsx
+│   │       ├── table.tsx
+│   │       ├── tabs.tsx
+│   │       └── toggle.tsx
+│   ├── context
+│   │   └── DataContext.tsx
+│   ├── hooks
+│   │   ├── common
+│   │   │   ├── useProvinceAntennes.ts
+│   │   │   ├── useProvinceData.ts
+│   │   │   ├── useTableData.ts
+│   │   │   └── useZoneData.ts
+│   │   ├── ecv
+│   │   │   ├── useEcvVaccCovRow.ts
+│   │   │   ├── useEcvZeroDoseMapData.ts
+│   │   │   └── useKeyEcvData.ts
+│   │   └── model
+│   │       ├── useAccessibilityProfile.ts
+│   │       └── useIndicatorComparison.ts
+│   ├── index.css
+│   ├── lib
+│   │   ├── charts
+│   │   │   ├── accessibilityOptions.ts
+│   │   │   ├── barOptions.ts
+│   │   │   ├── dumbbellOptions.ts
+│   │   │   ├── ecvBarOptions.ts
+│   │   │   ├── ecvMapOptions.ts
+│   │   │   ├── mapOptions.ts
+│   │   │   └── theme.ts
+│   │   └── utils
+│   │       ├── constants.ts
+│   │       ├── csv.ts
+│   │       ├── dataUtils.ts
+│   │       ├── ecvVaccCov.ts
+│   │       └── utils.ts
+│   ├── main.tsx
+│   ├── store
+│   │   └── dashboardStore.ts
+│   ├── types
+│   │   └── index.ts
+│   └── vite-env.d.ts
+├── tailwind.config.ts
+├── tsconfig.json
+├── tsconfig.node.json
+├── tsconfig.node.tsbuildinfo
+├── tsconfig.tsbuildinfo
+├── uv.lock
+├── vite.config.d.ts
+├── vite.config.js
+└── vite.config.ts

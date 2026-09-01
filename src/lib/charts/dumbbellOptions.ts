@@ -1,5 +1,5 @@
 import type { EChartsOption } from 'echarts'
-import type { IndicatorRow } from '@/hooks/useIndicatorComparison'
+import type { IndicatorRow } from '@/hooks'
 
 interface DumbbellConfig {
   items: IndicatorRow[]
@@ -26,7 +26,7 @@ export function buildDumbbellOptions(config: DumbbellConfig): EChartsOption {
     legend: {
       top: 8,
       right: 16,
-      data: ['Vaccinated', 'Zero-dose'],
+      data: ['Vacciné', 'Zéro-dose'],
       textStyle: { color: '#475569' },
     },
     tooltip: {
@@ -50,9 +50,9 @@ export function buildDumbbellOptions(config: DumbbellConfig): EChartsOption {
         return (
           `<strong>${r.label}</strong>` +
           desc +
-          `<span style="color:${VACC}">●</span> Vaccinated: ${r.vacc.toFixed(2)} (raw ${rawVacc})<br/>` +
-          `<span style="color:${ZD}">●</span> Zero-dose: ${r.zd.toFixed(2)} (raw ${rawZd})<br/>` +
-          `Gap (0-dose − vacc): ${sign}${gap.toFixed(2)}`
+          `<span style="color:${VACC}">●</span> Vacciné: ${r.vacc.toFixed(2)} (raw ${rawVacc})<br/>` +
+          `<span style="color:${ZD}">●</span> Zéro-dose: ${r.zd.toFixed(2)} (raw ${rawZd})<br/>` +
+          `Ecart (0-dose − vacc): ${sign}${gap.toFixed(2)}`
         )
       },
     },
@@ -91,7 +91,7 @@ export function buildDumbbellOptions(config: DumbbellConfig): EChartsOption {
         },
       },
       {
-        name: 'Vaccinated',
+        name: 'Vacciné',
         type: 'scatter',
         symbolSize: 14,
         itemStyle: { color: VACC },
@@ -99,7 +99,7 @@ export function buildDumbbellOptions(config: DumbbellConfig): EChartsOption {
         z: 3,
       },
       {
-        name: 'Zero-dose',
+        name: 'Zéro-dose',
         type: 'scatter',
         symbolSize: 14,
         itemStyle: { color: ZD },

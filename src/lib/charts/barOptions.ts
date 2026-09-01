@@ -54,7 +54,7 @@ export function buildBarOptions(config: BarConfig): EChartsOption {
 
           if (typeof item.count === 'number') {
             const displayCount = Math.round(item.count).toLocaleString()
-            tooltip += `<br/># Children: ${displayCount}`
+            tooltip += `<br/># Enfants: ${displayCount}`
           }
 
           return tooltip

@@ -1,6 +1,7 @@
 import type { EChartsOption } from 'echarts'
 import type { ProvinceRow, ZoneRow, MetricKey, AntenneGroup } from '@/types'
-import { METRIC_META, getColorScaleBounds } from '@/lib/dataUtils'
+import { MODEL_METRIC_META } from '@/lib/utils/constants'
+import { getColorScaleBounds } from '@/lib/utils/dataUtils'
 
 interface MapConfig {
   features: (ZoneRow | ProvinceRow)[]
@@ -15,6 +16,7 @@ interface MapConfig {
   antenneOverlay?: AntenneGroup[]
 }
 
+type MetricProperties = Partial<Record<MetricKey, number | null>>
 export function buildMapOptions(config: MapConfig): EChartsOption {
   const { features, metric, isZeroDose, mapName, boundingCoords, antenneOverlay } = config
 
@@ -33,23 +35,25 @@ export function buildMapOptions(config: MapConfig): EChartsOption {
     }
   }
 
-  const metricMeta = METRIC_META[metric]
+  const metricMeta = MODEL_METRIC_META[metric]
 
   // Collect numeric coverage values for colorscale bounds. Null predictions
   // (ungauged zones) are excluded so they don't drag the scale.
   const values = features
-    .map(f => (f.properties as any)[metric])
+    .map(f => (f.properties as MetricProperties)[metric])
     .filter((v): v is number => typeof v === 'number')
     .map(v => v * 100)
 
-  let { min, max } = getColorScaleBounds(values)
+  const bounds = getColorScaleBounds(values)
+  const min = bounds.min
+  let max = bounds.max
 
   if (isZeroDose && max < 10) {
     max = 10
   }
 
   const dataSeries = features.map(f => {
-    const rawValue = (f.properties as any)[metric]
+    const rawValue = (f.properties as MetricProperties)[metric]
     const value = typeof rawValue === 'number' ? rawValue * 100 : null
     // mapKey matches the registered map shape (raw province-prefixed name),
     // so two zones with the same cleaned name (e.g. "Bili") stay distinct.
@@ -107,8 +111,7 @@ export function buildMapOptions(config: MapConfig): EChartsOption {
   // SVG path for the antenne head marker: a small broadcast-tower silhouette
   // (triangular body, two crossbars, antenna spike). Drawn in the group's
   // colour so the marker, label, and zone fill all read as one cluster.
-  const ANTENNE_ICON =
-    'path://M0,-12 L-8,10 L8,10 Z M-4,3 L4,3 M-2,-4 L2,-4 M0,-12 L0,-16'
+  const ANTENNE_ICON = 'path://M0,-12 L-8,10 L8,10 Z M-4,3 L4,3 M-2,-4 L2,-4 M0,-12 L0,-16'
 
   if (antenneOverlay) {
     const markerData = antenneOverlay
@@ -180,8 +183,8 @@ export function buildMapOptions(config: MapConfig): EChartsOption {
 
         let tooltip = `<strong>${displayName}</strong><br/>`
         tooltip += `${metricMeta.label}: ${displayPercentage}%<br/>`
-        tooltip += `# Children: ${displayCount}<br/>`
-        tooltip += `Births/Year: ${displayBirths}`
+        tooltip += `# Enfants: ${displayCount}<br/>`
+        tooltip += `Naissances/An: ${displayBirths}`
         if (antenneOverlay) {
           const entry = antenneByMapKey.get(params.name)
           if (entry) {
@@ -194,29 +197,26 @@ export function buildMapOptions(config: MapConfig): EChartsOption {
     ...(antenneOverlay
       ? {}
       : {
-          visualMap: {
-            min: min,
-            max: max,
-            inRange: isZeroDose
-              ? {
-                  color: ['#fee2e2', '#7f1d1d'], // light red to dark red
-                }
-              : {
-                  color: ['#d1fae5', '#047857'], // light green to dark green
-                },
-            outOfRange: {
-              color: '#e5e7eb', // neutral grey for null / out-of-range values
+        visualMap: {
+          min: min,
+          max: max,
+          inRange: isZeroDose
+            ? {
+              color: ['#fee2e2', '#7f1d1d'], // light red to dark red
+            }
+            : {
+              color: ['#d1fae5', '#047857'], // light green to dark green
             },
-            textStyle: {
-              color: '#475569',
-              fontSize: 12,
-            },
-            bottom: 20,
-            left: 20,
-            orient: 'vertical',
-            text: [`${Math.round(max)}%`, `${Math.round(min)}%`],
+          outOfRange: {
+            color: '#e5e7eb', // neutral grey for null / out-of-range values
           },
-        }),
+          textStyle: { color: '#475569', fontSize: 12, },
+          bottom: 20,
+          left: 20,
+          orient: 'vertical',
+          text: [`${Math.round(max)}%`, `${Math.round(min)}%`],
+        },
+      }),
     geo: {
       map: mapName,
       roam: false,
@@ -225,8 +225,8 @@ export function buildMapOptions(config: MapConfig): EChartsOption {
       emphasis: { label: { show: false } },
       ...(geoRegions ? { regions: geoRegions } : {}),
       ...(boundingCoords ? { boundingCoords } : {}),
-    } as any,
-    series: series as any,
+    } as EChartsOption['geo'],
+    series, //: series as any,
   }
 
   return option
