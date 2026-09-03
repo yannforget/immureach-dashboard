@@ -3,6 +3,7 @@ import { Notes } from '../common/Notes'
 import { PlaceholderPanel } from '../common/PlaceholderPanel'
 import { EcvIndicatorCardGrid, EcvZeroDoseMap, EcvVaccineBarChart, EcvEvolutionLineChart, EcvCaracteristicsChart } from '@/components/features/ecv'
 import { ModelIndicatorCardGrid, ModelCoverageMap, ModelBarChart, ModelVaccinationDataTable, ProfilingPanel } from '@/components/features/model'
+import { DeterminantCardGrid, DeterminantRadarChart } from '@/components/features/determinants'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
 import { useDashboardStore } from '@/store/dashboardStore'
 import type { ViewMode } from '@/types'
@@ -58,7 +59,29 @@ export function DashboardGrid() {
         </div>
       </section>
       )}
-      {activeSection === 'determinants' && <PlaceholderPanel title="Déterminants ménages" />}
+      {activeSection === 'determinants' && (
+        <>
+          {/* Category cards */}
+          <section className="mb-8">
+            <DeterminantCardGrid />
+          </section>
+          {/* Radar chart */}
+          <section className="mb-8">
+            <div className="rounded-lg border border-slate-200 bg-white p-4" style={{ height: 560 }}>
+              <DeterminantRadarChart />
+            </div>
+          </section>
+          {/* COM-B explanation */}
+          <section className="mt-8">
+            <Notes>
+              <strong>Modèle COM-B&nbsp;:</strong> le comportement de vaccination est déterminé par
+              l'interaction entre trois composantes : <em>Capacité</em> (connaissances, aptitudes),
+              <em> Motivation</em> (croyances, attitudes, peurs) et <em>Opportunité</em> (accès,
+              normes sociales, coûts).
+            </Notes>
+          </section>
+        </>
+      )}
       {activeSection === 'actions' && <PlaceholderPanel title="Actions / interventions" />}
 
       {activeSection === 'zerodose' && (

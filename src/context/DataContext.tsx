@@ -5,7 +5,7 @@ import { parseCsv } from '@/lib/utils/csv'
 // import type { KeyEcvRow, ProfileData, ProfileScopeLevel, ProvinceRow, Year, ZoneRow } from '@/types'
 import { parseEcvVaccCovCsv } from '@/lib/utils/ecvVaccCov'
 import { parseEcvCaracteristicsCsv } from '@/lib/utils/ecvCaracteristics'
-import type { EcvCaracteristicsRow, EcvVaccCovRow, KeyEcvRow, ProfileData, ProfileScopeLevel, ProvinceRow, Year, ZoneRow } from '@/types'
+import type { CovariateRow, EcvCaracteristicsRow, EcvVaccCovRow, KeyEcvRow, ProfileData, ProfileScopeLevel, ProvinceRow, RelativeInfluenceRow, Year, ZoneRow } from '@/types'
 
 export type Bbox = [number, number, number, number] // [minLon, minLat, maxLon, maxLat]
 
@@ -16,6 +16,8 @@ interface DataContextType {
   keyEcv: KeyEcvRow[]
   ecvVaccCov: EcvVaccCovRow[]
   ecvCaracteristics: EcvCaracteristicsRow[]
+  covariates: CovariateRow[]
+  relativeInfluences: RelativeInfluenceRow[]
   provinceBboxes: Record<string, Bbox>
   loading: boolean
   error: Error | null
@@ -40,6 +42,24 @@ function parseKeyEcvCsv(text: string): KeyEcvRow[] {
     penta_cov_high: toNum(r.penta_cov_high),
     zdc_cov_low: toNum(r.zdc_cov_low),
     zdc_cov_high: toNum(r.zdc_cov_high),
+  }))
+}
+
+function parseCovariatesCsv(text: string): CovariateRow[] {
+  return parseCsv(text).map(r => ({
+    Category: r.Category,
+    var_description: r.var_description,
+    variable_name: r.variable_name,
+  }))
+}
+
+function parseRelativeInfluencesCsv(text: string): RelativeInfluenceRow[] {
+  return parseCsv(text).map(r => ({
+    Variable: r.Variable,
+    mean_ri: Number(r.mean_ri),
+    median_ri: Number(r.median_ri),
+    lower_q_ri: Number(r.lower_q_ri),
+    upper_q_ri: Number(r.upper_q_ri),
   }))
 }
 
@@ -75,6 +95,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [keyEcv, setKeyEcv] = useState<KeyEcvRow[]>([])
   const [ecvVaccCov, setEcvVaccCov] = useState<EcvVaccCovRow[]>([])
   const [ecvCaracteristics, setEcvCaracteristics] = useState<EcvCaracteristicsRow[]>([])
+  const [covariates, setCovariates] = useState<CovariateRow[]>([])
+  const [relativeInfluences, setRelativeInfluences] = useState<RelativeInfluenceRow[]>([])
   const [provinceBboxes, setProvinceBboxes] = useState<Record<string, Bbox>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
@@ -211,6 +233,25 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           console.warn('Failed to load ecv_caracteristics.csv:', ecvCaractErr)
         }
 
+        // covariates_description.csv + relative_influences.csv (determinants tab data) are optional and non-fatal.
+        try {
+          const covRes = await fetch('/data/indicators/covariates_description.csv')
+          if (covRes.ok) {
+            setCovariates(parseCovariatesCsv(await covRes.text()))
+          }
+        } catch (covErr) {
+          console.warn('Failed to load covariates_description.csv:', covErr)
+        }
+
+        try {
+          const riRes = await fetch('/data/indicators/relative_influences.csv')
+          if (riRes.ok) {
+            setRelativeInfluences(parseRelativeInfluencesCsv(await riRes.text()))
+          }
+        } catch (riErr) {
+          console.warn('Failed to load relative_influences.csv:', riErr)
+        }
+
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Unknown error'))
         console.error('Failed to load data:', err)
@@ -224,7 +265,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   return (
     // <DataContext.Provider value={{ provinces, zones, profile, keyEcv, provinceBboxes, loading, error }}>
-    <DataContext.Provider value={{ provinces, zones, profile, keyEcv, ecvVaccCov, ecvCaracteristics, provinceBboxes, loading, error }}>
+    <DataContext.Provider value={{ provinces, zones, profile, keyEcv, ecvVaccCov, ecvCaracteristics, covariates, relativeInfluences, provinceBboxes, loading, error }}>
       {children}
     </DataContext.Provider>
   )
