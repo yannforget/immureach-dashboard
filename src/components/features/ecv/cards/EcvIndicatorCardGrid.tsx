@@ -17,7 +17,7 @@ export function EcvIndicatorCardGrid() {
                 label: 'Enfants enquêtés',
                 value: formatNumber(row?.nb_people ?? null),
                 confidenceInterval: undefined,
-                description: "Nombre d'enfants couverts par l'enquête ECV pour la sélection courante (année, province, zone).",
+                description: "Nombre d'enfants âgés de 12 à 23 mois couverts par l'enquête ECV pour la sélection courante (année, province, zone).",
             },
             {
                 key: 'nb_zones',
@@ -32,8 +32,8 @@ export function EcvIndicatorCardGrid() {
                     row?.nb_areas != null && row.nb_areas_tot != null
                         ? `${formatNumber(row.nb_areas)} / ${formatNumber(row.nb_areas_tot)} aires de santé enquêtées`
                         : row?.nb_areas != null
-                          ? `${formatNumber(row.nb_areas)} aires de santé enquêtées`
-                          : undefined,
+                            ? `${formatNumber(row.nb_areas)} aires de santé enquêtées`
+                            : undefined,
             },
             {
                 key: 'penta_cov',
