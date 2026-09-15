@@ -17,7 +17,7 @@ export function EcvIndicatorCardGrid() {
                 label: 'Enfants enquêtés',
                 value: formatNumber(row?.nb_people ?? null),
                 confidenceInterval: undefined,
-                description: "Nombre d'enfants âgés de 12 à 23 mois couverts par l'enquête ECV pour la sélection courante (année, province, zone).",
+                description: "Nombre d'enfants âgés de 6 à 24 mois couverts par l'enquête ECV pour la sélection courante (année, province, zone).",
             },
             {
                 key: 'nb_zones',

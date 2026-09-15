@@ -1,7 +1,7 @@
 """Compute ECV key figures for young children from the raw survey microdata.
 
 Reads the Stata exports in data/input/ecv/ (ECV_2022_* and ECV_2023_*), keeps
-children inside the age window (`vs25`, age in completed months; 12-23 by
+children inside the age window (`vs25`, age in completed months; 6-23 by
 default, see AGE_MIN_MONTHS), and derives the two headline indicators the
 dashboard shows:
 
@@ -52,14 +52,14 @@ OUT_CSV = PROJECT_ROOT / "public" / "data" / "key_ecv.csv"
 # Age window in completed months, read off `vs25` ("Quel age a ... en mois ?").
 # Override per run with --age-min / --age-max.
 #
-# Note on the source files: the 2022 export is *already* confined to 6-23
-# months (81,438 children, vs25 spans exactly 6..23) and the 2023 export very
-# nearly so (83,371 of 83,414 rows). A 6-23 filter is therefore close to a
-# no-op. It is 12-23 that selects the ~48k-per-year subset
-# (2022: 47,880 / 2023: 48,326) -- and 12-23 is also what the previously
-# shipped public/data/key_ecv.csv was built on.
-AGE_MIN_MONTHS = 12
-AGE_MAX_MONTHS = 23
+# Note on the source files: the 2022 export is *already* confined to 6-24
+# months (81,438 children, vs25 spans exactly 6..24) and the 2023 export very
+# nearly so (83,371 of 83,414 rows), so the 6-23 window below is close to a
+# no-op and keeps every child the survey collected. The narrower 12-23 window
+# used previously selected only the ~48k-per-year subset (2022: 47,880 /
+# 2023: 48,326); pass --age-min 12 to reproduce it.
+AGE_MIN_MONTHS = 6
+AGE_MAX_MONTHS = 24
 
 # `<vaccine>_merg` columns common to the 2022 and 2023 questionnaires: card
 # and history merged, coded 1 = vaccinated / 2 = not vaccinated. A child is
@@ -184,8 +184,7 @@ out_csv <- args[2]
 d <- read.csv(in_csv, stringsAsFactors = FALSE)
 
 # Stratified two-stage design: strata = province, PSU = aire de sante,
-# weights = the survey's `ponderation`. nest = TRUE because PSU ids are only
-# unique within a stratum.
+# weights = `ponderation`. nest = TRUE because PSU ids are only unique within a stratum.
 design <- svydesign(
   ids = ~psu_id,
   strata = ~stratum_id,
@@ -621,7 +620,7 @@ def check_against_reference(
                 f"R={row[metric]} vs weighted mean={row[f'{metric}_ref']:.1f}"
             )
         # A CI outside [0, 100], or one collapsed onto a point, is not a
-        # confidence interval -- flag it even when the estimate itself is right.
+        # confidence interval: flag it even when the estimate itself is right.
         impossible = (low < 0) | (high > 100) | (low > got) | (high < got)
         collapsed = (high <= low) & ref.notna()
         for _, row in merged[impossible.fillna(False)].iterrows():
