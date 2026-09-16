@@ -5,6 +5,7 @@ import { normalizeAreaName } from '@/lib/utils/ecvVaccCov'
 import { useZoneData } from '../common/useZoneData'
 import {
   ECV_CARACTERISTIC_GROUPS,
+  ECV_CARACTERISTIC_KEYS,
   ECV_CARACTERISTIC_VARIABLE_LABELS,
 } from '@/lib/utils/constants'
 import type { EcvCaracteristicValue, EcvCaracteristicsRow } from '@/types'
@@ -18,6 +19,11 @@ export interface EcvCaracteristicGroup {
   key: string
   label: string
   series: EcvCaracteristicSeries[]
+  // True when the series are the modalities of one question, so the stack
+  // fills the bar to exactly 100%; false for the options of a multi-select
+  // question, whose stacked height is a sum of overlapping answers and can
+  // pass 100%. See ECV_CARACTERISTIC_GROUPS.
+  exclusive: boolean
 }
 
 export interface EcvCaracteristicBar {
@@ -40,13 +46,20 @@ function humanizeVariable(root: string): string {
   return root.replace(/_/g, ' ')
 }
 
-// Derives the tab list from the CSV's `<root>_pct` columns. "mere" and
-// "gardienne" (two answers to the same question) share one tab per
-// ECV_CARACTERISTIC_GROUPS; every other variable — including columns added
-// to the file later — becomes its own single-series tab, in header order.
+function labelOf(variable: string): string {
+  return ECV_CARACTERISTIC_VARIABLE_LABELS[variable] ?? humanizeVariable(variable)
+}
+
+// Builds the tab list from the charted variables (ECV_CARACTERISTIC_KEYS
+// order). Variables sharing an ECV_CARACTERISTIC_GROUPS entry — the answers
+// to one question — collapse into a single multi-series tab; every other
+// variable becomes its own single-series tab. A group only keeps the
+// variables the CSV actually carries, so a round missing a column still
+// charts the rest.
 function buildGroups(variables: string[]): EcvCaracteristicGroup[] {
   const groups: EcvCaracteristicGroup[] = []
   const emitted = new Set<string>()
+  const charted = new Set(variables)
 
   for (const variable of variables) {
     const groupEntry = Object.entries(ECV_CARACTERISTIC_GROUPS).find(([, entry]) =>
@@ -60,18 +73,19 @@ function buildGroups(variables: string[]): EcvCaracteristicGroup[] {
       groups.push({
         key: groupKey,
         label: entry.label,
-        series: entry.variables.map(v => ({
-          key: v,
-          label: ECV_CARACTERISTIC_VARIABLE_LABELS[v] ?? humanizeVariable(v),
-        })),
+        exclusive: entry.exclusive,
+        series: entry.variables
+          .filter(v => charted.has(v))
+          .map(v => ({ key: v, label: labelOf(v) })),
       })
       continue
     }
 
     groups.push({
       key: variable,
-      label: ECV_CARACTERISTIC_VARIABLE_LABELS[variable] ?? humanizeVariable(variable),
-      series: [{ key: variable, label: ECV_CARACTERISTIC_VARIABLE_LABELS[variable] ?? humanizeVariable(variable) }],
+      label: labelOf(variable),
+      exclusive: true,
+      series: [{ key: variable, label: labelOf(variable) }],
     })
   }
 
@@ -98,7 +112,10 @@ export function useEcvCaracteristicsData(): EcvCaracteristicsData {
     const zoneKey = normalizeAreaName(zoneName)
     const provinceKey = normalizeAreaName(selectedProvince)
 
-    const variables = Object.keys(ecvCaracteristics[0]?.values ?? [])
+    // Whitelist + order the charted variables; the CSV may carry extra
+    // `<root>_pct` families that this panel does not show.
+    const available = new Set(Object.keys(ecvCaracteristics[0]?.values ?? {}))
+    const variables = ECV_CARACTERISTIC_KEYS.filter(v => available.has(v))
     const groups = buildGroups(variables)
 
     const rows = ecvCaracteristics.filter(r => r.year === selectedYear)

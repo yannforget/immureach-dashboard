@@ -52,6 +52,41 @@ export const ECV_HIGHLIGHT_RAMP: string[] = [
   mixHex(ECV_HIGHLIGHT_COLOR, '#ffffff', 0.7), // much lighter
 ]
 
+// Sequential ramp for the ECV characteristics heatmap (multi-select groups:
+// difficultés d'accès, problèmes des services). Built around the amber the
+// stacked groups give to "Gardienne" (ECV_CARACTERISTIC_SERIES_COLORS), so
+// every cell here reads as a reported problem — the dashboard's teal is kept
+// for the favourable end of the ordinal scales below.
+export const ECV_HEATMAP_RAMP: string[] = [
+  '#fffbeb',
+  '#fde68a',
+  '#fbbf24',
+  '#f59e0b',
+  '#b45309',
+];
+
+// Explicit colours for the ECV characteristics stacked groups, keyed by
+// variable root. Roots absent from this map fall back to ECV_LINE_PALETTE by
+// series index.
+//
+// BeSD4 (importance perçue) and BeSD6 (confiance) are ordinal scales, so their
+// modalities get a diverging ramp instead of categorical colours: the
+// dashboard teal for the best answer, through green-yellow and yellow, to
+// orange-red for the worst. Mère / Gardienne is not ordinal — it keeps the
+// teal/amber pair the categorical palette already gave it.
+export const ECV_CARACTERISTIC_SERIES_COLORS: Record<string, string> = {
+  mere: '#0d9488',
+  gardienne: '#f59e0b',
+  besd4_tres_important: '#0d9488',
+  besd4_moyen_important: '#84cc16',
+  besd4_peu_important: '#eab308',
+  besd4_pas_important: '#ea580c',
+  besd6_grande_confiance: '#0d9488',
+  besd6_confiance_moyenne: '#84cc16',
+  besd6_confiance_limitee: '#eab308',
+  besd6_aucune_confiance: '#ea580c',
+};
+
 // Fallback categorical palette used only for metric keys missing from ECV_LINE_COLORS.
 export const ECV_LINE_PALETTE: string[] = [
   '#0d9488',
