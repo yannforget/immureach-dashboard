@@ -4,8 +4,13 @@ Reads the Stata exports in data/input/ecv/ (ECV_2022_* and ECV_2023_*), keeps
 children inside the age window (`vs25`, age in completed months; 6-23 by
 default, which is the population both files were collected on), and writes
 public/data/ecv_caracteristics.csv -- one row per national / province / zone
-domain and year, with a `_pct` / `_low` / `_high` triplet per variable (point
-estimate and 95% confidence interval, 0-100).
+domain, year and milieu, with a `_pct` / `_low` / `_high` triplet per variable
+(point estimate and 95% confidence interval, 0-100).
+
+`milieu` is the dashboard's rural/urbain ribbon filter, read off `q108`
+("Milieu de localisation du menage"): every domain is estimated three times,
+once on the whole sample (`all`) and once on each q108 modality (`urbain`,
+`rural`). See MILIEUX.
 
 This is the file behind the characteristics bar chart at the bottom right of
 the dashboard's first tab. Adding a variable to INDICATORS below puts a
@@ -94,14 +99,16 @@ dashboard geometry. Anything the geojson does not know about is reported and
 dropped, so a renamed zone can never silently disappear from the chart.
 
 Run from the project root. The R step estimates every (domain, variable) pair
-one at a time, so the runtime grows with the number of variables -- budget
-around ten minutes for both years and all of them; `--variables` / `--years`
-cut that down when debugging, and `--workdir` keeps the R extract and script so
-the R step can be re-run by hand:
+one at a time and runs once per milieu, so the runtime grows with the number of
+variables and milieux -- budget around half an hour for both years, all
+variables and all three milieux; `--variables` / `--years` / `--milieux` cut
+that down when debugging, and `--workdir` keeps the R extract and script so the
+R step can be re-run by hand:
 
-    uv run scripts/process-ecv-caracteristics.py
-    uv run scripts/process-ecv-caracteristics.py --years 2022 --variables mere,gardienne
-    uv run scripts/process-ecv-caracteristics.py --workdir /tmp/ecv-carac-debug
+    python scripts/process-ecv-caracteristics.py
+    python scripts/process-ecv-caracteristics.py --years 2022 --variables mere,gardienne
+    python scripts/process-ecv-caracteristics.py --milieux all
+    python scripts/process-ecv-caracteristics.py --workdir /tmp/ecv-carac-debug
 """
 
 from __future__ import annotations
@@ -136,6 +143,16 @@ ZONE_COL = "q103"  # "Nom de la zone de santé"
 AREA_COL = "q105"  # "Nom de la grappe (de l'Aire de santé)" -- the PSU
 WEIGHT_COL = "ponderation"
 AGE_COL = "vs25"
+MILIEU_COL = "q108"  # "Milieu de localisation du ménage"
+
+# `q108` modalities, per the Stata value labels: 1 = Urbain, 2 = Rurale.
+MILIEU_BY_CODE = {1: "urbain", 2: "rural"}
+
+# Every domain is estimated once per entry: "all" is the whole sample -- the
+# only thing the file carried before the milieu split -- and the other two are
+# the q108 modalities. Urban zone domains are sparse (only ~190 of the ~505
+# zones have any urban child), so expect empty cells and wide intervals there.
+MILIEUX = ("all", *MILIEU_BY_CODE.values())
 
 
 @dataclass(frozen=True)
@@ -221,28 +238,70 @@ def reason(column: str, gate: tuple[str, tuple[int, ...]]) -> dict[str, Source]:
 INDICATORS: tuple[Indicator, ...] = (
     # -- Document de vaccination -------------------------------------------
     # vs26: 1 = carte seule, 2 = autre document seul, 3 = les deux, 4 = rien.
-    Indicator("possession_carte", "Possession de carte", every_year("vs26", (1, 3), (2, 4))),
-    Indicator("carte_ou_document", "Carte ou document", every_year("vs26", (1, 2, 3), (4,))),
+    Indicator(
+        "possession_carte", "Possession de carte", every_year("vs26", (1, 3), (2, 4))
+    ),
+    Indicator(
+        "carte_ou_document", "Carte ou document", every_year("vs26", (1, 2, 3), (4,))
+    ),
     # -- Mere / gardienne ---------------------------------------------------
     Indicator("mere", "Mère", every_year("qa100", (1,), (2,))),
     Indicator("gardienne", "Gardienne", every_year("qa100", (2,), (1,))),
     # -- Enregistrement de la naissance -------------------------------------
     # vs25d: 1 = oui vu, 2 = oui pas vu, 3 = non (8 = ne sait pas -> missing).
-    Indicator("certificat_naissance", "Certificat de naissance", every_year("vs25d", (1, 2), (3,))),
+    Indicator(
+        "certificat_naissance",
+        "Certificat de naissance",
+        every_year("vs25d", (1, 2), (3,)),
+    ),
     # vs25e: 1 = oui, 2 = non (99 = NSP -> missing).
-    Indicator("naissance_enregistree", "Naissance enregistrée", every_year("vs25e", (1,), (2,))),
+    Indicator(
+        "naissance_enregistree",
+        "Naissance enregistrée",
+        every_year("vs25e", (1,), (2,)),
+    ),
     # -- BeSD4: importance percue des vaccins -------------------------------
     # 1 = pas du tout, 2 = quelque peu, 3 = moyennement, 4 = tres important.
-    Indicator("besd4_pas_important", "Pas du tout important", scale_modality("BeSD4", 1, LIKERT4)),
-    Indicator("besd4_peu_important", "Quelque peu important", scale_modality("BeSD4", 2, LIKERT4)),
-    Indicator("besd4_moyen_important", "Moyennement important", scale_modality("BeSD4", 3, LIKERT4)),
-    Indicator("besd4_tres_important", "Très important", scale_modality("BeSD4", 4, LIKERT4)),
+    Indicator(
+        "besd4_pas_important",
+        "Pas du tout important",
+        scale_modality("BeSD4", 1, LIKERT4),
+    ),
+    Indicator(
+        "besd4_peu_important",
+        "Quelque peu important",
+        scale_modality("BeSD4", 2, LIKERT4),
+    ),
+    Indicator(
+        "besd4_moyen_important",
+        "Moyennement important",
+        scale_modality("BeSD4", 3, LIKERT4),
+    ),
+    Indicator(
+        "besd4_tres_important", "Très important", scale_modality("BeSD4", 4, LIKERT4)
+    ),
     # -- BeSD6: confiance dans les agents de sante --------------------------
     # 1 = aucune, 2 = limitee, 3 = moyenne, 4 = grande confiance.
-    Indicator("besd6_aucune_confiance", "Aucune confiance", scale_modality("BeSD6", 1, LIKERT4)),
-    Indicator("besd6_confiance_limitee", "Confiance limitée", scale_modality("BeSD6", 2, LIKERT4)),
-    Indicator("besd6_confiance_moyenne", "Confiance moyenne", scale_modality("BeSD6", 3, LIKERT4)),
-    Indicator("besd6_grande_confiance", "Grande confiance", scale_modality("BeSD6", 4, LIKERT4)),
+    Indicator(
+        "besd6_aucune_confiance",
+        "Aucune confiance",
+        scale_modality("BeSD6", 1, LIKERT4),
+    ),
+    Indicator(
+        "besd6_confiance_limitee",
+        "Confiance limitée",
+        scale_modality("BeSD6", 2, LIKERT4),
+    ),
+    Indicator(
+        "besd6_confiance_moyenne",
+        "Confiance moyenne",
+        scale_modality("BeSD6", 3, LIKERT4),
+    ),
+    Indicator(
+        "besd6_grande_confiance",
+        "Grande confiance",
+        scale_modality("BeSD6", 4, LIKERT4),
+    ),
     # -- BeSD19: difficultes d'acces (BeSD19_a .. BeSD19_e) -----------------
     # "Aucune difficulte" is its own option in 2022 (BeSD19a) and the "Non"
     # answer of the 2023 filter question (BeSD19); the four reasons follow.
@@ -252,7 +311,9 @@ INDICATORS: tuple[Indicator, ...] = (
         {"2022": Source("BeSD19a", (1,), (2,)), "2023": Source("BeSD19", (2,), (1,))},
     ),
     Indicator("besd19_trajet", "Trajet difficile", reason("BeSD19b", GATE_ACCES)),
-    Indicator("besd19_horaires", "Horaires peu pratiques", reason("BeSD19c", GATE_ACCES)),
+    Indicator(
+        "besd19_horaires", "Horaires peu pratiques", reason("BeSD19c", GATE_ACCES)
+    ),
     Indicator("besd19_refoulement", "Refoulement", reason("BeSD19d", GATE_ACCES)),
     Indicator("besd19_attente", "Attente trop longue", reason("BeSD19e", GATE_ACCES)),
     # -- BeSD20: problemes des services (BeSD21_a .. BeSD21_h) --------------
@@ -261,15 +322,36 @@ INDICATORS: tuple[Indicator, ...] = (
     Indicator(
         "besd21_satisfait",
         "Rien, satisfait(e)",
-        {"2022": Source("BeSD21a", (1,), (2,)), "2023": Source("BeSD20", (2, 3, 4), (1,))},
+        {
+            "2022": Source("BeSD21a", (1,), (2,)),
+            "2023": Source("BeSD20", (2, 3, 4), (1,)),
+        },
     ),
-    Indicator("besd21_rupture", "Vaccin indisponible", reason("BeSD21b", GATE_SATISFACTION)),
-    Indicator("besd21_ouverture", "Ouverture tardive", reason("BeSD21c", GATE_SATISFACTION)),
-    Indicator("besd21_attente", "Attente trop longue", reason("BeSD21d", GATE_SATISFACTION)),
-    Indicator("besd21_proprete", "Manque de propreté", reason("BeSD21e", GATE_SATISFACTION)),
-    Indicator("besd21_formation", "Personnel mal formé", reason("BeSD21f", GATE_SATISFACTION)),
-    Indicator("besd21_respect", "Personnel irrespectueux", reason("BeSD21g", GATE_SATISFACTION)),
-    Indicator("besd21_temps", "Trop peu de temps accordé", reason("BeSD21h", GATE_SATISFACTION)),
+    Indicator(
+        "besd21_rupture", "Vaccin indisponible", reason("BeSD21b", GATE_SATISFACTION)
+    ),
+    Indicator(
+        "besd21_ouverture", "Ouverture tardive", reason("BeSD21c", GATE_SATISFACTION)
+    ),
+    Indicator(
+        "besd21_attente", "Attente trop longue", reason("BeSD21d", GATE_SATISFACTION)
+    ),
+    Indicator(
+        "besd21_proprete", "Manque de propreté", reason("BeSD21e", GATE_SATISFACTION)
+    ),
+    Indicator(
+        "besd21_formation", "Personnel mal formé", reason("BeSD21f", GATE_SATISFACTION)
+    ),
+    Indicator(
+        "besd21_respect",
+        "Personnel irrespectueux",
+        reason("BeSD21g", GATE_SATISFACTION),
+    ),
+    Indicator(
+        "besd21_temps",
+        "Trop peu de temps accordé",
+        reason("BeSD21h", GATE_SATISFACTION),
+    ),
 )
 
 INDICATOR_BY_KEY = {ind.key: ind for ind in INDICATORS}
@@ -303,7 +385,7 @@ PARTITIONS: tuple[tuple[str, tuple[str, ...]], ...] = (
 )
 
 # Survey design + geography columns, required in every file.
-GEO_COLUMNS = [STRATUM_COL, ZONE_COL, AREA_COL, WEIGHT_COL, AGE_COL]
+GEO_COLUMNS = [STRATUM_COL, ZONE_COL, AREA_COL, WEIGHT_COL, AGE_COL, MILIEU_COL]
 
 
 def source_columns(variables: list[str], year: str) -> list[str]:
@@ -589,13 +671,7 @@ def normalize(name: str) -> str:
 
 
 def load_geojson_names(path: Path) -> tuple[dict[str, str], dict[str, tuple[str, str]]]:
-    """Canonical province / zone names from the dashboard's zone boundaries.
-
-    Returns (province lookup, zone lookup), both keyed by the normalized name
-    -- the zone one by "<province>|<zone>" because zone names repeat across
-    provinces. Values are the cleaned names exactly as the dashboard's
-    cleanName() produces them from level_2_name / level_3_name.
-    """
+    """Canonical province / zone names from the dashboard's zone boundaries."""
     if not path.exists():
         raise FileNotFoundError(
             f"zone boundaries not found: {path}\n"
@@ -872,6 +948,25 @@ def load_year(
     df["zone"] = clean_name(df[ZONE_COL])
     df["area"] = clean_name(df[AREA_COL])
     df["weight"] = pd.to_numeric(df[WEIGHT_COL], errors="coerce")
+    df["milieu"] = pd.to_numeric(df[MILIEU_COL], errors="coerce").map(MILIEU_BY_CODE)
+
+    # The milieu split is a filter, not an indicator: a child whose `q108` is
+    # missing or carries an unexpected code still counts in the "all" domain,
+    # it just never lands in a urbain/rural one. Report it so a file that codes
+    # the question differently is caught rather than silently halving the split.
+    unknown_milieu = df["milieu"].isna()
+    seen = df["milieu"].value_counts().to_dict()
+    print(
+        f"  milieu `{MILIEU_COL}`: "
+        + ", ".join(f"{name} {n:,}" for name, n in sorted(seen.items()))
+        + f" ({int(unknown_milieu.sum()):,} with no milieu)"
+    )
+    if unknown_milieu.any():
+        print(
+            f"  WARNING: {int(unknown_milieu.sum()):,} children carry a "
+            f"`{MILIEU_COL}` outside {sorted(MILIEU_BY_CODE)}; they are counted "
+            "in the `all` milieu only"
+        )
 
     df = canonicalize_names(df, provinces, zones)
     df = build_indicators(df, variables, year)
@@ -884,7 +979,16 @@ def load_year(
     if nonpositive:
         print(f"  WARNING: {nonpositive:,} children carry a weight <= 0")
 
-    keep = ["province", "zone", "area", "zone_key", "psu_key", "weight", *variables]
+    keep = [
+        "province",
+        "zone",
+        "area",
+        "zone_key",
+        "psu_key",
+        "weight",
+        "milieu",
+        *variables,
+    ]
     return df[keep]
 
 
@@ -1116,10 +1220,56 @@ def check_against_reference(
         print("  cross-check OK: every estimate matches its weighted mean")
 
 
+def process_milieu(
+    df: pd.DataFrame,
+    year: str,
+    milieu: str,
+    variables: list[str],
+    rscript: str,
+    workdir: Path | None,
+) -> pd.DataFrame:
+    """Estimate every domain on one milieu subset of a year's children.
+
+    The subset is taken before `svydesign()` is built rather than through
+    `subset()` on a full-sample design. That matches what the R script already
+    does for the province and zone domains (see the `domain()` comment there),
+    so a milieu domain is estimated exactly the way a zone domain is.
+    """
+    counts = build_counts(df)
+    print(
+        f"  domains: {int((counts['level'] == 'province').sum())} provinces, "
+        f"{int((counts['level'] == 'zone').sum())} zones, 1 national"
+    )
+
+    print("  running the R survey estimation ...")
+    if workdir is None:
+        with tempfile.TemporaryDirectory(prefix=f"ecv-carac-{year}-{milieu}-") as tmp:
+            est = run_survey_r(df, variables, rscript, Path(tmp))
+    else:
+        run_dir = workdir / year / milieu
+        run_dir.mkdir(parents=True, exist_ok=True)
+        est = run_survey_r(df, variables, rscript, run_dir)
+        print(f"  kept the R inputs/outputs in {run_dir}")
+
+    wide = reshape_estimates(est, variables)
+    check_against_reference(wide, weighted_rates(df, variables), variables)
+
+    out = counts.merge(wide, on=["level", "domain_key"], how="left")
+    unmatched = int(out[f"{variables[0]}_pct"].isna().sum())
+    if unmatched:
+        print(f"  WARNING: {unmatched} domain(s) got no estimate from R")
+    out["nb_children"] = out["nb_children"].astype("Int64")
+    out["year"] = year
+    out["milieu"] = milieu
+    print(f"  {len(out)} rows for {year} / {milieu}")
+    return out.drop(columns=["domain_key"])
+
+
 def process_file(
     dta_path: Path,
     year: str,
     variables: list[str],
+    milieux: list[str],
     rscript: str,
     workdir: Path | None,
     age_min: int,
@@ -1135,33 +1285,21 @@ def process_file(
     )
     report_indicators(df, variables)
 
-    counts = build_counts(df)
-    print(
-        f"  domains: {int((counts['level'] == 'province').sum())} provinces, "
-        f"{int((counts['level'] == 'zone').sum())} zones, 1 national"
-    )
+    frames = []
+    for milieu in milieux:
+        subset = df if milieu == "all" else df[df["milieu"] == milieu]
+        print(
+            f"\n--- {year} / milieu={milieu}: {len(subset):,} children in "
+            f"{subset['province'].nunique()} provinces / "
+            f"{subset['zone_key'].nunique()} zones / "
+            f"{subset['psu_key'].nunique()} areas ---"
+        )
+        if subset.empty:
+            print(f"  WARNING: no child with milieu={milieu}; no rows emitted")
+            continue
+        frames.append(process_milieu(subset, year, milieu, variables, rscript, workdir))
 
-    print("  running the R survey estimation ...")
-    if workdir is None:
-        with tempfile.TemporaryDirectory(prefix=f"ecv-carac-{year}-") as tmp:
-            est = run_survey_r(df, variables, rscript, Path(tmp))
-    else:
-        year_dir = workdir / year
-        year_dir.mkdir(parents=True, exist_ok=True)
-        est = run_survey_r(df, variables, rscript, year_dir)
-        print(f"  kept the R inputs/outputs in {year_dir}")
-
-    wide = reshape_estimates(est, variables)
-    check_against_reference(wide, weighted_rates(df, variables), variables)
-
-    out = counts.merge(wide, on=["level", "domain_key"], how="left")
-    unmatched = int(out[f"{variables[0]}_pct"].isna().sum())
-    if unmatched:
-        print(f"  WARNING: {unmatched} domain(s) got no estimate from R")
-    out["nb_children"] = out["nb_children"].astype("Int64")
-    out["year"] = year
-    print(f"  {len(out)} rows for {year}")
-    return out.drop(columns=["domain_key"])
+    return pd.concat(frames, ignore_index=True)
 
 
 def resolve_rscript(explicit: str | None) -> str:
@@ -1206,6 +1344,13 @@ def main() -> None:
         f"(default: all {len(VARIABLES)})",
     )
     parser.add_argument(
+        "--milieux",
+        default=",".join(MILIEUX),
+        help="comma-separated subset of milieu domains to estimate; each one "
+        "costs a full R pass over every province and zone "
+        f"(default: {','.join(MILIEUX)})",
+    )
+    parser.add_argument(
         "--age-min",
         type=int,
         default=AGE_MIN_MONTHS,
@@ -1247,8 +1392,13 @@ def main() -> None:
         raise SystemExit(
             f"unknown variable(s): {unknown}\nknown variables: {VARIABLES}"
         )
+    milieux = [m.strip() for m in args.milieux.split(",") if m.strip()]
+    unknown = [m for m in milieux if m not in MILIEUX]
+    if unknown:
+        raise SystemExit(f"unknown milieu(x): {unknown}\nknown milieux: {MILIEUX}")
     print(f"  years     : {years}")
     print(f"  variables : {len(variables)} -> {variables}")
+    print(f"  milieux   : {milieux}")
 
     rscript = resolve_rscript(args.rscript)
     provinces, zones = load_geojson_names(args.boundaries)
@@ -1268,6 +1418,7 @@ def main() -> None:
                 matches[0],
                 year,
                 variables,
+                milieux,
                 rscript,
                 args.workdir,
                 args.age_min,
@@ -1283,12 +1434,16 @@ def main() -> None:
         for variable in variables
         for stat in ("pct", "low", "high")
     ]
-    output = output[["year", "level", "province", "zone", "nb_children", *ordered]]
+    output = output[
+        ["year", "milieu", "level", "province", "zone", "nb_children", *ordered]
+    ]
 
     print("\n=== output ===")
     for level in ("national", "province", "zone"):
-        by_year = output[output["level"] == level].groupby("year").size().to_dict()
-        print(f"  {level:<9} rows per year: {by_year}")
+        at_level = output[output["level"] == level]
+        for milieu in milieux:
+            by_year = at_level[at_level["milieu"] == milieu].groupby("year").size()
+            print(f"  {level:<9} {milieu:<7} rows per year: {by_year.to_dict()}")
     empty = [c for c in ordered if output[c].isna().all()]
     if empty:
         print(f"  WARNING: {len(empty)} column(s) are entirely empty: {empty}")
@@ -1305,7 +1460,9 @@ def main() -> None:
 
     print("\n  national percentages:")
     for _, row in output[output["level"] == "national"].iterrows():
-        print(f"    --- {row['year']} ({row['nb_children']:,} children)")
+        print(
+            f"    --- {row['year']} / {row['milieu']} ({row['nb_children']:,} children)"
+        )
         for variable in variables:
             print(
                 f"      {INDICATOR_BY_KEY[variable].label:<28} "

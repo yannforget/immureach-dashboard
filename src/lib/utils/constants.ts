@@ -242,7 +242,7 @@ export const ECV_CARACTERISTIC_GROUPS: Record<
         exclusive: true,
     },
     besd6_confiance: {
-        label: 'Confiance aux vaccinateurs',
+        label: 'Confiance dans vaccinateurs',
         variables: [
             'besd6_aucune_confiance',
             'besd6_confiance_limitee',

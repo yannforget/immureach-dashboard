@@ -19,10 +19,19 @@ interval (`svyciprop(method = "logit")`), which behaves properly for the small
 zone-level domains where coverage sits near 0% or 100%.
 
 Counts (children, health zones, health areas) are unweighted sample sizes and
-are computed here in pandas.
+are computed here in pandas. `nb_zones` is the exception: it counts the health
+zones the *survey* reached, so it is taken from the whole sample and repeated
+unchanged on the urbain/rural rows (see build_counts).
 
 Output mirrors the KeyEcvRow schema consumed by the dashboard
-(src/types/index.ts): one row per national / province / zone domain and year.
+(src/types/index.ts): one row per national / province / zone domain, year and
+milieu.
+
+`milieu` is the dashboard's rural/urbain ribbon filter, read off `q108`
+("Milieu de localisation du menage"): every domain is estimated three times,
+once on the whole sample (`all`) and once on each q108 modality (`urbain`,
+`rural`). See MILIEUX. Each milieu costs a full R pass, so the run takes about
+three times as long as it used to; `--milieux all` reproduces the old output.
 
 Requires R with the `survey` package installed:
 
@@ -97,6 +106,16 @@ AREA_COL = "q105"  # "Nom de la grappe (de l'Aire de sante)" -- the PSU
 WEIGHT_COL = "ponderation"
 AGE_COL = "vs25"
 AREAS_TOTAL_COL = "nbre_as"  # health areas in the zone (sampling frame)
+MILIEU_COL = "q108"  # "Milieu de localisation du menage"
+
+# `q108` modalities, per the Stata value labels: 1 = Urbain, 2 = Rurale.
+MILIEU_BY_CODE = {1: "urbain", 2: "rural"}
+
+# Every domain is estimated once per entry: "all" is the whole sample -- the
+# only thing the file carried before the milieu split -- and the other two are
+# the q108 modalities. Urban zone domains are sparse (only ~190 of the ~505
+# zones have any urban child), so expect empty cells and wide intervals there.
+MILIEUX = ("all", *MILIEU_BY_CODE.values())
 
 LOAD_COLUMNS = [
     STRATUM_COL,
@@ -105,6 +124,7 @@ LOAD_COLUMNS = [
     WEIGHT_COL,
     AGE_COL,
     AREAS_TOTAL_COL,
+    MILIEU_COL,
 ] + MERG_COLUMNS
 
 # Names arrive as "kl Kwilu Province" / "bu Aketi Zone de Sante": a two-letter
@@ -361,6 +381,17 @@ def load_year(
     df["area"] = clean_name(df[AREA_COL])
     df["weight"] = pd.to_numeric(df[WEIGHT_COL], errors="coerce")
     df["nb_areas_tot"] = pd.to_numeric(df[AREAS_TOTAL_COL], errors="coerce")
+    # The milieu split is a filter, not an indicator: a child whose `q108` is
+    # missing or carries an unexpected code still counts in the "all" domain,
+    # it just never lands in a urbain/rural one.
+    df["milieu"] = pd.to_numeric(df[MILIEU_COL], errors="coerce").map(MILIEU_BY_CODE)
+    print(
+        f"  milieu `{MILIEU_COL}`: "
+        + ", ".join(
+            f"{name} {n:,}" for name, n in sorted(df["milieu"].value_counts().items())
+        )
+        + f" ({int(df['milieu'].isna().sum()):,} with no milieu)"
+    )
 
     merg = df[MERG_COLUMNS].apply(pd.to_numeric, errors="coerce")
     df["penta3"] = (merg["penta3_merg"] == VACCINATED).astype("Int64")
@@ -384,14 +415,27 @@ def load_year(
             "psu_key",
             "weight",
             "nb_areas_tot",
+            "milieu",
             "penta3",
             "zero_dose",
         ]
     ]
 
 
-def build_counts(df: pd.DataFrame) -> pd.DataFrame:
-    """Unweighted sample sizes per domain: children, zones, areas surveyed/total."""
+def build_counts(
+    df: pd.DataFrame, zone_frame: pd.DataFrame | None = None
+) -> pd.DataFrame:
+    """Unweighted sample sizes per domain: children, zones, areas surveyed/total.
+
+    `zone_frame` is the whole-sample frame for the same year and is used for
+    `nb_zones` only. "Zones de sante enquetees" describes the reach of the
+    survey itself, not of the rural/urbain slice the ribbon happens to show, so
+    it has to read the same under every milieu -- otherwise switching the
+    ribbon to `urbain` makes it look as if the survey suddenly covered a third
+    of the country. Every other count is a genuine count of `df` and does vary
+    by milieu. Defaults to `df`, which reproduces the whole-sample figures.
+    """
+    zones_ref = df if zone_frame is None else zone_frame
     zone_totals = df.groupby("zone_key")["nb_areas_tot"].max()
 
     zone = (
@@ -408,10 +452,12 @@ def build_counts(df: pd.DataFrame) -> pd.DataFrame:
         df.groupby("province")
         .agg(
             nb_people=("weight", "size"),
-            nb_zones=("zone_key", "nunique"),
             nb_areas=("psu_key", "nunique"),
         )
         .reset_index()
+    )
+    province["nb_zones"] = province["province"].map(
+        zones_ref.groupby("province")["zone_key"].nunique()
     )
     province["nb_areas_tot"] = province["province"].map(
         df.drop_duplicates("zone_key").groupby("province")["nb_areas_tot"].sum()
@@ -426,7 +472,7 @@ def build_counts(df: pd.DataFrame) -> pd.DataFrame:
                 "province": None,
                 "zone": None,
                 "nb_people": len(df),
-                "nb_zones": df["zone_key"].nunique(),
+                "nb_zones": zones_ref["zone_key"].nunique(),
                 "nb_areas": df["psu_key"].nunique(),
                 "nb_areas_tot": df.drop_duplicates("zone_key")["nb_areas_tot"].sum(),
                 "level": "national",
@@ -649,9 +695,48 @@ def check_against_reference(
         print("  cross-check OK: all estimates match the weighted means")
 
 
+def process_milieu(
+    df: pd.DataFrame,
+    year: str,
+    milieu: str,
+    workdir: Path | None = None,
+    zone_frame: pd.DataFrame | None = None,
+) -> pd.DataFrame:
+    """Estimate every domain on one milieu subset of a year's children.
+
+    The subset is taken before `svydesign()` is built rather than through
+    `subset()` on a full-sample design. That matches what the R script already
+    does for the province and zone domains (see the `domain()` comment there),
+    so a milieu domain is estimated exactly the way a zone domain is.
+    """
+    counts = build_counts(df, zone_frame)
+
+    print("  running R survey estimation ...")
+    if workdir is None:
+        with tempfile.TemporaryDirectory(prefix=f"ecv-{year}-{milieu}-") as tmp:
+            est = run_survey_r(df, Path(tmp))
+    else:
+        # Keep the extract, the generated R script and the raw estimates so the
+        # R step can be re-run and debugged by hand.
+        run_dir = workdir / year / milieu
+        run_dir.mkdir(parents=True, exist_ok=True)
+        est = run_survey_r(df, run_dir)
+        print(f"  kept R inputs/outputs in {run_dir}")
+    wide = reshape_estimates(est)
+    check_against_reference(wide, weighted_rates(df))
+
+    out = counts.merge(wide, on=["level", "domain_key"], how="left")
+    count_cols = ["nb_people", "nb_zones", "nb_areas", "nb_areas_tot"]
+    out[count_cols] = out[count_cols].astype("Int64")
+    out["year"] = year
+    out["milieu"] = milieu
+    return out.drop(columns=["domain_key"])
+
+
 def process_file(
     dta_path: Path,
     year: str,
+    milieux: list[str],
     workdir: Path | None = None,
     age_min: int = AGE_MIN_MONTHS,
     age_max: int = AGE_MAX_MONTHS,
@@ -663,27 +748,21 @@ def process_file(
         f"{df['zone_key'].nunique()} zones / {df['psu_key'].nunique()} areas"
     )
 
-    counts = build_counts(df)
+    frames = []
+    for milieu in milieux:
+        subset = df if milieu == "all" else df[df["milieu"] == milieu]
+        print(
+            f"  --- milieu={milieu}: {len(subset):,} children in "
+            f"{subset['zone_key'].nunique()} zones / "
+            f"{subset['psu_key'].nunique()} areas ---"
+        )
+        if subset.empty:
+            print(f"  WARNING: no child with milieu={milieu}; no rows emitted")
+            continue
+        # `df`, not `subset`, so nb_zones stays the whole-sample count.
+        frames.append(process_milieu(subset, year, milieu, workdir, zone_frame=df))
 
-    print("  running R survey estimation ...")
-    if workdir is None:
-        with tempfile.TemporaryDirectory(prefix=f"ecv-{year}-") as tmp:
-            est = run_survey_r(df, Path(tmp))
-    else:
-        # Keep the extract, the generated R script and the raw estimates so the
-        # R step can be re-run and debugged by hand.
-        year_dir = workdir / year
-        year_dir.mkdir(parents=True, exist_ok=True)
-        est = run_survey_r(df, year_dir)
-        print(f"  kept R inputs/outputs in {year_dir}")
-    wide = reshape_estimates(est)
-    check_against_reference(wide, weighted_rates(df))
-
-    out = counts.merge(wide, on=["level", "domain_key"], how="left")
-    count_cols = ["nb_people", "nb_zones", "nb_areas", "nb_areas_tot"]
-    out[count_cols] = out[count_cols].astype("Int64")
-    out["year"] = year
-    return out.drop(columns=["domain_key"])
+    return pd.concat(frames, ignore_index=True)
 
 
 def main() -> None:
@@ -693,6 +772,13 @@ def main() -> None:
         type=Path,
         default=OUT_CSV,
         help=f"destination CSV (default: {OUT_CSV.relative_to(PROJECT_ROOT)})",
+    )
+    parser.add_argument(
+        "--milieux",
+        default=",".join(MILIEUX),
+        help="comma-separated subset of milieu domains to estimate; each one "
+        "costs a full R pass over every province and zone "
+        f"(default: {','.join(MILIEUX)})",
     )
     parser.add_argument(
         "--age-min",
@@ -718,19 +804,27 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    milieux = [m.strip() for m in args.milieux.split(",") if m.strip()]
+    unknown = [m for m in milieux if m not in MILIEUX]
+    if unknown:
+        raise SystemExit(f"unknown milieu(x): {unknown}\nknown milieux: {MILIEUX}")
+
     frames = []
     for year in ("2022", "2023"):
         matches = sorted(INPUT_DIR.glob(f"ECV_{year}_*.dta"))
         if not matches:
             raise FileNotFoundError(f"no ECV_{year}_*.dta in {INPUT_DIR}")
         frames.append(
-            process_file(matches[0], year, args.workdir, args.age_min, args.age_max)
+            process_file(
+                matches[0], year, milieux, args.workdir, args.age_min, args.age_max
+            )
         )
 
     output = pd.concat(frames, ignore_index=True)
     output = output[
         [
             "year",
+            "milieu",
             "level",
             "province",
             "zone",

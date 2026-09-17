@@ -5,8 +5,13 @@ children inside the age window (`vs25`, age in completed months; 6-23 by
 default, which is the population both files were collected on, so the filter
 is close to a no-op -- see AGE_MIN_MONTHS), and writes
 public/data/ecv_vaccination_coverage.csv -- one row per national / province /
-zone domain and year, with a `_pct` / `_low` / `_high` triplet per metric
-(point estimate and 95% confidence interval, 0-100).
+zone domain, year and milieu, with a `_pct` / `_low` / `_high` triplet per
+metric (point estimate and 95% confidence interval, 0-100).
+
+`milieu` is the dashboard's rural/urbain ribbon filter, read off `q108`
+("Milieu de localisation du menage"): every domain is estimated three times,
+once on the whole sample (`all`) and once on each q108 modality (`urbain`,
+`rural`). See MILIEUX.
 
 The 17 antigen metrics come straight from the `<vaccine>_merg` columns, which
 merge the vaccination card with the mother's recall and are coded
@@ -28,16 +33,15 @@ dropped, so a renamed zone can never silently disappear from the map.
 
 Counts (nb_children, nb_as, as_enq) are unweighted sample sizes.
 
-Run from the project root (~3 minutes for both years; `--metrics` /`--years`
-cut that down when debugging, `--workdir` keeps the R extract and script so the
-R step can be re-run by hand):
+Run from the project root (~10 minutes for both years and all three milieux --
+each milieu is a full R pass; `--metrics` / `--years` / `--milieux` cut that
+down when debugging, `--workdir` keeps the R extract and script so the R step
+can be re-run by hand):
 
-    uv run scripts/process-ecv-vaccination-coverage.py
-    uv run scripts/process-ecv-vaccination-coverage.py --years 2022 --metrics penta3,zero_dose
-    uv run scripts/process-ecv-vaccination-coverage.py --workdir /tmp/ecv-debug
-
-Rscript is taken from PATH; point at another interpreter with --rscript, e.g.
---rscript ~/miniforge3/envs/immu_tdb/bin/Rscript.
+    python scripts/process-ecv-vaccination-coverage.py
+    python scripts/process-ecv-vaccination-coverage.py --years 2022 --metrics penta3,zero_dose
+    python scripts/process-ecv-vaccination-coverage.py --milieux all
+    python scripts/process-ecv-vaccination-coverage.py --workdir /tmp/ecv-debug
 """
 
 from __future__ import annotations
@@ -78,6 +82,19 @@ WEIGHT_COL = "ponderation"
 AGE_COL = "vs25"
 AREAS_TOTAL_COL = "nbre_as"  # health areas in the zone (sampling frame)
 AREAS_SURVEYED_COL = "nbre_asenq"  # health areas actually surveyed, per the file
+MILIEU_COL = "q108"  # "Milieu de localisation du ménage"
+
+# `q108` modalities, per the Stata value labels: 1 = Urbain, 2 = Rurale. The
+# dashboard's milieu ribbon filter reads the `milieu` column built from them.
+MILIEU_BY_CODE = {1: "urbain", 2: "rural"}
+
+# Every domain is estimated once per entry: "all" is the whole sample -- the
+# only thing the file carried before the milieu split -- and the other two are
+# the q108 modalities. Urban zone domains are sparse (only ~190 of the ~505
+# zones have any urban child, a third of those from a single aire de santé),
+# so expect empty cells and wide intervals there; the CI fallback in the R
+# script handles them the same way it handles small zones.
+MILIEUX = ("all", *MILIEU_BY_CODE.values())
 
 # Dashboard metric key -> `<vaccine>_merg` column.
 # The 2023 file additionally carries `vpi2_merg` / `var2_merg` (second doses);
@@ -122,6 +139,7 @@ LOAD_COLUMNS = [
     AGE_COL,
     AREAS_TOTAL_COL,
     AREAS_SURVEYED_COL,
+    MILIEU_COL,
     ZERO_DOSE_REF_COL,
     *MERG_COLUMNS,
 ]
@@ -139,6 +157,10 @@ R_SCRIPT = r"""
 # intervals. Called by scripts/process-ecv-vaccination-coverage.py. 
 # Reads the child-level extract, writes one row per (domain, indicator) 
 # with the point estimate and CI bounds as proportions.
+if (!requireNamespace("survey", quietly = TRUE)) {
+  stop("the R package 'survey' is not installed: install.packages(\"survey\")")
+}
+suppressPackageStartupMessages(library(survey))
 
 # Subsetting to a single zone can leave a stratum contributing one PSU; centre
 # those on the grand mean rather than dropping the variance contribution.
@@ -394,13 +416,7 @@ def normalize(name: str) -> str:
 
 
 def load_geojson_names(path: Path) -> tuple[dict[str, str], dict[str, tuple[str, str]]]:
-    """Canonical province / zone names from the dashboard's zone boundaries.
-
-    Returns (province lookup, zone lookup), both keyed by the normalized name
-    -- the zone one by "<province>|<zone>" because zone names repeat across
-    provinces. Values are the cleaned names exactly as the dashboard's
-    cleanName() produces them from level_2_name / level_3_name.
-    """
+    """Canonical province / zone names from the dashboard's zone boundaries."""
     if not path.exists():
         raise FileNotFoundError(
             f"zone boundaries not found: {path}\n"
@@ -616,6 +632,31 @@ def load_year(
     df["weight"] = pd.to_numeric(df[WEIGHT_COL], errors="coerce")
     df["nb_as"] = pd.to_numeric(df[AREAS_TOTAL_COL], errors="coerce")
     df["as_enq_file"] = pd.to_numeric(df[AREAS_SURVEYED_COL], errors="coerce")
+    df["milieu"] = pd.to_numeric(df[MILIEU_COL], errors="coerce").map(MILIEU_BY_CODE)
+
+    # The milieu split is a filter, not an indicator: a child whose `q108` is
+    # missing or carries an unexpected code still counts in the "all" domain,
+    # it just never lands in a urbain/rural one. Report it so a file that codes
+    # the question differently is caught rather than silently halving the split.
+    unknown_milieu = df["milieu"].isna()
+    counts = df["milieu"].value_counts().to_dict()
+    print(
+        f"  milieu `{MILIEU_COL}`: "
+        + ", ".join(f"{name} {n:,}" for name, n in sorted(counts.items()))
+        + f" ({int(unknown_milieu.sum()):,} with no milieu)"
+    )
+    if unknown_milieu.any():
+        codes = sorted(
+            pd.to_numeric(df.loc[unknown_milieu, MILIEU_COL], errors="coerce")
+            .dropna()
+            .unique()
+            .tolist()
+        )
+        print(
+            f"  WARNING: {int(unknown_milieu.sum()):,} children carry a `{MILIEU_COL}` "
+            f"outside {sorted(MILIEU_BY_CODE)} (codes seen: {codes or 'none, all blank'}); "
+            "they are counted in the `all` milieu only"
+        )
 
     df = canonicalize_names(df, provinces, zones)
     df = build_indicators(df)
@@ -637,14 +678,21 @@ def load_year(
         "weight",
         "nb_as",
         "as_enq_file",
+        "milieu",
         "zero_dose_ref",
         *METRICS,
     ]
     return df[keep]
 
 
-def build_counts(df: pd.DataFrame) -> pd.DataFrame:
-    """Unweighted sample sizes per domain: children, health areas surveyed/total."""
+def build_counts(df: pd.DataFrame, check_as_enq: bool = True) -> pd.DataFrame:
+    """Unweighted sample sizes per domain: children, health areas surveyed/total.
+
+    `check_as_enq` compares the distinct PSU count against the file's own
+    `nbre_asenq`. It only holds on the full sample: inside a milieu subset a
+    zone keeps just the aires de santé that have a child of that milieu, so the
+    two legitimately differ and the check is skipped.
+    """
     zone_totals = df.groupby("zone_key")["nb_as"].max()
 
     zone = (
@@ -658,24 +706,25 @@ def build_counts(df: pd.DataFrame) -> pd.DataFrame:
 
     # `nbre_asenq` is the file's own count of surveyed areas; the distinct PSU
     # count must reproduce it, and a mismatch means the PSU key is wrong.
-    counted = zone.set_index("zone_key")["as_enq"]
-    declared = df.groupby("zone_key")["as_enq_file"].max().reindex(counted.index)
-    mismatch = pd.DataFrame({"counted": counted, "declared": declared})
-    mismatch = mismatch[
-        mismatch["declared"].notna() & (mismatch["counted"] != mismatch["declared"])
-    ]
-    if len(mismatch):
-        print(
-            f"  WARNING: {len(mismatch)} zone(s) where the distinct PSU count "
-            f"differs from `{AREAS_SURVEYED_COL}`:"
-        )
-        for zone_key, row in mismatch.head(10).iterrows():
+    if check_as_enq:
+        counted = zone.set_index("zone_key")["as_enq"]
+        declared = df.groupby("zone_key")["as_enq_file"].max().reindex(counted.index)
+        mismatch = pd.DataFrame({"counted": counted, "declared": declared})
+        mismatch = mismatch[
+            mismatch["declared"].notna() & (mismatch["counted"] != mismatch["declared"])
+        ]
+        if len(mismatch):
             print(
-                f"    {zone_key}: counted {int(row['counted'])}, file says "
-                f"{row['declared']:.0f}"
+                f"  WARNING: {len(mismatch)} zone(s) where the distinct PSU count "
+                f"differs from `{AREAS_SURVEYED_COL}`:"
             )
-    else:
-        print(f"  as_enq matches `{AREAS_SURVEYED_COL}` in every zone")
+            for zone_key, row in mismatch.head(10).iterrows():
+                print(
+                    f"    {zone_key}: counted {int(row['counted'])}, file says "
+                    f"{row['declared']:.0f}"
+                )
+        else:
+            print(f"  as_enq matches `{AREAS_SURVEYED_COL}` in every zone")
 
     province = (
         df.groupby("province")
@@ -765,10 +814,16 @@ def run_survey_r(
     )
 
     started = time.perf_counter()
-    # Stream R's stderr straight through so the progress/warning lines appear
-    # while it runs; stdout is captured because nothing on it is expected.
+    # R writes its progress, warnings *and* its fatal error to stderr, so tee
+    # it: echo each line as it arrives (the run takes minutes and the progress
+    # lines are the only sign it is alive) and keep a copy for the exception
+    # below. Inheriting stderr instead would print the error to the terminal
+    # but leave the raised RuntimeError carrying nothing but an empty stdout.
+    #
+    # Reading stderr to EOF before draining stdout cannot deadlock here: the R
+    # script writes nothing to stdout, so that pipe never fills.
     sys.stdout.flush()
-    proc = subprocess.run(
+    proc = subprocess.Popen(
         [
             rscript,
             "--vanilla",
@@ -779,16 +834,28 @@ def run_survey_r(
             str(labels_csv),
         ],
         stdout=subprocess.PIPE,
-        stderr=None,
+        stderr=subprocess.PIPE,
         text=True,
     )
+    assert proc.stderr is not None
+    stderr_lines: list[str] = []
+    for line in proc.stderr:
+        sys.stderr.write(line)
+        stderr_lines.append(line)
+    sys.stderr.flush()
+    stdout, _ = proc.communicate()
     print(f"  R finished in {time.perf_counter() - started:.1f}s")
     if proc.returncode != 0:
+        # Keep the tail: a failure late in the run is preceded by thousands of
+        # progress lines, and the message that matters is the last one.
+        tail = "".join(stderr_lines[-40:]).strip()
         raise RuntimeError(
-            f"Rscript failed (exit {proc.returncode}).\n--- stdout ---\n{proc.stdout}"
+            f"Rscript failed (exit {proc.returncode}).\n"
+            f"--- stderr (last {min(len(stderr_lines), 40)} line(s)) ---\n{tail}\n"
+            f"--- stdout ---\n{stdout}"
         )
-    if proc.stdout.strip():
-        print(f"  [R stdout] {proc.stdout.strip()}")
+    if stdout.strip():
+        print(f"  [R stdout] {stdout.strip()}")
 
     id_to_province = {i: name for name, i in province_ids.items()}
     id_to_zone = {i: name for name, i in zone_ids.items()}
@@ -905,10 +972,58 @@ def check_against_reference(
         print("  cross-check OK: every estimate matches its weighted mean")
 
 
+def process_milieu(
+    df: pd.DataFrame,
+    year: str,
+    milieu: str,
+    metrics: list[str],
+    rscript: str,
+    workdir: Path | None,
+) -> pd.DataFrame:
+    """Estimate every domain on one milieu subset of a year's children.
+
+    The subset is taken before `svydesign()` is built rather than through
+    `subset()` on a full-sample design. That matches what the R script already
+    does for the province and zone domains (see the `domain()` comment there),
+    so a milieu domain is estimated exactly the way a zone domain is.
+    """
+    counts = build_counts(df, check_as_enq=milieu == "all")
+    print(
+        f"  domains: {int((counts['level'] == 'province').sum())} provinces, "
+        f"{int((counts['level'] == 'zone').sum())} zones, 1 national"
+    )
+
+    print("  running the R survey estimation ...")
+    if workdir is None:
+        with tempfile.TemporaryDirectory(prefix=f"ecv-{year}-{milieu}-") as tmp:
+            est = run_survey_r(df, metrics, rscript, Path(tmp))
+    else:
+        # Keep the extract, the generated R script and the raw estimates so the
+        # R step can be re-run and debugged by hand.
+        run_dir = workdir / year / milieu
+        run_dir.mkdir(parents=True, exist_ok=True)
+        est = run_survey_r(df, metrics, rscript, run_dir)
+        print(f"  kept the R inputs/outputs in {run_dir}")
+
+    wide = reshape_estimates(est, metrics)
+    check_against_reference(wide, weighted_rates(df, metrics), metrics)
+
+    out = counts.merge(wide, on=["level", "domain_key"], how="left")
+    unmatched = int(out[f"{metrics[0]}_pct"].isna().sum())
+    if unmatched:
+        print(f"  WARNING: {unmatched} domain(s) got no estimate from R")
+    out[COUNT_COLS] = out[COUNT_COLS].astype("Int64")
+    out["year"] = year
+    out["milieu"] = milieu
+    print(f"  {len(out)} rows for {year} / {milieu}")
+    return out.drop(columns=["domain_key"])
+
+
 def process_file(
     dta_path: Path,
     year: str,
     metrics: list[str],
+    milieux: list[str],
     rscript: str,
     workdir: Path | None,
     age_min: int,
@@ -924,35 +1039,21 @@ def process_file(
     )
     report_indicators(df, metrics)
 
-    counts = build_counts(df)
-    print(
-        f"  domains: {int((counts['level'] == 'province').sum())} provinces, "
-        f"{int((counts['level'] == 'zone').sum())} zones, 1 national"
-    )
+    frames = []
+    for milieu in milieux:
+        subset = df if milieu == "all" else df[df["milieu"] == milieu]
+        print(
+            f"\n--- {year} / milieu={milieu}: {len(subset):,} children in "
+            f"{subset['province'].nunique()} provinces / "
+            f"{subset['zone_key'].nunique()} zones / "
+            f"{subset['psu_key'].nunique()} areas ---"
+        )
+        if subset.empty:
+            print(f"  WARNING: no child with milieu={milieu}; no rows emitted")
+            continue
+        frames.append(process_milieu(subset, year, milieu, metrics, rscript, workdir))
 
-    print("  running the R survey estimation ...")
-    if workdir is None:
-        with tempfile.TemporaryDirectory(prefix=f"ecv-{year}-") as tmp:
-            est = run_survey_r(df, metrics, rscript, Path(tmp))
-    else:
-        # Keep the extract, the generated R script and the raw estimates so the
-        # R step can be re-run and debugged by hand.
-        year_dir = workdir / year
-        year_dir.mkdir(parents=True, exist_ok=True)
-        est = run_survey_r(df, metrics, rscript, year_dir)
-        print(f"  kept the R inputs/outputs in {year_dir}")
-
-    wide = reshape_estimates(est, metrics)
-    check_against_reference(wide, weighted_rates(df, metrics), metrics)
-
-    out = counts.merge(wide, on=["level", "domain_key"], how="left")
-    unmatched = int(out[f"{metrics[0]}_pct"].isna().sum())
-    if unmatched:
-        print(f"  WARNING: {unmatched} domain(s) got no estimate from R")
-    out[COUNT_COLS] = out[COUNT_COLS].astype("Int64")
-    out["year"] = year
-    print(f"  {len(out)} rows for {year}")
-    return out.drop(columns=["domain_key"])
+    return pd.concat(frames, ignore_index=True)
 
 
 def resolve_rscript(explicit: str | None) -> str:
@@ -997,6 +1098,13 @@ def main() -> None:
         f"(default: all {len(METRICS)})",
     )
     parser.add_argument(
+        "--milieux",
+        default=",".join(MILIEUX),
+        help="comma-separated subset of milieu domains to estimate; each one "
+        "costs a full R pass over every province and zone "
+        f"(default: {','.join(MILIEUX)})",
+    )
+    parser.add_argument(
         "--age-min",
         type=int,
         default=AGE_MIN_MONTHS,
@@ -1036,8 +1144,13 @@ def main() -> None:
     unknown = [m for m in metrics if m not in METRICS]
     if unknown:
         raise SystemExit(f"unknown metric(s): {unknown}\nknown metrics: {METRICS}")
+    milieux = [m.strip() for m in args.milieux.split(",") if m.strip()]
+    unknown = [m for m in milieux if m not in MILIEUX]
+    if unknown:
+        raise SystemExit(f"unknown milieu(x): {unknown}\nknown milieux: {MILIEUX}")
     print(f"  years     : {years}")
     print(f"  metrics   : {len(metrics)} -> {metrics}")
+    print(f"  milieux   : {milieux}")
 
     rscript = resolve_rscript(args.rscript)
     provinces, zones = load_geojson_names(args.boundaries)
@@ -1057,6 +1170,7 @@ def main() -> None:
                 matches[0],
                 year,
                 metrics,
+                milieux,
                 rscript,
                 args.workdir,
                 args.age_min,
@@ -1070,12 +1184,16 @@ def main() -> None:
     ordered = [
         f"{metric}_{stat}" for metric in metrics for stat in ("pct", "low", "high")
     ]
-    output = output[["year", "level", "province", "zone", *COUNT_COLS, *ordered]]
+    output = output[
+        ["year", "milieu", "level", "province", "zone", *COUNT_COLS, *ordered]
+    ]
 
     print("\n=== output ===")
     for level in ("national", "province", "zone"):
-        by_year = output[output["level"] == level].groupby("year").size().to_dict()
-        print(f"  {level:<9} rows per year: {by_year}")
+        at_level = output[output["level"] == level]
+        for milieu in milieux:
+            by_year = at_level[at_level["milieu"] == milieu].groupby("year").size()
+            print(f"  {level:<9} {milieu:<7} rows per year: {by_year.to_dict()}")
     empty = [c for c in ordered if output[c].isna().all()]
     if empty:
         print(f"  WARNING: {len(empty)} column(s) are entirely empty: {empty}")

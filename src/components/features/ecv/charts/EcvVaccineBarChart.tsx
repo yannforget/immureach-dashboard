@@ -6,6 +6,7 @@ import { useEcvVaccCovRow } from '@/hooks'
 import { ECV_BAR_METRIC_KEYS } from '@/lib/utils/constants'
 import { ECV_METRIC_META } from '@/lib/utils/constants'
 import { buildEcvVaccineBarOptions, type EcvBarItem } from '@/lib/charts/ecvBarOptions'
+import { withMilieu } from '@/lib/utils/ecvScope'
 
 export function EcvVaccineBarChart() {
   const chartRef = useRef<EChartsReact>(null)
@@ -13,6 +14,7 @@ export function EcvVaccineBarChart() {
   const row = useEcvVaccCovRow()
   const selectedProvince = useDashboardStore(s => s.selectedProvince)
   const selectedZoneId = useDashboardStore(s => s.selectedZoneId)
+  const selectedMilieu = useDashboardStore(s => s.selectedMilieu)
 
   // One bar per vaccine dose (BCG, Penta1-3, Polio0-3, PCV1-3, ROTA1-3, VPI, VAR, VAA), each with its 95% CI. 
   // Rows without a value are dropped so missing indicators don't render as 0-bars. 
@@ -32,7 +34,10 @@ export function EcvVaccineBarChart() {
 
   const options = buildEcvVaccineBarOptions({ items })
 
-  const scopeLabel = selectedZoneId ? 'zone sélectionnée' : selectedProvince ? selectedProvince : 'national'
+  const scopeLabel = withMilieu(
+    selectedZoneId ? 'zone sélectionnée' : selectedProvince ? selectedProvince : 'national',
+    selectedMilieu,
+  )
 
   if (loading) {
     return (

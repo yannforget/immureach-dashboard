@@ -1,5 +1,6 @@
 import type { EChartsOption } from 'echarts'
 import { getColorScaleBounds } from '@/lib/utils/dataUtils'
+import { MAP_NO_DATA_COLOR, MAP_OUT_OF_SCOPE_COLOR } from '@/lib/charts/theme'
 import type { EcvMapFeatureValue } from '@/hooks'
 
 interface EcvMapConfig {
@@ -28,19 +29,36 @@ export function buildEcvZeroDoseMapOptions(config: EcvMapConfig): EChartsOption 
   // a minimum spread so the scale doesn't collapse to a single color.
   if (max < 10) max = 10
 
-  const dataSeries = values.map(v => ({
-    name: v.mapKey,
-    value: v.dimmed ? null : v.pct,
-    ...(v.dimmed
-      ? {
-          itemStyle: {
-            areaColor: '#e5e7eb',
-            borderColor: '#cbd5e1',
-            borderWidth: 0.5,
-          },
-        }
-      : {}),
-  }))
+  // Three kinds of shape, and they must not look alike:
+  //  - one with an estimate, coloured by the visualMap ramp;
+  //  - one the selection covers but the survey has no estimate for (most zones
+  //    under the `urbain` filter, where no surveyed household was urban) —
+  //    dark grey, because "the survey never reached this habitat here" is a
+  //    finding of its own and must not read as background;
+  //  - one outside the selected province — pale, so it reads as backdrop.
+  //
+  // How the two greys are applied is not interchangeable with the obvious
+  // `itemStyle.areaColor`. This series renders through `geoIndex`, so ECharts
+  // resolves each region's itemStyle off the *geo* model rather than off the
+  // data item (MapDraw's `isGeo` branch) and a per-item `areaColor` is
+  // silently dropped; the only per-item colour that survives is the fill the
+  // visual pipeline computes. Hence: `visualMap: false` opts the item out of
+  // the ramp, and `itemStyle.color` — the key that maps to `style.fill`, not
+  // `areaColor` — is then what paints the shape.
+  const greyShape = (mapKey: string, color: string) => ({
+    name: mapKey,
+    value: null,
+    visualMap: false,
+    itemStyle: { color },
+  })
+
+  const dataSeries = values.map(v =>
+    v.dimmed
+      ? greyShape(v.mapKey, MAP_OUT_OF_SCOPE_COLOR)
+      : v.pct == null
+        ? greyShape(v.mapKey, MAP_NO_DATA_COLOR)
+        : { name: v.mapKey, value: v.pct },
+  )
 
   const option: EChartsOption = {
     tooltip: {
@@ -52,7 +70,7 @@ export function buildEcvZeroDoseMapOptions(config: EcvMapConfig): EChartsOption 
         const displayName = entry?.displayName ?? params.name
 
         if (!entry || entry.pct == null) {
-          return `<strong>${displayName}</strong><br/>Pas de données`
+          return `<strong>${displayName}</strong><br/>Aucune donnée`
         }
 
         let tooltip = `<strong>${displayName}</strong><br/>`
@@ -69,8 +87,10 @@ export function buildEcvZeroDoseMapOptions(config: EcvMapConfig): EChartsOption 
       inRange: {
         color: ['#fee2e2', '#7f1d1d'], // light red to dark red
       },
+      // Unreachable in practice — every valueless shape opts out of the
+      // ramp above — but a sane fallback if one ever slips through.
       outOfRange: {
-        color: '#e5e7eb', // neutral grey for null values
+        color: MAP_OUT_OF_SCOPE_COLOR,
       },
       textStyle: {
         color: '#475569',

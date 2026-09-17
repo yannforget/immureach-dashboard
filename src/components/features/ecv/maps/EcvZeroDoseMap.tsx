@@ -4,10 +4,12 @@ import { useDashboardStore } from '@/store/dashboardStore'
 import { useData } from '@/context/DataContext'
 import { useEcvZeroDoseMapData } from '@/hooks'
 import { buildEcvZeroDoseMapOptions } from '@/lib/charts/ecvMapOptions'
+import { MILIEU_LABELS } from '@/types'
 
 export function EcvZeroDoseMap() {
   const chartRef = useRef<EChartsReact>(null)
   const selectedProvince = useDashboardStore(s => s.selectedProvince)
+  const selectedMilieu = useDashboardStore(s => s.selectedMilieu)
   const setProvince = useDashboardStore(s => s.setProvince)
   const setSelectedZone = useDashboardStore(s => s.setSelectedZone)
 
@@ -66,7 +68,12 @@ export function EcvZeroDoseMap() {
   return (
     <div className="flex flex-col h-full relative">
       <div className="border-b border-slate-200 px-4 py-3">
-        <h3 className="text-sm font-semibold text-slate-700">Zéro dose — Enquête ECV</h3>
+        <h3 className="text-sm font-semibold text-slate-700">
+          Zéro dose — Enquête ECV
+          {selectedMilieu !== 'all' && (
+            <span className="font-normal text-slate-400"> ({MILIEU_LABELS[selectedMilieu]})</span>
+          )}
+        </h3>
       </div>
       <div className="flex-1 relative">
         <EChartsReact
@@ -74,7 +81,7 @@ export function EcvZeroDoseMap() {
           option={options}
           theme="dashboard"
           style={{ width: '100%', height: '100%' }}
-          key={`ecv-map-${selectedProvince}`}
+          key={`ecv-map-${selectedProvince}-${selectedMilieu}`}
           onEvents={onEvents}
         />
       </div>

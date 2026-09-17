@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 import { useData } from '@/context/DataContext'
 import { useDashboardStore } from '@/store/dashboardStore'
-import { normalizeAreaName } from '@/lib/utils/ecvVaccCov'
-import { useZoneData } from '../common/useZoneData'
+import { normalizeAreaName, zoneJoinKey } from '@/lib/utils/ecvVaccCov'
+import { useEcvScope } from './useEcvScope'
 import {
   ECV_CARACTERISTIC_GROUPS,
   ECV_CARACTERISTIC_KEYS,
@@ -94,31 +94,30 @@ function buildGroups(variables: string[]): EcvCaracteristicGroup[] {
 
 // Feeds the ECV characteristics chart from public/data/ecv_caracteristics.csv.
 // Resolves rows for the scope implied by the ribbon (province zones -> province
-// rows -> national), filtered to the selected year, and projects them onto one
-// bar per area with the pct of each variable rooted in `values`. When a zone
-// is selected, all of its province's zones are still shown, with the selected
-// zone's bar flagged as `highlighted`.
+// rows -> national), filtered to the selected year and milieu, and projects
+// them onto one bar per area with the pct of each variable rooted in `values`.
+// When a zone is selected, all of its province's zones are still shown, with
+// the selected zone's bar flagged as `highlighted`. An area with no child of
+// the selected milieu has no row, so it simply drops out of the chart.
+//
+// Zone rows are matched on the (province, zone) pair, never on the zone name
+// alone: see zoneJoinKey.
 export function useEcvCaracteristicsData(): EcvCaracteristicsData {
   const { ecvCaracteristics } = useData()
   const selectedYear = useDashboardStore(s => s.selectedYear)
-  const selectedProvince = useDashboardStore(s => s.selectedProvince)
-  const selectedZoneId = useDashboardStore(s => s.selectedZoneId)
-  const zones = useZoneData(selectedProvince)
+  const selectedMilieu = useDashboardStore(s => s.selectedMilieu)
+  const { provinceName, provinceKey, zoneKey } = useEcvScope()
 
   return useMemo(() => {
-    const zoneName = selectedZoneId
-      ? zones.find(z => z.id === selectedZoneId)?.displayName ?? null
-      : null
-    const zoneKey = normalizeAreaName(zoneName)
-    const provinceKey = normalizeAreaName(selectedProvince)
-
     // Whitelist + order the charted variables; the CSV may carry extra
     // `<root>_pct` families that this panel does not show.
     const available = new Set(Object.keys(ecvCaracteristics[0]?.values ?? {}))
     const variables = ECV_CARACTERISTIC_KEYS.filter(v => available.has(v))
     const groups = buildGroups(variables)
 
-    const rows = ecvCaracteristics.filter(r => r.year === selectedYear)
+    const rows = ecvCaracteristics.filter(
+      r => r.year === selectedYear && r.milieu === selectedMilieu,
+    )
 
     const toBar = (row: EcvCaracteristicsRow, name: string, highlighted = false): EcvCaracteristicBar => {
       const values: Record<string, EcvCaracteristicValue> = {}
@@ -132,7 +131,7 @@ export function useEcvCaracteristicsData(): EcvCaracteristicsData {
     let scopeLabel = 'national'
 
     if (provinceKey) {
-      scopeLabel = zoneKey ? 'zone sélectionnée' : selectedProvince ?? ''
+      scopeLabel = zoneKey ? 'zone sélectionnée' : provinceName ?? ''
       areaRows = rows.filter(
         r => r.level === 'zone' && normalizeAreaName(r.province) === provinceKey,
       )
@@ -145,10 +144,12 @@ export function useEcvCaracteristicsData(): EcvCaracteristicsData {
       toBar(
         row,
         (row.zone ?? row.province) as string,
-        !!zoneKey && row.level === 'zone' && normalizeAreaName(row.zone) === zoneKey,
+        !!zoneKey &&
+          row.level === 'zone' &&
+          zoneJoinKey(row.province, row.zone) === zoneKey,
       ),
     )
 
     return { groups, areas, scopeLabel }
-  }, [ecvCaracteristics, selectedYear, selectedProvince, selectedZoneId, zones])
+  }, [ecvCaracteristics, selectedYear, selectedMilieu, provinceName, provinceKey, zoneKey])
 }

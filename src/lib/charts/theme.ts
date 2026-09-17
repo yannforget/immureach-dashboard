@@ -30,6 +30,20 @@ export const ECV_LINE_COLORS: Record<EcvMetricKey, string> = {
 // (map selection, bar emphasis, ECV characteristics selected bar).
 export const ECV_HIGHLIGHT_COLOR = '#ffdf33'
 
+// Choropleth greys, for the two different reasons a shape can be colourless.
+//
+// NO_DATA is a shape the current selection *does* cover but for which the
+// survey has no estimate — typically a health zone where the ribbon's
+// rural/urbain filter left no child at all. It is deliberately dark: those
+// zones are a finding in their own right (the survey did not reach that
+// habitat there), so they must not read as background.
+//
+// OUT_OF_SCOPE is a shape outside the current selection, e.g. the rest of the
+// country once a province is picked. That one stays pale so the selection
+// reads as the subject of the map.
+export const MAP_NO_DATA_COLOR = '#64748b'
+export const MAP_OUT_OF_SCOPE_COLOR = '#e5e7eb'
+
 // Blends two hex colors: ratio 0 -> base, 1 -> target.
 function mixHex(base: string, target: string, ratio: number): string {
   const parse = (hex: string) => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16))
