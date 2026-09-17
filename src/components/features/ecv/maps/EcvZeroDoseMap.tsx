@@ -1,9 +1,9 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import EChartsReact from 'echarts-for-react'
 import { useDashboardStore } from '@/store/dashboardStore'
 import { useData } from '@/context/DataContext'
 import { useEcvZeroDoseMapData } from '@/hooks'
-import { buildEcvZeroDoseMapOptions } from '@/lib/charts/ecvMapOptions'
+import { buildEcvZeroDoseMapOptions, ZOOM_MAX, ZOOM_MIN } from '@/lib/charts/ecvMapOptions'
 import { MILIEU_LABELS } from '@/types'
 
 export function EcvZeroDoseMap() {
@@ -12,6 +12,41 @@ export function EcvZeroDoseMap() {
   const selectedMilieu = useDashboardStore(s => s.selectedMilieu)
   const setProvince = useDashboardStore(s => s.setProvince)
   const setSelectedZone = useDashboardStore(s => s.setSelectedZone)
+
+  // Pan/zoom lives in the ECharts geo model, so the cheapest way to reset it
+  // is to remount the chart — `resetNonce` is part of the chart key below.
+  const [resetNonce, setResetNonce] = useState(0)
+
+  // Step zoom from the +/- buttons, anchored on the current centre.
+  //
+  // Not `dispatchAction({ type: 'geoRoam' })`: that action runs with
+  // `update: 'updateTransform'`, which re-renders series but explicitly skips
+  // component views ("Geo render cost a lot" in echarts.ts). Wheel roam gets
+  // away with it because MapDraw's roam controller moves the drawn group
+  // itself and only dispatches the action to keep the model in sync — so a
+  // bare dispatch updates the model and nothing redraws. Writing zoom back
+  // through `setOption` goes down the normal update path, where `resizeGeo`
+  // re-applies `geo.zoom` to the coordinate system.
+  //
+  // Reading the live zoom off the coordinate system (rather than tracking it
+  // in React state) keeps the buttons in step with wheel/drag roam, and keeps
+  // the view out of the render path — an option rebuilt on every store change
+  // must not carry a stale zoom that would snap the map back.
+  const zoomBy = (factor: number) => {
+    const chart = chartRef.current?.getEchartsInstance()
+    if (!chart) return
+    //   const geo: any = (chart.getOption() as any).getComponent('geo')
+    //   const current: number = geo?.coordinateSystem?.getZoom?.() ?? 1
+    //   const next = Math.min(Math.max(current * factor, ZOOM_MIN), ZOOM_MAX)
+    //   if (next === current) return
+    //   chart.setOption({ geo: { zoom: next } })
+    const option = chart.getOption() as { geo?: Array<{ zoom?: number }> }
+
+    const current = option.geo?.[0]?.zoom ?? 1
+    const next = Math.min(Math.max(current * factor, ZOOM_MIN), ZOOM_MAX,)
+
+    chart.setOption({ geo: { zoom: next }, })
+  }
 
   const { loading, error, provinceBboxes } = useData()
   const { features, values, mapName } = useEcvZeroDoseMapData()
@@ -76,12 +111,42 @@ export function EcvZeroDoseMap() {
         </h3>
       </div>
       <div className="flex-1 relative">
+        {/* Zoom controls — fixed at the bottom-right, opposite the colour legend. */}
+        <div className="absolute bottom-3 right-3 z-10 flex flex-col overflow-hidden rounded-md border border-slate-200 bg-white/95 shadow-sm">
+          <button
+            type="button"
+            onClick={() => zoomBy(1.4)}
+            title="Zoom avant"
+            aria-label="Zoom avant"
+            className="h-7 w-7 text-sm font-medium leading-none text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+          >
+            +
+          </button>
+          <button
+            type="button"
+            onClick={() => zoomBy(1 / 1.4)}
+            title="Zoom arrière"
+            aria-label="Zoom arrière"
+            className="h-7 w-7 border-t border-slate-200 text-sm font-medium leading-none text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+          >
+            −
+          </button>
+          <button
+            type="button"
+            onClick={() => setResetNonce(n => n + 1)}
+            title="Réinitialiser la vue"
+            aria-label="Réinitialiser la vue"
+            className="h-7 w-7 border-t border-slate-200 text-xs leading-none text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+          >
+            ⟲
+          </button>
+        </div>
         <EChartsReact
           ref={chartRef}
           option={options}
           theme="dashboard"
           style={{ width: '100%', height: '100%' }}
-          key={`ecv-map-${selectedProvince}-${selectedMilieu}`}
+          key={`ecv-map-${selectedProvince}-${selectedMilieu}-${resetNonce}`}
           onEvents={onEvents}
         />
       </div>

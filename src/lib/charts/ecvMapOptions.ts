@@ -3,6 +3,10 @@ import { getColorScaleBounds } from '@/lib/utils/dataUtils'
 import { MAP_NO_DATA_COLOR, MAP_OUT_OF_SCOPE_COLOR } from '@/lib/charts/theme'
 import type { EcvMapFeatureValue } from '@/hooks'
 
+// Zoom bounds, shared with the map's +/- buttons. `1` is the fitted view.
+export const ZOOM_MIN = 1
+export const ZOOM_MAX = 12
+
 interface EcvMapConfig {
   values: EcvMapFeatureValue[]
   mapName: 'drc-provinces' | 'drc-zones'
@@ -15,6 +19,11 @@ export function buildEcvZeroDoseMapOptions(config: EcvMapConfig): EChartsOption 
   const { values, mapName, boundingCoords } = config
 
   const byMapKey = new Map(values.map(v => [v.mapKey, v]))
+
+  // Map-shape name (the raw, province-prefixed boundary name) -> the cleaned
+  // name the rest of the dashboard shows. Used by every label and tooltip.
+  const regionLabel = (params: { name: string }) =>
+    byMapKey.get(params.name)?.displayName ?? params.name
 
   // Only in-province zones drive the color scale; dimmed (out-of-province)
   // zones keep their tooltip data but must not stretch the bounds.
@@ -103,10 +112,27 @@ export function buildEcvZeroDoseMapOptions(config: EcvMapConfig): EChartsOption 
     },
     geo: {
       map: mapName,
-      roam: false,
+      roam: true,
+      scaleLimit: { min: ZOOM_MIN, max: ZOOM_MAX },
       selectedMode: 'single',
-      label: { show: false },
-      emphasis: { label: { show: false } },
+      // Shapes are registered under the province-prefixed boundary name
+      // ("kl Mungindu", "kl Kwilu Province") because q103 alone is not unique
+      // DRC-wide — so every label has to be routed through `regionLabel` or it
+      // renders that raw key. `geo.select.label.show` defaults to *true*, and
+      // this series draws through `geoIndex`, so the label of a clicked shape
+      // comes from the geo model: without a formatter it showed the prefix.
+      // GeoModel.getFormattedLabel resolves any non-normal status (select
+      // included) against `emphasis.label.formatter`, hence the two below.
+      label: { show: false, formatter: regionLabel },
+      emphasis: { label: { show: false, formatter: regionLabel } },
+      select: {
+        label: {
+          show: true,
+          formatter: regionLabel,
+          color: '#224387',
+          fontSize: 12,
+        },
+      },
       ...(boundingCoords ? { boundingCoords } : {}),
     } as any,
     series: [
