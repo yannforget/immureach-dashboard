@@ -134,6 +134,13 @@ ZONES_GEOJSON = PROJECT_ROOT / "data" / "output" / "boundaries" / "zones.geojson
 OUT_CSV = PROJECT_ROOT / "public" / "data" / "ecv_caracteristics.csv"
 
 YEARS = ("2022", "2023")
+
+# The ECV_<year>_*.dta exports are named after the year the file was produced,
+# which is the year *before* the survey actually went to the field. Rows are
+# labelled with that collection year, so the dashboard reports when the data
+# was gathered rather than when the export was cut. A file already named
+# after its fieldwork year (ECV2026) is passed through unchanged.
+COLLECTION_YEAR = {"2022": "2023", "2023": "2024"}
 AGE_MIN_MONTHS = 6
 AGE_MAX_MONTHS = 24
 
@@ -1259,7 +1266,7 @@ def process_milieu(
     if unmatched:
         print(f"  WARNING: {unmatched} domain(s) got no estimate from R")
     out["nb_children"] = out["nb_children"].astype("Int64")
-    out["year"] = year
+    out["year"] = COLLECTION_YEAR.get(year, year)
     out["milieu"] = milieu
     print(f"  {len(out)} rows for {year} / {milieu}")
     return out.drop(columns=["domain_key"])
@@ -1335,7 +1342,8 @@ def main() -> None:
     parser.add_argument(
         "--years",
         default=",".join(YEARS),
-        help=f"comma-separated survey years to process (default: {','.join(YEARS)})",
+        help=f"comma-separated source-file years to process, as named in the\n"
+        f"ECV_<year>_*.dta filenames (default: {','.join(YEARS)})",
     )
     parser.add_argument(
         "--variables",

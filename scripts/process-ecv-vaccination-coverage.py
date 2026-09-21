@@ -66,6 +66,13 @@ OUT_CSV = PROJECT_ROOT / "public" / "data" / "ecv_vaccination_coverage.csv"
 
 YEARS = ("2022", "2023")
 
+# The ECV_<year>_*.dta exports are named after the year the file was produced,
+# which is the year *before* the survey actually went to the field. Rows are
+# labelled with that collection year, so the dashboard reports when the data
+# was gathered rather than when the export was cut. A file already named
+# after its fieldwork year (ECV2026) is passed through unchanged.
+COLLECTION_YEAR = {"2022": "2023", "2023": "2024"}
+
 # Age window in completed months, read off `vs25` ("Quel âge a ... en mois ?").
 # Both exports were collected on 6-23 month olds (2022 spans exactly 6..23;
 # 2023 has 43 rows outside it), so this window keeps essentially every child in
@@ -1013,7 +1020,7 @@ def process_milieu(
     if unmatched:
         print(f"  WARNING: {unmatched} domain(s) got no estimate from R")
     out[COUNT_COLS] = out[COUNT_COLS].astype("Int64")
-    out["year"] = year
+    out["year"] = COLLECTION_YEAR.get(year, year)
     out["milieu"] = milieu
     print(f"  {len(out)} rows for {year} / {milieu}")
     return out.drop(columns=["domain_key"])
@@ -1089,7 +1096,8 @@ def main() -> None:
     parser.add_argument(
         "--years",
         default=",".join(YEARS),
-        help=f"comma-separated survey years to process (default: {','.join(YEARS)})",
+        help=f"comma-separated source-file years to process, as named in the\n"
+        f"ECV_<year>_*.dta filenames (default: {','.join(YEARS)})",
     )
     parser.add_argument(
         "--metrics",

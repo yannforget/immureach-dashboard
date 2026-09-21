@@ -27,6 +27,14 @@ Dependencies are pinned in `pyproject.toml`.
 
 ## `data/input/` — raw upstream sources
 
+**Survey years.** The ECV exports are named after the year the file was cut,
+which is the year *before* the survey went to the field (`ECV_2022_*` was
+collected in March–April 2023, `ECV_2023_*` in April–May 2024). Everything
+downstream — the `year` column of the runtime CSVs, the year-suffixed files in
+`data/output/`, the year keys in `profile.json` and the ribbon — is labelled
+with the **collection year**, so the file years 2022 / 2023 surface as 2023 /
+2024. The shift lives in each script's `COLLECTION_YEAR` map.
+
 Three providers feed the pipeline. None of these files are checked into git;
 copy them locally before running the scripts.
 
@@ -124,21 +132,21 @@ the dashboard.
 
 Produced by `scripts/aggregate-accessibility.py` (DuckDB).
 
-- `zone_2022.csv`, `zone_2023.csv` — passthrough of the per-zone CSV with
+- `zone_2023.csv`, `zone_2024.csv` — passthrough of the per-zone CSV with
   geometry dropped.
-- `province_2022.csv`, `province_2023.csv` — counts (`n`, `n_0d`,
+- `province_2023.csv`, `province_2024.csv` — counts (`n`, `n_0d`,
   `n_{30/60/90/120/150/180}mn`, `n_0d_{…}mn`) summed across zones in each
   province; `mean_travel` averaged weighted by `n`, `mean_travel_0d`
   averaged weighted by `n_0d`. Median columns are dropped.
-- `national_2022.csv`, `national_2023.csv` — same aggregation across all
+- `national_2023.csv`, `national_2024.csv` — same aggregation across all
   zones.
 
 ### `data/output/indicators/`
 
 Produced by `scripts/aggregate-indicators.py` (DuckDB).
 
-- `zone_<year>.csv`, `province_<year>.csv`, `national_<year>.csv` for 2022 and
-  2023.
+- `zone_<year>.csv`, `province_<year>.csv`, `national_<year>.csv` for 2023 and
+  2024 (the `ecv` column carries the same collection year).
 - `radar_data.json` — pre-aggregated payload for radar charts (national,
   per-province and per-zone, split by zero-dose status).
 

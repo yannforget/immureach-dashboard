@@ -59,12 +59,23 @@ INDICATORS = NUMERIC_INDICATORS + BOOLEAN_INDICATORS
 SCALE_LOW_Q = 0.05
 SCALE_HIGH_Q = 0.95
 
+# The ECV source files are named after the year they were produced, which is the
+# year *before* the survey went to the field. Outputs are labelled with that
+# collection year (source year -> collection year).
+COLLECTION_YEAR = {2022: 2023, 2023: 2024}
+
 # (level name, area columns selected from the source, output column aliases)
 LEVELS = [
     ("zone", ["q101", "q103"], ["province", "zone"]),
     ("province", ["q101"], ["province"]),
     ("national", [], []),
 ]
+
+
+def collection_year_sql(col: str) -> str:
+    """Translate a source-year column into the survey's collection year."""
+    cases = " ".join(f"WHEN {src} THEN {dst}" for src, dst in COLLECTION_YEAR.items())
+    return f"CASE {col} {cases} ELSE {col} END AS ecv"
 
 
 def value_expr(indicator: str) -> str:
@@ -146,11 +157,13 @@ def main() -> None:
             )
         indicator_select_sql = ",\n            ".join(indicator_select)
 
-        key_cols = "a.ecv, " + "".join(f"a.{alias}, " for alias in area_aliases)
+        key_cols = f"{collection_year_sql('a.ecv')}, " + "".join(
+            f"a.{alias}, " for alias in area_aliases
+        )
         order_cols = "a.ecv, " + "".join(f"a.{alias}, " for alias in area_aliases) + "a.zero_dose_penta"
 
         for year in years:
-            out_path = OUT_DIR / f"{level}_{year}.csv"
+            out_path = OUT_DIR / f"{level}_{COLLECTION_YEAR.get(year, year)}.csv"
             con.execute(
                 f"""
                 COPY (

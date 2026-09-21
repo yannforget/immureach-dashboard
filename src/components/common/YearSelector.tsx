@@ -1,5 +1,6 @@
 import { useDashboardStore } from '@/store/dashboardStore'
 import { useData } from '@/context/DataContext'
+import { DEFAULT_YEARS } from '@/lib/utils/years'
 import type { Year } from '@/types'
 
 export function YearSelector() {
@@ -7,7 +8,7 @@ export function YearSelector() {
   const selectedYear = useDashboardStore((s) => s.selectedYear)
   const setSelectedYear = useDashboardStore((s) => s.setSelectedYear)
 
-  const years: Year[] = profile?.years ?? [2022, 2023]
+  const years: Year[] = profile?.years ?? DEFAULT_YEARS
 
   return (
     <div className="flex items-center gap-2">

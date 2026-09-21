@@ -1,5 +1,7 @@
 export { useProvinceAntennes } from './common/useProvinceAntennes';
+export { useMapSelectionSync } from './common/useMapSelectionSync';
 export { useProvinceData } from './common/useProvinceData';
+export { useSectionYears } from './common/useSectionYears';
 export { useTableData } from './common/useTableData';
 export { useZoneData } from './common/useZoneData';
 export { type EcvLineSeries, type EcvLineData, useEcvEvolutionLineData } from './ecv/useEcvEvolutionLineData';

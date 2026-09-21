@@ -1,7 +1,7 @@
 import { useDashboardStore } from '@/store/dashboardStore'
-import { useData } from '@/context/DataContext'
-import { useAvailableMilieux, useProvinceData, useZoneData } from '@/hooks'
+import { useAvailableMilieux, useProvinceData, useSectionYears, useZoneData } from '@/hooks'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { yearLabel } from '@/lib/utils/years'
 import { MILIEU_LABELS } from '@/types'
 import type { DashboardSection, Milieu, Year } from '@/types'
 
@@ -67,8 +67,7 @@ export function Ribbon() {
     const selectedZoneId = useDashboardStore(s => s.selectedZoneId)
     const setSelectedZone = useDashboardStore(s => s.setSelectedZone)
 
-    const { profile } = useData()
-    const years: Year[] = profile?.years ?? [2022, 2023]
+    const years: Year[] = useSectionYears()
 
     const provinces = useProvinceData()
     const zones = useZoneData(selectedProvince)
@@ -94,7 +93,7 @@ export function Ribbon() {
             <div className="flex flex-wrap items-center gap-5 border-t border-slate-100 px-4 py-3">
                 {/* Year */}
                 <Segmented<Year>
-                    label="Année"
+                    label={yearLabel(activeSection)}
                     options={years.map(y => ({ value: y, label: String(y) }))}
                     value={selectedYear}
                     onChange={setSelectedYear}

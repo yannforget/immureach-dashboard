@@ -58,6 +58,13 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 INPUT_DIR = PROJECT_ROOT / "data" / "input" / "ecv"
 OUT_CSV = PROJECT_ROOT / "public" / "data" / "key_ecv.csv"
 
+# The ECV_<year>_*.dta exports are named after the year the file was produced,
+# which is the year *before* the survey actually went to the field. Rows are
+# labelled with that collection year, so the dashboard reports when the data
+# was gathered rather than when the export was cut. A file already named
+# after its fieldwork year (ECV2026) is passed through unchanged.
+COLLECTION_YEAR = {"2022": "2023", "2023": "2024"}
+
 # Age window in completed months, read off `vs25` ("Quel age a ... en mois ?").
 # Override per run with --age-min / --age-max.
 #
@@ -728,7 +735,7 @@ def process_milieu(
     out = counts.merge(wide, on=["level", "domain_key"], how="left")
     count_cols = ["nb_people", "nb_zones", "nb_areas", "nb_areas_tot"]
     out[count_cols] = out[count_cols].astype("Int64")
-    out["year"] = year
+    out["year"] = COLLECTION_YEAR.get(year, year)
     out["milieu"] = milieu
     return out.drop(columns=["domain_key"])
 
@@ -810,7 +817,7 @@ def main() -> None:
         raise SystemExit(f"unknown milieu(x): {unknown}\nknown milieux: {MILIEUX}")
 
     frames = []
-    for year in ("2022", "2023"):
+    for year in COLLECTION_YEAR:
         matches = sorted(INPUT_DIR.glob(f"ECV_{year}_*.dta"))
         if not matches:
             raise FileNotFoundError(f"no ECV_{year}_*.dta in {INPUT_DIR}")
