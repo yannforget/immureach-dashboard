@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import EChartsReact from 'echarts-for-react'
 import { useDashboardStore } from '@/store/dashboardStore'
 import { useData } from '@/context/DataContext'
-import { useEcvZeroDoseMapData } from '@/hooks'
+import { useEcvZeroDoseMapData, useMapSelectionSync } from '@/hooks'
 import { buildEcvZeroDoseMapOptions, ZOOM_MAX, ZOOM_MIN } from '@/lib/charts/ecvMapOptions'
 import { MILIEU_LABELS } from '@/types'
 
@@ -10,6 +10,7 @@ export function EcvZeroDoseMap() {
   const chartRef = useRef<EChartsReact>(null)
   const selectedProvince = useDashboardStore(s => s.selectedProvince)
   const selectedMilieu = useDashboardStore(s => s.selectedMilieu)
+  const selectedZoneId = useDashboardStore(s => s.selectedZoneId)
   const setProvince = useDashboardStore(s => s.setProvince)
   const setSelectedZone = useDashboardStore(s => s.setSelectedZone)
 
@@ -28,24 +29,18 @@ export function EcvZeroDoseMap() {
   // through `setOption` goes down the normal update path, where `resizeGeo`
   // re-applies `geo.zoom` to the coordinate system.
   //
-  // Reading the live zoom off the coordinate system (rather than tracking it
-  // in React state) keeps the buttons in step with wheel/drag roam, and keeps
-  // the view out of the render path — an option rebuilt on every store change
-  // must not carry a stale zoom that would snap the map back.
+  // The current zoom is read back off the live option (wheel roam writes it
+  // there via GeoModel.setZoom) rather than tracked in React state, so the
+  // buttons stay in step with wheel/drag roam and an option rebuilt on a store
+  // change never carries a stale zoom that would snap the map back.
   const zoomBy = (factor: number) => {
     const chart = chartRef.current?.getEchartsInstance()
     if (!chart) return
-    //   const geo: any = (chart.getOption() as any).getComponent('geo')
-    //   const current: number = geo?.coordinateSystem?.getZoom?.() ?? 1
-    //   const next = Math.min(Math.max(current * factor, ZOOM_MIN), ZOOM_MAX)
-    //   if (next === current) return
-    //   chart.setOption({ geo: { zoom: next } })
     const option = chart.getOption() as { geo?: Array<{ zoom?: number }> }
-
     const current = option.geo?.[0]?.zoom ?? 1
-    const next = Math.min(Math.max(current * factor, ZOOM_MIN), ZOOM_MAX,)
-
-    chart.setOption({ geo: { zoom: next }, })
+    const next = Math.min(Math.max(current * factor, ZOOM_MIN), ZOOM_MAX)
+    if (next === current) return
+    chart.setOption({ geo: { zoom: next } })
   }
 
   const { loading, error, provinceBboxes } = useData()
@@ -58,6 +53,19 @@ export function EcvZeroDoseMap() {
     : undefined
 
   const options = buildEcvZeroDoseMapOptions({ values, mapName, boundingCoords })
+
+  const chartKey = `ecv-map-${selectedProvince}-${selectedMilieu}-${resetNonce}`
+
+  // Highlight the ribbon's zone the same way a click on the shape does. The
+  // yellow `select` fill lives in the ECharts series model rather than in the
+  // option, so every remount drops it — switching section tabs unmounts this
+  // whole panel, and the reset button remounts it on purpose — while the
+  // ribbon still holds the zone; hence the re-dispatch, keyed on chartKey.
+  // At province level no shape matches, so nothing is selected.
+  const selectedMapKey = selectedZoneId
+    ? features.find(f => f.id === selectedZoneId)?.mapKey ?? null
+    : null
+  useMapSelectionSync(chartRef, selectedMapKey, chartKey)
 
   // Clicking a province shape selects it (drills down to its zones);
   // clicking a zone shape (once drilled down) selects that zone. Matched via
@@ -146,7 +154,7 @@ export function EcvZeroDoseMap() {
           option={options}
           theme="dashboard"
           style={{ width: '100%', height: '100%' }}
-          key={`ecv-map-${selectedProvince}-${selectedMilieu}-${resetNonce}`}
+          key={chartKey}
           onEvents={onEvents}
         />
       </div>

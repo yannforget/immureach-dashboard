@@ -79,6 +79,13 @@ export const ECV_HEATMAP_RAMP: string[] = [
   '#b45309',
 ];
 
+// Outline colour for the selected / hovered column of the characteristics
+// heatmap. The amber ECV_HIGHLIGHT_COLOR the rest of the dashboard uses sits
+// inside ECV_HEATMAP_RAMP, so a highlighted cell was hard to tell from a
+// merely high-value one; blue is the complement of that ramp and never
+// appears in it, so the outline reads as selection and not as a value.
+export const ECV_HEATMAP_OUTLINE_COLOR = '#2563eb'
+
 // Explicit colours for the ECV characteristics stacked groups, keyed by
 // variable root. Roots absent from this map fall back to ECV_LINE_PALETTE by
 // series index.

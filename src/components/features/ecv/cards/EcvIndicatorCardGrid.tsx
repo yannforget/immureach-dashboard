@@ -40,14 +40,14 @@ export function EcvIndicatorCardGrid() {
                 label: 'Couverture Penta',
                 value: formatPercent(row?.penta_cov ?? null),
                 confidenceInterval: formatCi(row?.penta_cov_low ?? null, row?.penta_cov_high ?? null),
-                description: "Couverture vaccinale pentavalente mesurée par l'enquête ECV.",
+                description: "Couverture vaccinale pentavalente mesurée par l'enquête ECV (3 doses).",
             },
             {
                 key: 'zdc_cov',
                 label: 'Enfants zéro dose',
                 value: formatPercent(row?.zdc_cov ?? null),
                 confidenceInterval: formatCi(row?.zdc_cov_low ?? null, row?.zdc_cov_high ?? null),
-                description: "Proportion d'enfants zéro dose mesurée par l'enquête ECV.",
+                description: "Proportion d'enfants zéro dose mesurée par l'enquête ECV (aucune dose d'aucun vaccin).",
             },
         ],
         [row]

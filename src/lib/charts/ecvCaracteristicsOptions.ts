@@ -1,8 +1,8 @@
 import type { EChartsOption, TooltipComponentFormatterCallbackParams } from 'echarts'
 import {
   ECV_CARACTERISTIC_SERIES_COLORS,
+  ECV_HEATMAP_OUTLINE_COLOR,
   ECV_HEATMAP_RAMP,
-  ECV_HIGHLIGHT_COLOR,
   ECV_HIGHLIGHT_RAMP,
   ECV_LINE_PALETTE,
 } from './theme'
@@ -31,8 +31,10 @@ export interface EcvCaracteristicsConfig {
 //               under ~4px).
 //
 // Only `_pct` values are drawn; the `_low`/`_high` CI columns are surfaced in
-// the tooltip only. The selected zone is marked with ECV_HIGHLIGHT_COLOR — as
-// the bar's fill in the stacked form, as a column outline in the heatmap.
+// the tooltip only. The selected zone is marked with the dashboard's amber
+// (ECV_HIGHLIGHT_RAMP) as the bar's fill in the stacked form, and with a blue
+// column outline (ECV_HEATMAP_OUTLINE_COLOR) in the heatmap, whose own ramp is
+// amber and would swallow an amber outline.
 export function buildEcvCaracteristicsOptions(config: EcvCaracteristicsConfig): EChartsOption {
   return config.group.exclusive ? buildStackedOptions(config) : buildHeatmapOptions(config)
 }
@@ -67,9 +69,11 @@ function buildHeatmapOptions(config: EcvCaracteristicsConfig): EChartsOption {
       cells.push({
         value: [x, y, pct],
         // The selected zone gets an outline rather than a fill: the cell has
-        // to keep showing its value colour.
+        // to keep showing its value colour. Blue, not the dashboard amber —
+        // the ramp underneath is amber, so an amber outline vanished on the
+        // high-value cells it most needed to mark.
         itemStyle: area.highlighted
-          ? { borderColor: ECV_HIGHLIGHT_COLOR, borderWidth: 2 }
+          ? { borderColor: ECV_HEATMAP_OUTLINE_COLOR, borderWidth: 2 }
           : undefined,
       })
     })
@@ -163,7 +167,7 @@ function buildHeatmapOptions(config: EcvCaracteristicsConfig): EChartsOption {
           },
         },
         emphasis: {
-          itemStyle: { borderColor: ECV_HIGHLIGHT_COLOR, borderWidth: 2 },
+          itemStyle: { borderColor: ECV_HEATMAP_OUTLINE_COLOR, borderWidth: 2 },
         },
       },
     ],
