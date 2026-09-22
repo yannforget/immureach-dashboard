@@ -36,8 +36,7 @@ lerna-debug.log*
 result.txt
 
 # Runtime data
-data/input/*
-data/output/*
+data/*
 pids/
 *.pid
 *.seed

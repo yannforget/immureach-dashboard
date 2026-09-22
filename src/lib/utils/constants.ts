@@ -142,16 +142,137 @@ export const ECV_LINE_METRIC_KEYS: EcvMetricKey[] = ECV_METRIC_KEYS.filter(
 // ecv_caracteristics.csv (`<root>_pct/_low/_high` column families). Roots
 // missing from this map fall back to the humanized column name in the hook.
 export const ECV_CARACTERISTIC_VARIABLE_LABELS: Record<string, string> = {
-    possession_carte: 'Possession de carte',
+    certificat_naissance: 'Possession certificat naissance',
+    naissance_enregistree: 'Naissance enregistrée',
+    possession_carte: 'Possession carte vaccination',
+    carte_ou_document: 'Possession carte ou document',
     mere: 'Mère',
     gardienne: 'Gardienne',
+    // BeSD4 — importance perçue des vaccins, one label per modality.
+    besd4_pas_important: 'Pas du tout important',
+    besd4_peu_important: 'Quelque peu important',
+    besd4_moyen_important: 'Moyennement important',
+    besd4_tres_important: 'Très important',
+    // BeSD6 — confiance dans les agents de santé vaccinateurs.
+    besd6_aucune_confiance: 'Aucune confiance',
+    besd6_confiance_limitee: 'Confiance limitée',
+    besd6_confiance_moyenne: 'Confiance moyenne',
+    besd6_grande_confiance: 'Grande confiance',
+    // BeSD19 — difficultés d'accès citées (BeSD19_a à BeSD19_e).
+    besd19_aucune_difficulte: 'Aucune difficulté',
+    besd19_trajet: 'Trajet difficile',
+    besd19_horaires: 'Horaires inadaptés',
+    besd19_refoulement: 'Refoulé sans vaccin',
+    besd19_attente: 'Attente trop longue',
+    // BeSD20 — problèmes des services cités (BeSD21_a à BeSD21_h).
+    besd21_satisfait: 'Satisfait(e)',
+    besd21_rupture: 'Vaccin indisponible',
+    besd21_ouverture: 'Ouverture tardive',
+    besd21_attente: 'Attente trop longue',
+    besd21_proprete: 'Manque de propreté',
+    besd21_formation: 'Personnel mal formé',
+    besd21_respect: 'Personnel irrespectueux',
+    besd21_temps: 'Trop peu de temps accordé',
 };
 
-// Variables that belong to the *same* chart tab. Each entry is one tab:
-// "mere" and "gardienne" are two answers to the same question, so they are
-// grouped and drawn as stacked bars; every other variable (now and any
-// `<root>_pct` column added later) gets its own single-series tab.
-export const ECV_CARACTERISTIC_GROUPS: Record<string, { label: string; variables: string[] }> = {
-    mere_gardienne: { label: 'Mère / Gardienne', variables: ['mere', 'gardienne'] },
+// Variable roots charted on the ECV characteristics panel, in tab order.
+// Acts as a whitelist: `<root>_pct` columns present in the CSV but absent
+// here are parsed but never charted. Roots sharing an
+// ECV_CARACTERISTIC_GROUPS entry collapse into a single multi-series tab.
+export const ECV_CARACTERISTIC_KEYS: string[] = [
+    'certificat_naissance',
+    'naissance_enregistree',
+    'possession_carte',
+    'carte_ou_document',
+    'mere',
+    'gardienne',
+    'besd4_pas_important',
+    'besd4_peu_important',
+    'besd4_moyen_important',
+    'besd4_tres_important',
+    'besd6_aucune_confiance',
+    'besd6_confiance_limitee',
+    'besd6_confiance_moyenne',
+    'besd6_grande_confiance',
+    'besd19_trajet',
+    'besd19_horaires',
+    'besd19_refoulement',
+    'besd19_attente',
+    'besd21_rupture',
+    'besd21_ouverture',
+    'besd21_attente',
+    'besd21_proprete',
+    'besd21_formation',
+    'besd21_respect',
+    'besd21_temps',
+];
+
+// Variables that belong to the *same* chart tab. Each entry is one tab; every
+// charted variable left out of every entry gets its own single-series tab.
+// Only roots listed in ECV_CARACTERISTIC_KEYS are considered, and the group
+// takes the tab slot of its first listed variable. Every tab is drawn as a
+// stacked bar.
+//
+// `exclusive` says what the stack adds up to, which is what the chart's y axis
+// and tooltip key off:
+//   true  — the variables are the modalities of one question, so exactly one
+//           of them holds for each child and the segments fill the bar to
+//           exactly 100% (Mère / Gardienne, BeSD4, BeSD6).
+//   false — the variables are the options of a multi-select question, so a
+//           caregiver can pick several and the answers overlap. There is no
+//           total to stack towards, so these groups are drawn as a heatmap
+//           (one row per option, one column per area) instead of a bar.
+export const ECV_CARACTERISTIC_GROUPS: Record<
+    string,
+    { label: string; variables: string[]; exclusive: boolean }
+> = {
+    mere_gardienne: {
+        label: 'Mère / Gardienne',
+        variables: ['mere', 'gardienne'],
+        exclusive: true,
+    },
+    besd4_importance: {
+        label: 'Importance des vaccins',
+        variables: [
+            'besd4_pas_important',
+            'besd4_peu_important',
+            'besd4_moyen_important',
+            'besd4_tres_important',
+        ],
+        exclusive: true,
+    },
+    besd6_confiance: {
+        label: 'Confiance dans vaccinateurs',
+        variables: [
+            'besd6_aucune_confiance',
+            'besd6_confiance_limitee',
+            'besd6_confiance_moyenne',
+            'besd6_grande_confiance',
+        ],
+        exclusive: true,
+    },
+    besd19_acces: {
+        label: "Difficultés d'accès",
+        variables: [
+            'besd19_trajet',
+            'besd19_horaires',
+            'besd19_refoulement',
+            'besd19_attente',
+        ],
+        exclusive: false,
+    },
+    besd21_problemes: {
+        label: 'Problèmes des services',
+        variables: [
+            'besd21_rupture',
+            'besd21_ouverture',
+            'besd21_attente',
+            'besd21_proprete',
+            'besd21_formation',
+            'besd21_respect',
+            'besd21_temps',
+        ],
+        exclusive: false,
+    },
 };
 

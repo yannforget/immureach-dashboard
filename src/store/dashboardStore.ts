@@ -1,6 +1,7 @@
 import { create } from 'zustand';
-import type { DashboardSection, MetricKey, ViewMode, Year } from '@/types';
+import type { DashboardSection, Milieu, MetricKey, ViewMode, Year } from '@/types';
 import { MODEL_METRIC_KEYS } from '@/lib/utils/constants';
+import { resolveSectionYear } from '@/lib/utils/years';
 
 interface DashboardState {
   // Top-level ribbon tab.
@@ -16,6 +17,10 @@ interface DashboardState {
   viewMode: ViewMode;
   selectedYear: Year;
 
+  // ECV habitat filter (survey question q108). Only the ECV datasets are
+  // published per milieu, so this is inert outside the ECV section.
+  selectedMilieu: Milieu;
+
   // Map-only Antenne overlay (purely visual; resets when province changes).
   showAntenne: boolean;
 
@@ -27,6 +32,7 @@ interface DashboardState {
   setHoveredZone: (zoneId: string | null) => void;
   setViewMode: (mode: ViewMode) => void;
   setSelectedYear: (year: Year) => void;
+  setSelectedMilieu: (milieu: Milieu) => void;
   setShowAntenne: (show: boolean) => void;
 }
 
@@ -37,10 +43,17 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   selectedZoneId: null,
   hoveredZoneId: null,
   viewMode: 'data',
-  selectedYear: 2022,
+  selectedYear: 2023,
+  selectedMilieu: 'all',
   showAntenne: true,
 
-  setActiveSection: (section) => set({ activeSection: section }),
+  // Sections do not all publish every year (the zero-dose model covers the
+  // latest one only), so the selection follows the section.
+  setActiveSection: (section) =>
+    set((state) => ({
+      activeSection: section,
+      selectedYear: resolveSectionYear(section, state.selectedYear),
+    })),
 
   setMetric: (metric) => set({ selectedMetric: metric }),
 
@@ -58,6 +71,8 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   setViewMode: (mode) => set({ viewMode: mode }),
 
   setSelectedYear: (year) => set({ selectedYear: year }),
+
+  setSelectedMilieu: (milieu) => set({ selectedMilieu: milieu }),
 
   setShowAntenne: (show) => set({ showAntenne: show }),
 }));

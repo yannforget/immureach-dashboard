@@ -1,8 +1,9 @@
 import { useDashboardStore } from '@/store/dashboardStore'
-import { useData } from '@/context/DataContext'
-import { useProvinceData, useZoneData } from '@/hooks'
+import { useAvailableMilieux, useProvinceData, useSectionYears, useZoneData } from '@/hooks'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import type { DashboardSection, Year } from '@/types'
+import { yearLabel } from '@/lib/utils/years'
+import { MILIEU_LABELS } from '@/types'
+import type { DashboardSection, Milieu, Year } from '@/types'
 
 const SECTIONS: { value: DashboardSection; label: string }[] = [
     { value: 'ecv', label: 'Données brutes ECV' },
@@ -16,6 +17,40 @@ const selectClass =
     'focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 ' +
     'disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400'
 
+// Pill group used by the ribbon's single-choice filters (année, milieu).
+function Segmented<T extends string | number>({
+    label,
+    options,
+    value,
+    onChange,
+}: {
+    label: string
+    options: { value: T; label: string }[]
+    value: T
+    onChange: (value: T) => void
+}) {
+    return (
+        <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-slate-500">{label}</span>
+            <div className="inline-flex rounded-md bg-slate-100 p-1">
+                {options.map(option => (
+                    <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => onChange(option.value)}
+                        className={`rounded-sm px-3 py-1 text-xs font-medium transition-colors ${value === option.value
+                            ? 'bg-white text-teal-700 shadow-sm'
+                            : 'text-slate-600 hover:text-slate-900'
+                            }`}
+                    >
+                        {option.label}
+                    </button>
+                ))}
+            </div>
+        </div>
+    )
+}
+
 export function Ribbon() {
     const activeSection = useDashboardStore(s => s.activeSection)
     const setActiveSection = useDashboardStore(s => s.setActiveSection)
@@ -23,17 +58,20 @@ export function Ribbon() {
     const selectedYear = useDashboardStore(s => s.selectedYear)
     const setSelectedYear = useDashboardStore(s => s.setSelectedYear)
 
+    const selectedMilieu = useDashboardStore(s => s.selectedMilieu)
+    const setSelectedMilieu = useDashboardStore(s => s.setSelectedMilieu)
+
     const selectedProvince = useDashboardStore(s => s.selectedProvince)
     const setProvince = useDashboardStore(s => s.setProvince)
 
     const selectedZoneId = useDashboardStore(s => s.selectedZoneId)
     const setSelectedZone = useDashboardStore(s => s.setSelectedZone)
 
-    const { profile } = useData()
-    const years: Year[] = profile?.years ?? [2022, 2023]
+    const years: Year[] = useSectionYears()
 
     const provinces = useProvinceData()
     const zones = useZoneData(selectedProvince)
+    const milieux = useAvailableMilieux()
 
     return (
         <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -54,24 +92,25 @@ export function Ribbon() {
             {/* Filters */}
             <div className="flex flex-wrap items-center gap-5 border-t border-slate-100 px-4 py-3">
                 {/* Year */}
-                <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium text-slate-500">Année</span>
-                    <div className="inline-flex rounded-md bg-slate-100 p-1">
-                        {years.map(y => (
-                            <button
-                                key={y}
-                                type="button"
-                                onClick={() => setSelectedYear(y)}
-                                className={`rounded-sm px-3 py-1 text-xs font-medium transition-colors ${selectedYear === y
-                                    ? 'bg-white text-teal-700 shadow-sm'
-                                    : 'text-slate-600 hover:text-slate-900'
-                                    }`}
-                            >
-                                {y}
-                            </button>
-                        ))}
-                    </div>
-                </div>
+                <Segmented<Year>
+                    label={yearLabel(activeSection)}
+                    options={years.map(y => ({ value: y, label: String(y) }))}
+                    value={selectedYear}
+                    onChange={setSelectedYear}
+                />
+
+                {/* Milieu (q108). Only the ECV datasets are published per
+                    milieu, so the filter is hidden on the other sections — and
+                    on ECV data that predates the split, where useAvailableMilieux
+                    reports 'all' alone. */}
+                {activeSection === 'ecv' && milieux.length > 1 && (
+                    <Segmented<Milieu>
+                        label="Milieu"
+                        options={milieux.map(m => ({ value: m, label: MILIEU_LABELS[m] }))}
+                        value={selectedMilieu}
+                        onChange={setSelectedMilieu}
+                    />
+                )}
 
                 {/* Province */}
                 <label className="flex items-center gap-2 text-xs font-medium text-slate-500">

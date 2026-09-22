@@ -30,6 +30,20 @@ export const ECV_LINE_COLORS: Record<EcvMetricKey, string> = {
 // (map selection, bar emphasis, ECV characteristics selected bar).
 export const ECV_HIGHLIGHT_COLOR = '#ffdf33'
 
+// Choropleth greys, for the two different reasons a shape can be colourless.
+//
+// NO_DATA is a shape the current selection *does* cover but for which the
+// survey has no estimate — typically a health zone where the ribbon's
+// rural/urbain filter left no child at all. It is deliberately dark: those
+// zones are a finding in their own right (the survey did not reach that
+// habitat there), so they must not read as background.
+//
+// OUT_OF_SCOPE is a shape outside the current selection, e.g. the rest of the
+// country once a province is picked. That one stays pale so the selection
+// reads as the subject of the map.
+export const MAP_NO_DATA_COLOR = '#64748b'
+export const MAP_OUT_OF_SCOPE_COLOR = '#e5e7eb'
+
 // Blends two hex colors: ratio 0 -> base, 1 -> target.
 function mixHex(base: string, target: string, ratio: number): string {
   const parse = (hex: string) => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16))
@@ -51,6 +65,48 @@ export const ECV_HIGHLIGHT_RAMP: string[] = [
   mixHex(ECV_HIGHLIGHT_COLOR, '#000000', 0.35), // much darker
   mixHex(ECV_HIGHLIGHT_COLOR, '#ffffff', 0.7), // much lighter
 ]
+
+// Sequential ramp for the ECV characteristics heatmap (multi-select groups:
+// difficultés d'accès, problèmes des services). Built around the amber the
+// stacked groups give to "Gardienne" (ECV_CARACTERISTIC_SERIES_COLORS), so
+// every cell here reads as a reported problem — the dashboard's teal is kept
+// for the favourable end of the ordinal scales below.
+export const ECV_HEATMAP_RAMP: string[] = [
+  '#fffbeb',
+  '#fde68a',
+  '#fbbf24',
+  '#f59e0b',
+  '#b45309',
+];
+
+// Outline colour for the selected / hovered column of the characteristics
+// heatmap. The amber ECV_HIGHLIGHT_COLOR the rest of the dashboard uses sits
+// inside ECV_HEATMAP_RAMP, so a highlighted cell was hard to tell from a
+// merely high-value one; blue is the complement of that ramp and never
+// appears in it, so the outline reads as selection and not as a value.
+export const ECV_HEATMAP_OUTLINE_COLOR = '#2563eb'
+
+// Explicit colours for the ECV characteristics stacked groups, keyed by
+// variable root. Roots absent from this map fall back to ECV_LINE_PALETTE by
+// series index.
+//
+// BeSD4 (importance perçue) and BeSD6 (confiance) are ordinal scales, so their
+// modalities get a diverging ramp instead of categorical colours: the
+// dashboard teal for the best answer, through green-yellow and yellow, to
+// orange-red for the worst. Mère / Gardienne is not ordinal — it keeps the
+// teal/amber pair the categorical palette already gave it.
+export const ECV_CARACTERISTIC_SERIES_COLORS: Record<string, string> = {
+  mere: '#0d9488',
+  gardienne: '#f59e0b',
+  besd4_tres_important: '#0d9488',
+  besd4_moyen_important: '#84cc16',
+  besd4_peu_important: '#eab308',
+  besd4_pas_important: '#ea580c',
+  besd6_grande_confiance: '#0d9488',
+  besd6_confiance_moyenne: '#84cc16',
+  besd6_confiance_limitee: '#eab308',
+  besd6_aucune_confiance: '#ea580c',
+};
 
 // Fallback categorical palette used only for metric keys missing from ECV_LINE_COLORS.
 export const ECV_LINE_PALETTE: string[] = [

@@ -39,6 +39,9 @@ export interface ProvinceProperties {
 
 export interface ZoneProperties extends ProvinceProperties {
   q103: string;
+  // Province-prefixed zone name straight out of the boundaries file. Unlike
+  // q103 it is unique DRC-wide, so it is what `mapKey` is built from.
+  level_3_name?: string;
   // PEV/EPI antenne (operational hub) the zone reports to. Only a few provinces have antenne assignments — null elsewhere.
   antenne: string | null;
 }
@@ -83,7 +86,9 @@ export type ViewMode = 'data' | 'profiling';
 
 export type DashboardSection = 'ecv' | 'zerodose' | 'determinants' | 'actions';
 
-export type Year = 2022 | 2023;
+// Year the ECV survey was collected (the source exports are named after the
+// year before, see scripts/process-ecv-*.py).
+export type Year = 2023 | 2024;
 
 export const ACCESSIBILITY_THRESHOLDS = [30, 60, 90, 120, 150, 180] as const;
 export type AccessibilityThreshold = (typeof ACCESSIBILITY_THRESHOLDS)[number];
@@ -141,13 +146,29 @@ export interface ProfileData {
 
 export type ProfileScopeLevel = 'national' | 'province' | 'zone';
 
-// One row of public/data/key_ecv.csv (columns: year, level, province, zone,
-// nb_people, nb_zones, penta_cov, zdc_cov, penta_cov_low/high,
+// Habitat filter, from the ECV survey's `q108` ("Milieu de localisation du
+// ménage"). Every ECV domain is published three times, so a row is only
+// comparable to another row of the same `milieu`: 'all' is the whole sample,
+// 'urbain'/'rural' its two q108 modalities. Rows written before the split
+// carried no column at all and parse as 'all'.
+export type Milieu = 'all' | 'urbain' | 'rural';
+
+export const MILIEUX: Milieu[] = ['all', 'urbain', 'rural'];
+
+export const MILIEU_LABELS: Record<Milieu, string> = {
+  all: 'Tous',
+  urbain: 'Urbain',
+  rural: 'Rural',
+};
+
+// One row of public/data/key_ecv.csv (columns: year, milieu, level, province,
+// zone, nb_people, nb_zones, penta_cov, zdc_cov, penta_cov_low/high,
 // zdc_cov_low/high). `province`/`zone` are only populated for the matching
 // `level`; penta_cov/zdc_cov and the *_low/_high pairs bound their 95%
 // confidence interval, all as 0-100 percentages.
 export interface KeyEcvRow {
   year: Year;
+  milieu: Milieu;
   level: ProfileScopeLevel;
   province: string | null;
   zone: string | null;
@@ -203,6 +224,7 @@ export type EcvMetricKey =
 // only populated for the matching `level`, mirroring KeyEcvRow.
 export interface EcvVaccCovRow {
   year: number;
+  milieu: Milieu;
   level: ProfileScopeLevel;
   province: string | null;
   zone: string | null;
@@ -227,6 +249,7 @@ export interface EcvCaracteristicValue {
 // `<root>_pct/_low/_high` columns are picked up without type changes.
 export interface EcvCaracteristicsRow {
   year: number;
+  milieu: Milieu;
   level: ProfileScopeLevel;
   province: string | null;
   zone: string | null;

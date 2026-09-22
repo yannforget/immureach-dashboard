@@ -43,7 +43,7 @@ src/
 │   ├── IndicatorCards.tsx       # 8 metric cards (aggregates over selection)
 │   ├── IndicatorCard.tsx        # single card with tooltip
 │   ├── ProfilingPanel.tsx       # Profiling-mode 2-col chart grid
-│   ├── YearSelector.tsx         # 2022/2023 toggle (next to Tabs in profiling mode)
+│   ├── YearSelector.tsx         # 2023/2024 toggle (next to Tabs in profiling mode)
 │   ├── layout/
 │   │   ├── Header.tsx
 │   │   └── DashboardGrid.tsx    # main grid orchestrator
@@ -106,7 +106,7 @@ src/
 │ (geo by selected metric) │ (per-province or per-zone, sorted)   │
 │                          │   [Coverage %] [# Children] [# Births/Year] │
 ├──────────────────────────┴──────────────────────────────────────┤
-│ [Data] [Profiling]                       Survey year [2022][2023] │
+│ [Data] [Profiling]                       Survey year [2023][2024] │
 ├─────────────────────────────────────────────────────────────────┤
 │ Data table  -or-  Profiling charts (accessibility + dumbbell)   │
 └─────────────────────────────────────────────────────────────────┘
@@ -153,7 +153,7 @@ Selecting any control fans out to the other panels via store subscriptions
   selectedZoneId:    string | null,       // ZoneRow.id (e.g. "zone-142")
   hoveredZoneId:     string | null,       // cross-panel hover highlight
   viewMode:          'data' | 'profiling',// lower-panel tab
-  selectedYear:      2022 | 2023,         // survey year for Profiling panel
+  selectedYear:      2023 | 2024,         // collection year for Profiling panel
 }
 ```
 
@@ -269,7 +269,7 @@ switching between **Data** (the existing `DataTable`) and **Profiling**
 (`ProfilingPanel.tsx`). The active tab is stored as `viewMode` in the Zustand
 store. Selection state (province / zone / metric) is shared across both tabs.
 
-The 2022 / 2023 `YearSelector` is rendered next to the `TabsList` in
+The 2023 / 2024 `YearSelector` is rendered next to the `TabsList` in
 `DashboardGrid.tsx` on the same row, but conditionally — it appears only when
 `viewMode === 'profiling'`. This keeps the year toggle visible without burning
 its own row of vertical space.

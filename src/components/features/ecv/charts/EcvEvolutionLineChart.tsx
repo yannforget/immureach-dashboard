@@ -7,6 +7,7 @@ import { useEcvEvolutionLineData, useZoneData } from '@/hooks'
 import { ECV_LINE_METRIC_KEYS, ECV_METRIC_META } from '@/lib/utils/constants'
 import { buildEcvEvolutionLineOptions } from '@/lib/charts/ecvLineOptions'
 import { buildEcvEvolutionCsv, buildScopeSlug, downloadDataUrl, downloadText } from '@/lib/utils/download'
+import { milieuSlug, withMilieu } from '@/lib/utils/ecvScope'
 import { Button } from '@/components/ui/button'
 import type { EcvMetricKey } from '@/types'
 
@@ -16,6 +17,7 @@ export function EcvEvolutionLineChart() {
   const selectedProvince = useDashboardStore(s => s.selectedProvince)
   const selectedZoneId = useDashboardStore(s => s.selectedZoneId)
   const selectedYear = useDashboardStore(s => s.selectedYear)
+  const selectedMilieu = useDashboardStore(s => s.selectedMilieu)
 
   // Multi-select state lives here — no other component reads it.
   const [selectedKeys, setSelectedKeys] = useState<EcvMetricKey[]>(['zero_dose'])
@@ -34,9 +36,12 @@ export function EcvEvolutionLineChart() {
     )
   }
 
-  const scopeLabel = selectedZoneId ? 'zone sélectionnée' : selectedProvince ?? 'national'
+  const scopeLabel = withMilieu(
+    selectedZoneId ? 'zone sélectionnée' : selectedProvince ?? 'national',
+    selectedMilieu,
+  )
 
-  const baseFilename = `ecv-evolution-${buildScopeSlug(selectedProvince, zoneName)}-${selectedYear}`
+  const baseFilename = `ecv-evolution-${buildScopeSlug(selectedProvince, zoneName)}${milieuSlug(selectedMilieu)}-${selectedYear}`
   const downloadDisabled = data.series.length === 0
 
   const options = useMemo(
@@ -62,7 +67,7 @@ export function EcvEvolutionLineChart() {
     downloadText(
       buildEcvEvolutionCsv(
         data,
-        { province: selectedProvince, zone: zoneName },
+        { province: selectedProvince, zone: zoneName, milieu: selectedMilieu },
         ecvVaccCov,
         zones,
       ),
@@ -97,7 +102,7 @@ export function EcvEvolutionLineChart() {
     <div className="flex flex-col h-full relative">
       <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
         <h3 className="text-sm font-semibold text-slate-700">
-          Évolution de la couverture — Enquête ECV{' '}
+          Évolution de la couverture{' '}
           <span className="font-normal text-slate-400">({scopeLabel})</span>
         </h3>
         <div className="relative">

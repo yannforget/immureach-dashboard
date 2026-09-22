@@ -1,43 +1,47 @@
 import { useMemo } from 'react'
 import { useDashboardStore } from '@/store/dashboardStore'
 import { useData } from '@/context/DataContext'
-import { useZoneData } from '../common/useZoneData'
+import { normalizeAreaName, zoneJoinKey } from '@/lib/utils/ecvVaccCov'
+import { useEcvScope } from './useEcvScope'
 import type { KeyEcvRow } from '@/types'
 
-// Picks the single key_ecv.csv row matching the ribbon's 3 filters
-// (year, province, zone). Falls back progressively: zone -> province -> national
+// Picks the single key_ecv.csv row matching the ribbon's 4 filters
+// (year, milieu, province, zone). Falls back progressively:
+// zone -> province -> national. A domain with no child of the selected milieu
+// has no row at all, so the result is null and the cards read as empty rather
+// than silently showing the whole-sample figure.
+//
+// Zone rows are matched on the (province, zone) pair, never on the zone name
+// alone: see zoneJoinKey.
 export function useKeyEcvData(): KeyEcvRow | null {
     const { keyEcv } = useData()
     const selectedYear = useDashboardStore(s => s.selectedYear)
-    const selectedProvince = useDashboardStore(s => s.selectedProvince)
-    const selectedZoneId = useDashboardStore(s => s.selectedZoneId)
-    const zones = useZoneData(selectedProvince)
+    const selectedMilieu = useDashboardStore(s => s.selectedMilieu)
+    const { provinceKey, zoneKey } = useEcvScope()
 
     return useMemo(() => {
-        const zoneName = selectedZoneId
-            ? zones.find(z => z.id === selectedZoneId)?.displayName ?? null
-            : null
+        const rows = keyEcv.filter(
+            r => r.year === selectedYear && r.milieu === selectedMilieu
+        )
 
-        if (zoneName) {
+        if (zoneKey) {
             return (
-                keyEcv.find(
+                rows.find(
+                    r => r.level === 'zone' && zoneJoinKey(r.province, r.zone) === zoneKey
+                ) ?? null
+            )
+        }
+
+        if (provinceKey) {
+            return (
+                rows.find(
                     r =>
-                        r.level === 'zone' &&
-                        r.year === selectedYear &&
-                        r.zone === zoneName &&
-                        (!selectedProvince || r.province === selectedProvince)
+                        r.level === 'province' &&
+                        normalizeAreaName(r.province) === provinceKey
                 ) ?? null
             )
         }
 
-        if (selectedProvince) {
-            return (
-                keyEcv.find(
-                    r => r.level === 'province' && r.year === selectedYear && r.province === selectedProvince
-                ) ?? null
-            )
-        }
-
-        return keyEcv.find(r => r.level === 'national' && r.year === selectedYear) ?? null
-    }, [keyEcv, selectedYear, selectedProvince, selectedZoneId, zones])
+        return rows.find(r => r.level === 'national') ?? null
+    }, [keyEcv, selectedYear, selectedMilieu, provinceKey, zoneKey])
 }

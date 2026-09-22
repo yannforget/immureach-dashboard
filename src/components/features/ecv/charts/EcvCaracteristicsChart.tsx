@@ -6,6 +6,7 @@ import { useData } from '@/context/DataContext'
 import { useEcvCaracteristicsData, useZoneData } from '@/hooks'
 import { buildEcvCaracteristicsOptions } from '@/lib/charts/ecvCaracteristicsOptions'
 import { buildEcvCaracteristicsCsv, buildScopeSlug, downloadText } from '@/lib/utils/download'
+import { milieuSlug, withMilieu } from '@/lib/utils/ecvScope'
 import { Button } from '@/components/ui/button'
 
 export function EcvCaracteristicsChart() {
@@ -14,6 +15,7 @@ export function EcvCaracteristicsChart() {
   const selectedProvince = useDashboardStore(s => s.selectedProvince)
   const selectedZoneId = useDashboardStore(s => s.selectedZoneId)
   const selectedYear = useDashboardStore(s => s.selectedYear)
+  const selectedMilieu = useDashboardStore(s => s.selectedMilieu)
 
   const { groups, areas } = useEcvCaracteristicsData()
   const groupsKey = groups.map(g => g.key).join('|')
@@ -36,11 +38,15 @@ export function EcvCaracteristicsChart() {
     ? zones.find(z => z.id === selectedZoneId)?.displayName ?? null
     : null
 
-  const scopeLabelDisplay = selectedZoneId ? 'zone sélectionnée' : selectedProvince ?? 'national'
+  const scopeLabelDisplay = withMilieu(
+    selectedZoneId ? 'zone sélectionnée' : selectedProvince ?? 'national',
+    selectedMilieu,
+  )
 
+  const scopeSlug = `${buildScopeSlug(selectedProvince, zoneName)}${milieuSlug(selectedMilieu)}`
   const baseFilename = activeGroup
-    ? `ecv-caracteristiques-${activeGroup.key}-${buildScopeSlug(selectedProvince, zoneName)}-${selectedYear}`
-    : `ecv-caracteristiques-${buildScopeSlug(selectedProvince, zoneName)}-${selectedYear}`
+    ? `ecv-caracteristiques-${activeGroup.key}-${scopeSlug}-${selectedYear}`
+    : `ecv-caracteristiques-${scopeSlug}-${selectedYear}`
   const downloadDisabled = !activeGroup || areas.length === 0
 
   // const handleDownloadPng = () => {
@@ -65,7 +71,7 @@ export function EcvCaracteristicsChart() {
     return (
       <div className="flex h-full flex-col">
         <div className="border-b border-slate-200 px-4 py-3">
-          <h3 className="text-sm font-semibold text-slate-700">Caractéristiques — Enquête ECV</h3>
+          <h3 className="text-sm font-semibold text-slate-700">Caractéristiques</h3>
         </div>
         <div className="flex flex-1 items-center justify-center bg-slate-50">
           <div className="text-center">
@@ -83,7 +89,7 @@ export function EcvCaracteristicsChart() {
     <div className="flex flex-col h-full relative">
       <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
         <h3 className="text-sm font-semibold text-slate-700">
-          Caractéristiques ménages — Enquête ECV{' '}
+          Caractéristiques ménages{' '}
           <span className="font-normal text-slate-400">({scopeLabelDisplay})</span>
         </h3>
         <div className="flex items-center gap-2">

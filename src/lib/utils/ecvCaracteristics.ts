@@ -1,4 +1,5 @@
 import { parseCsv } from '@/lib/utils/csv'
+import { parseMilieu } from '@/lib/utils/ecvVaccCov'
 import type { EcvCaracteristicValue, EcvCaracteristicsRow, ProfileScopeLevel } from '@/types'
 
 function toNum(v: string): number | null {
@@ -38,6 +39,7 @@ export function parseEcvCaracteristicsCsv(text: string): EcvCaracteristicsRow[] 
 
     return {
       year: Number(r.year),
+      milieu: parseMilieu(r.milieu),
       level: r.level as ProfileScopeLevel,
       province: toStr(r.province),
       zone: toStr(r.zone),

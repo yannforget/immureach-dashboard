@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useData } from '@/context/DataContext'
 import { useDashboardStore } from '@/store/dashboardStore'
-import { normalizeAreaName } from '@/lib/utils/ecvVaccCov'
+import { normalizeAreaName, zoneJoinKey } from '@/lib/utils/ecvVaccCov'
 import { useProvinceData } from '../common/useProvinceData'
 import { useZoneData } from '../common/useZoneData'
 import type { ProvinceRow, ZoneRow } from '@/types'
@@ -18,10 +18,20 @@ export interface EcvMapFeatureValue {
 }
 
 // Joins ecv_vaccination_coverage.csv's Zéro_dose values onto the dashboard's
-// province/zone geometries by (normalized) name, at whichever granularity
-// the ribbon's province filter implies — provinces when nothing is
-// selected, zones (scoped to the selected province) once one is. Mirrors
-// the level-switching behaviour of the existing zerodose CoverageMap.
+// province/zone geometries, at whichever granularity the ribbon's province
+// filter implies — provinces when nothing is selected, zones (scoped to the
+// selected province) once one is. Mirrors the level-switching behaviour of
+// the existing zerodose CoverageMap.
+//
+// Province rows join on the (normalized) province name; zone rows join on the
+// (province, zone) pair, because zone names are not unique across provinces —
+// see zoneJoinKey. Joining zones by name alone painted Bas Uele's Bili with
+// Nord Ubangi's estimate (and Kasaï Central's Lubunga with Tshopo's),
+// whichever of the two the CSV happened to list last.
+//
+// Only rows of the ribbon's milieu are joined, so a zone with no child of that
+// milieu — most of them, for `urbain` — resolves to a null pct and renders as
+// a no-data shape rather than borrowing the whole-sample figure.
 export function useEcvZeroDoseMapData(): {
   features: (ProvinceRow | ZoneRow)[]
   values: EcvMapFeatureValue[]
@@ -29,6 +39,7 @@ export function useEcvZeroDoseMapData(): {
 } {
   const { ecvVaccCov } = useData()
   const selectedYear = useDashboardStore(s => s.selectedYear)
+  const selectedMilieu = useDashboardStore(s => s.selectedMilieu)
   const selectedProvince = useDashboardStore(s => s.selectedProvince)
   const provinces = useProvinceData()
   const zones = useZoneData(selectedProvince)
@@ -44,16 +55,27 @@ export function useEcvZeroDoseMapData(): {
 
     // Keep every row of the selected level so dimmed (out-of-province) zones
     // still resolve their real data for the tooltip.
-    const rows = ecvVaccCov.filter(r => r.level === level && r.year === selectedYear)
+    const rows = ecvVaccCov.filter(
+      r => r.level === level && r.year === selectedYear && r.milieu === selectedMilieu,
+    )
 
-    const byName = new Map<string, (typeof rows)[number]>()
+    const byKey = new Map<string, (typeof rows)[number]>()
     for (const r of rows) {
-      const key = normalizeAreaName(level === 'zone' ? r.zone : r.province)
-      if (key) byName.set(key, r)
+      const key =
+        level === 'zone'
+          ? zoneJoinKey(r.province, r.zone)
+          : normalizeAreaName(r.province)
+      if (key) byKey.set(key, r)
     }
 
     const toValue = (f: ProvinceRow | ZoneRow, dimmed = false): EcvMapFeatureValue => {
-      const row = byName.get(normalizeAreaName(f.displayName))
+      // ZoneRow.provinceId is the cleaned province name, so it keys the same
+      // way as the CSV's `province` column.
+      const key =
+        'provinceId' in f
+          ? zoneJoinKey(f.provinceId, f.displayName)
+          : normalizeAreaName(f.displayName)
+      const row = byKey.get(key)
       const zd = row?.metrics.zero_dose
       return {
         mapKey: f.mapKey,
@@ -70,7 +92,7 @@ export function useEcvZeroDoseMapData(): {
     // Zone level: map over every DRC zone so out-of-province zones keep their
     // data in the tooltip, but dim (grey) the ones outside the province.
     return allZones.map(f => toValue(f, f.provinceId !== selectedProvince))
-  }, [ecvVaccCov, selectedYear, selectedProvince, features, allZones])
+  }, [ecvVaccCov, selectedYear, selectedMilieu, selectedProvince, features, allZones])
 
   return { features, values, mapName }
 }

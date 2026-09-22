@@ -23,7 +23,10 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 INPUT_DIR = PROJECT_ROOT / "data/input/immureach"
 OUT_DIR = PROJECT_ROOT / "data/output/accessibility"
 
-YEARS = [2022, 2023]
+# The ECV source files are named after the year they were produced, which is the
+# year *before* the survey went to the field. Outputs are labelled with that
+# collection year (source year -> collection year).
+COLLECTION_YEAR = {2022: 2023, 2023: 2024}
 
 THRESHOLDS = [30, 60, 90, 120, 150, 180]
 
@@ -50,8 +53,8 @@ def main() -> None:
     mean_travel = weighted_avg("mean_travel", "n")
     mean_travel_0d = weighted_avg("mean_travel_0d", "n_0d")
 
-    for year in YEARS:
-        source = INPUT_DIR / f"accessibility_{year}.csv"
+    for source_year, year in COLLECTION_YEAR.items():
+        source = INPUT_DIR / f"accessibility_{source_year}.csv"
         source_sql = str(source).replace("'", "''")
         con.execute(
             f"CREATE OR REPLACE TEMP VIEW src AS "

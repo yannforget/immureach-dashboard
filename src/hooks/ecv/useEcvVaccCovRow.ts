@@ -1,48 +1,43 @@
 import { useMemo } from 'react'
 import { useDashboardStore } from '@/store/dashboardStore'
 import { useData } from '@/context/DataContext'
-import { normalizeAreaName } from '@/lib/utils/ecvVaccCov'
-import { useZoneData } from '../common/useZoneData'
+import { normalizeAreaName, zoneJoinKey } from '@/lib/utils/ecvVaccCov'
+import { useEcvScope } from './useEcvScope'
 import type { EcvVaccCovRow } from '@/types'
 
 // Picks the single ecv_vaccination_coverage.csv row matching the ribbon's
-// filters (year, province, zone), used by the ECV vaccine bar chart. Falls
-// back progressively: zone -> province -> national, mirroring
+// filters (year, milieu, province, zone), used by the ECV vaccine bar chart.
+// Falls back progressively: zone -> province -> national, mirroring
 // useKeyEcvData's drill-down logic.
+//
+// Zone rows are matched on the (province, zone) pair, never on the zone name
+// alone: see zoneJoinKey.
 export function useEcvVaccCovRow(): EcvVaccCovRow | null {
   const { ecvVaccCov } = useData()
   const selectedYear = useDashboardStore(s => s.selectedYear)
-  const selectedProvince = useDashboardStore(s => s.selectedProvince)
-  const selectedZoneId = useDashboardStore(s => s.selectedZoneId)
-  const zones = useZoneData(selectedProvince)
+  const selectedMilieu = useDashboardStore(s => s.selectedMilieu)
+  const { provinceKey, zoneKey } = useEcvScope()
 
   return useMemo(() => {
-    const zoneName = selectedZoneId
-      ? zones.find(z => z.id === selectedZoneId)?.displayName ?? null
-      : null
-    const zoneKey = normalizeAreaName(zoneName)
-    const provinceKey = normalizeAreaName(selectedProvince)
+    const rows = ecvVaccCov.filter(
+      r => r.year === selectedYear && r.milieu === selectedMilieu,
+    )
 
     if (zoneKey) {
       return (
-        ecvVaccCov.find(
-          r =>
-            r.level === 'zone' &&
-            r.year === selectedYear &&
-            normalizeAreaName(r.zone) === zoneKey &&
-            (!provinceKey || normalizeAreaName(r.province) === provinceKey),
-        ) ?? null
+        rows.find(r => r.level === 'zone' && zoneJoinKey(r.province, r.zone) === zoneKey) ??
+        null
       )
     }
 
     if (provinceKey) {
       return (
-        ecvVaccCov.find(
-          r => r.level === 'province' && r.year === selectedYear && normalizeAreaName(r.province) === provinceKey,
+        rows.find(
+          r => r.level === 'province' && normalizeAreaName(r.province) === provinceKey,
         ) ?? null
       )
     }
 
-    return ecvVaccCov.find(r => r.level === 'national' && r.year === selectedYear) ?? null
-  }, [ecvVaccCov, selectedYear, selectedProvince, selectedZoneId, zones])
+    return rows.find(r => r.level === 'national') ?? null
+  }, [ecvVaccCov, selectedYear, selectedMilieu, provinceKey, zoneKey])
 }

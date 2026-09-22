@@ -3,8 +3,8 @@
 Run: uv run scripts/build-profile-json.py
 
 Reads two per-domain output trees:
-    data/output/accessibility/{national,province,zone}_{2022,2023}.csv
-    data/output/indicators/{national,province,zone}_{2022,2023}.csv
+    data/output/accessibility/{national,province,zone}_{2023,2024}.csv
+    data/output/indicators/{national,province,zone}_{2023,2024}.csv
 
 and emits a single JSON file consumed by the Profiling-mode panel:
 
@@ -48,7 +48,7 @@ ACCESS_DIR = PROJECT_ROOT / "data" / "output" / "accessibility"
 INDIC_DIR = PROJECT_ROOT / "data" / "output" / "indicators"
 OUT_PATH = PROJECT_ROOT / "public" / "data" / "profile.json"
 
-YEARS = [2022, 2023]
+YEARS = [2023, 2024]
 THRESHOLDS = [30, 60, 90, 120, 150, 180]
 
 INDICATORS = [

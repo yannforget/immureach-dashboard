@@ -3,7 +3,7 @@ import * as echarts from 'echarts'
 import { cleanName } from '@/lib/utils/dataUtils'
 import { parseCsv } from '@/lib/utils/csv'
 // import type { KeyEcvRow, ProfileData, ProfileScopeLevel, ProvinceRow, Year, ZoneRow } from '@/types'
-import { parseEcvVaccCovCsv } from '@/lib/utils/ecvVaccCov'
+import { parseEcvVaccCovCsv, parseMilieu } from '@/lib/utils/ecvVaccCov'
 import { parseEcvCaracteristicsCsv } from '@/lib/utils/ecvCaracteristics'
 import type { EcvCaracteristicsRow, EcvVaccCovRow, KeyEcvRow, ProfileData, ProfileScopeLevel, ProvinceRow, Year, ZoneRow } from '@/types'
 
@@ -27,6 +27,7 @@ function parseKeyEcvCsv(text: string): KeyEcvRow[] {
 
   return parseCsv(text).map(r => ({
     year: Number(r.year) as Year,
+    milieu: parseMilieu(r.milieu),
     level: r.level as ProfileScopeLevel,
     province: toStr(r.province),
     zone: toStr(r.zone),
@@ -64,6 +65,15 @@ function computeBbox(geometry: any): Bbox {
 
 function bboxCenter(bbox: Bbox): [number, number] {
   return [(bbox[0] + bbox[2]) / 2, (bbox[1] + bbox[3]) / 2]
+}
+
+// Name a zone shape is registered under in the ECharts map, and the `mapKey`
+// every component matches shapes by. `level_3_name` carries the province's
+// two-letter prefix, which is what makes it unique DRC-wide; the q103 +
+// province fallback covers a boundaries file built before that field existed
+// (q103 alone would collide for "Bili" / "Lubunga").
+function zoneMapKey(props: any): string {
+  return props?.level_3_name || `${props?.q101 || ''}|${props?.q103 || ''}`
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined)
@@ -117,9 +127,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           }
         )
 
-        // Process zones. The map key is the raw q103 (province-prefixed)
-        // because two zones can share a cleaned name (e.g. "Bili" in both
-        // Bas Uele and Nord Ubangi).
+        // Process zones. The map key is level_3_name, the province-prefixed
+        // spelling from the boundaries file: q103 is NOT unique (both Nord
+        // Ubangi and Bas Uele have a "Bili", both Kasai Central and Tshopo a
+        // "Lubunga"), and ECharts indexes map shapes by name, so keying on it
+        // made the two namesakes indistinguishable -- one province's colour,
+        // tooltip and click landed on the other's shape.
         const processedZones = (zonesGeo.features as any[]).map(
           (feature: any, index: number) => {
             const zoneProps = feature.properties as any
@@ -127,7 +140,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             return {
               id: `zone-${index}`,
               displayName: cleanName(zoneProps.q103 || ''),
-              mapKey: zoneProps.q103 || '',
+              mapKey: zoneMapKey(zoneProps),
               provinceId: provinceName,
               centroid: bboxCenter(computeBbox(feature.geometry)),
               properties: zoneProps,
@@ -161,13 +174,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         const zonesWithNames = {
           ...zonesGeo,
           features: (zonesGeo.features as any[]).map((feature: any) => {
-            const rawQ103 = (feature.properties as any).q103 || ''
+            const key = zoneMapKey(feature.properties as any)
             return {
               ...feature,
-              name: rawQ103,
+              name: key,
               properties: {
                 ...feature.properties,
-                name: rawQ103,
+                name: key,
               },
             }
           }),

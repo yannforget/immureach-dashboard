@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import EChartsReact from 'echarts-for-react'
 import { useDashboardStore } from '@/store/dashboardStore'
-import { useProvinceData, useZoneData, useProvinceAntennes } from '@/hooks'
+import { useMapSelectionSync, useProvinceData, useZoneData, useProvinceAntennes } from '@/hooks'
 import { useData } from '@/context/DataContext'
 import { MODEL_METRIC_META } from '@/lib/utils/constants'
 import { buildMapOptions } from '@/lib/charts/mapOptions'
@@ -10,6 +10,7 @@ import { Toggle } from '@/components/ui/toggle'
 export function ModelCoverageMap() {
   const chartRef = useRef<EChartsReact>(null)
   const selectedProvince = useDashboardStore(s => s.selectedProvince)
+  const selectedZoneId = useDashboardStore(s => s.selectedZoneId)
   const selectedMetric = useDashboardStore(s => s.selectedMetric)
   const showAntenne = useDashboardStore(s => s.showAntenne)
   const setProvince = useDashboardStore(s => s.setProvince)
@@ -40,6 +41,14 @@ export function ModelCoverageMap() {
     boundingCoords,
     antenneOverlay: showAntenne && antenneGroups ? antenneGroups : undefined,
   })
+
+  const chartKey = `map-${selectedProvince}-${selectedMetric}-${showAntenne ? 'a' : 'm'}`
+
+  // Highlight the ribbon's zone the same way a click on the shape does.
+  const selectedMapKey = selectedZoneId
+    ? zones.find(z => z.id === selectedZoneId)?.mapKey ?? null
+    : null
+  useMapSelectionSync(chartRef, selectedMapKey, chartKey)
 
   // Handle map selection and hover interactions. We match against `mapKey`
   // (the raw province-prefixed name) because two zones can share a cleaned
@@ -105,7 +114,7 @@ export function ModelCoverageMap() {
           option={options}
           theme="dashboard"
           style={{ width: '100%', height: '100%' }}
-          key={`map-${selectedProvince}-${selectedMetric}-${showAntenne ? 'a' : 'm'}`}
+          key={chartKey}
           onEvents={onEvents}
         />
         {selectedProvince && antenneGroups && (

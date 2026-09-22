@@ -17,7 +17,7 @@ export function EcvIndicatorCardGrid() {
                 label: 'Enfants enquêtés',
                 value: formatNumber(row?.nb_people ?? null),
                 confidenceInterval: undefined,
-                description: "Nombre d'enfants couverts par l'enquête ECV pour la sélection courante (année, province, zone).",
+                description: "Nombre d'enfants âgés de 6 à 24 mois couverts par l'enquête ECV pour la sélection courante (année, province, zone).",
             },
             {
                 key: 'nb_zones',
@@ -32,22 +32,22 @@ export function EcvIndicatorCardGrid() {
                     row?.nb_areas != null && row.nb_areas_tot != null
                         ? `${formatNumber(row.nb_areas)} / ${formatNumber(row.nb_areas_tot)} aires de santé enquêtées`
                         : row?.nb_areas != null
-                          ? `${formatNumber(row.nb_areas)} aires de santé enquêtées`
-                          : undefined,
+                            ? `${formatNumber(row.nb_areas)} aires de santé enquêtées`
+                            : undefined,
             },
             {
                 key: 'penta_cov',
                 label: 'Couverture Penta',
                 value: formatPercent(row?.penta_cov ?? null),
                 confidenceInterval: formatCi(row?.penta_cov_low ?? null, row?.penta_cov_high ?? null),
-                description: "Couverture vaccinale pentavalente mesurée par l'enquête ECV.",
+                description: "Couverture vaccinale pentavalente mesurée par l'enquête ECV (3 doses).",
             },
             {
                 key: 'zdc_cov',
                 label: 'Enfants zéro dose',
                 value: formatPercent(row?.zdc_cov ?? null),
                 confidenceInterval: formatCi(row?.zdc_cov_low ?? null, row?.zdc_cov_high ?? null),
-                description: "Proportion d'enfants zéro dose mesurée par l'enquête ECV.",
+                description: "Proportion d'enfants zéro dose mesurée par l'enquête ECV (aucune dose d'aucun vaccin).",
             },
         ],
         [row]

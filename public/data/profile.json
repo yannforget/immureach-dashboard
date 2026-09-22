@@ -1,7 +1,7 @@
 {
     "years": [
-        2022,
-        2023
+        2023,
+        2024
     ],
     "accessibility": {
         "thresholds": [
@@ -12,7 +12,7 @@
             150,
             180
         ],
-        "2022": {
+        "2023": {
             "national": {
                 "n_0d": 1710392.1500000006,
                 "n": 8603619.049999995,
@@ -18918,7 +18918,7 @@
                 }
             }
         },
-        "2023": {
+        "2024": {
             "national": {
                 "n_0d": 1782927.9799999995,
                 "n": 8763870.529999994,
@@ -38186,7 +38186,7 @@
                 "description": "Alignement culturel entre le groupe ethnique de la personne interrogée et le groupe dominant de la zone."
             }
         ],
-        "2022": {
+        "2023": {
             "national": {
                 "trust_in_hcw": {
                     "zd": 0.4400167329543984,
@@ -83600,7 +83600,7 @@
                 }
             }
         },
-        "2023": {
+        "2024": {
             "national": {
                 "trust_in_hcw": {
                     "zd": 0.3581912229934189,

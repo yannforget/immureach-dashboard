@@ -6,6 +6,7 @@ import { useEcvVaccCovRow } from '@/hooks'
 import { ECV_BAR_METRIC_KEYS } from '@/lib/utils/constants'
 import { ECV_METRIC_META } from '@/lib/utils/constants'
 import { buildEcvVaccineBarOptions, type EcvBarItem } from '@/lib/charts/ecvBarOptions'
+import { withMilieu } from '@/lib/utils/ecvScope'
 
 export function EcvVaccineBarChart() {
   const chartRef = useRef<EChartsReact>(null)
@@ -13,6 +14,7 @@ export function EcvVaccineBarChart() {
   const row = useEcvVaccCovRow()
   const selectedProvince = useDashboardStore(s => s.selectedProvince)
   const selectedZoneId = useDashboardStore(s => s.selectedZoneId)
+  const selectedMilieu = useDashboardStore(s => s.selectedMilieu)
 
   // One bar per vaccine dose (BCG, Penta1-3, Polio0-3, PCV1-3, ROTA1-3, VPI, VAR, VAA), each with its 95% CI. 
   // Rows without a value are dropped so missing indicators don't render as 0-bars. 
@@ -32,13 +34,16 @@ export function EcvVaccineBarChart() {
 
   const options = buildEcvVaccineBarOptions({ items })
 
-  const scopeLabel = selectedZoneId ? 'zone sélectionnée' : selectedProvince ? selectedProvince : 'national'
+  const scopeLabel = withMilieu(
+    selectedZoneId ? 'zone sélectionnée' : selectedProvince ? selectedProvince : 'national',
+    selectedMilieu,
+  )
 
   if (loading) {
     return (
       <div className="flex h-full flex-col">
         <div className="border-b border-slate-200 px-4 py-3">
-          <h3 className="text-sm font-semibold text-slate-700">Couverture vaccinale — Enquête ECV</h3>
+          <h3 className="text-sm font-semibold text-slate-700">Couverture vaccinale</h3>
         </div>
         <div className="flex flex-1 items-center justify-center bg-slate-50">
           <div className="text-center">
@@ -54,7 +59,7 @@ export function EcvVaccineBarChart() {
     <div className="flex flex-col h-full relative">
       <div className="border-b border-slate-200 px-4 py-3">
         <h3 className="text-sm font-semibold text-slate-700">
-          Couverture vaccinale — Enquête ECV <span className="font-normal text-slate-400">({scopeLabel})</span>
+          Couverture vaccinale <span className="font-normal text-slate-400">({scopeLabel})</span>
         </h3>
       </div>
       <div className="flex-1 relative">
