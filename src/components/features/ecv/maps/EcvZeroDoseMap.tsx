@@ -112,7 +112,7 @@ export function EcvZeroDoseMap() {
     <div className="flex flex-col h-full relative">
       <div className="border-b border-slate-200 px-4 py-3">
         <h3 className="text-sm font-semibold text-slate-700">
-          Zéro dose — Enquête ECV
+          Zéro dose
           {selectedMilieu !== 'all' && (
             <span className="font-normal text-slate-400"> ({MILIEU_LABELS[selectedMilieu]})</span>
           )}

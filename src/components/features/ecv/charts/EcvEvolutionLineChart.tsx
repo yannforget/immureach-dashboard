@@ -102,7 +102,7 @@ export function EcvEvolutionLineChart() {
     <div className="flex flex-col h-full relative">
       <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
         <h3 className="text-sm font-semibold text-slate-700">
-          Évolution de la couverture — Enquête ECV{' '}
+          Évolution de la couverture{' '}
           <span className="font-normal text-slate-400">({scopeLabel})</span>
         </h3>
         <div className="relative">

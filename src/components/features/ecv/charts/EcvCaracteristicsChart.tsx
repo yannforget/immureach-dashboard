@@ -71,7 +71,7 @@ export function EcvCaracteristicsChart() {
     return (
       <div className="flex h-full flex-col">
         <div className="border-b border-slate-200 px-4 py-3">
-          <h3 className="text-sm font-semibold text-slate-700">Caractéristiques — Enquête ECV</h3>
+          <h3 className="text-sm font-semibold text-slate-700">Caractéristiques</h3>
         </div>
         <div className="flex flex-1 items-center justify-center bg-slate-50">
           <div className="text-center">
@@ -89,7 +89,7 @@ export function EcvCaracteristicsChart() {
     <div className="flex flex-col h-full relative">
       <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
         <h3 className="text-sm font-semibold text-slate-700">
-          Caractéristiques ménages — Enquête ECV{' '}
+          Caractéristiques ménages{' '}
           <span className="font-normal text-slate-400">({scopeLabelDisplay})</span>
         </h3>
         <div className="flex items-center gap-2">

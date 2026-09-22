@@ -43,7 +43,7 @@ export function EcvVaccineBarChart() {
     return (
       <div className="flex h-full flex-col">
         <div className="border-b border-slate-200 px-4 py-3">
-          <h3 className="text-sm font-semibold text-slate-700">Couverture vaccinale — Enquête ECV</h3>
+          <h3 className="text-sm font-semibold text-slate-700">Couverture vaccinale</h3>
         </div>
         <div className="flex flex-1 items-center justify-center bg-slate-50">
           <div className="text-center">
@@ -59,7 +59,7 @@ export function EcvVaccineBarChart() {
     <div className="flex flex-col h-full relative">
       <div className="border-b border-slate-200 px-4 py-3">
         <h3 className="text-sm font-semibold text-slate-700">
-          Couverture vaccinale — Enquête ECV <span className="font-normal text-slate-400">({scopeLabel})</span>
+          Couverture vaccinale <span className="font-normal text-slate-400">({scopeLabel})</span>
         </h3>
       </div>
       <div className="flex-1 relative">
