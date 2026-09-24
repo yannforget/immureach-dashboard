@@ -20,7 +20,7 @@ export interface EcvLineData {
 }
 
 // Resolves one ecv_vaccination_coverage.csv row per survey year for the scope
-// implied by the ribbon (milieu, then zone -> province -> national fallback,
+// implied by the ribbon (milieu and age group, then zone -> province -> national fallback,
 // identical to useEcvVaccCovRow), then projects the requested metric keys onto
 // a { years, series } shape for the evolution line chart. Series whose values
 // are null for every year are dropped so missing indicators never render.
@@ -30,6 +30,7 @@ export interface EcvLineData {
 export function useEcvEvolutionLineData(metricKeys: EcvMetricKey[]): EcvLineData {
   const { ecvVaccCov } = useData()
   const selectedMilieu = useDashboardStore(s => s.selectedMilieu)
+  const selectedAgeGroup = useDashboardStore(s => s.selectedAgeGroup)
   const { provinceKey, zoneKey } = useEcvScope()
 
   return useMemo(() => {
@@ -37,7 +38,9 @@ export function useEcvEvolutionLineData(metricKeys: EcvMetricKey[]): EcvLineData
     // milieu that is missing from one round leaves a gap in the line instead
     // of shortening the axis.
     const years = Array.from(new Set(ecvVaccCov.map(r => r.year))).sort()
-    const inMilieu = ecvVaccCov.filter(r => r.milieu === selectedMilieu)
+    const inMilieu = ecvVaccCov.filter(
+      r => r.milieu === selectedMilieu && r.ageGroup === selectedAgeGroup,
+    )
 
     const resolveRow = (year: number): EcvVaccCovRow | null => {
       const candidates = inMilieu.filter(r => r.year === year)
@@ -73,5 +76,5 @@ export function useEcvEvolutionLineData(metricKeys: EcvMetricKey[]): EcvLineData
       .filter(s => s.values.some(v => v != null))
 
     return { years, series }
-  }, [ecvVaccCov, metricKeys, selectedMilieu, provinceKey, zoneKey])
+  }, [ecvVaccCov, metricKeys, selectedMilieu, selectedAgeGroup, provinceKey, zoneKey])
 }

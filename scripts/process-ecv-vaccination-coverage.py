@@ -5,13 +5,18 @@ children inside the age window (`vs25`, age in completed months; 6-23 by
 default, which is the population both files were collected on, so the filter
 is close to a no-op -- see AGE_MIN_MONTHS), and writes
 public/data/ecv_vaccination_coverage.csv -- one row per national / province /
-zone domain, year and milieu, with a `_pct` / `_low` / `_high` triplet per
+zone domain, year, age group and milieu, with a `_pct` / `_low` / `_high` triplet per
 metric (point estimate and 95% confidence interval, 0-100).
 
 `milieu` is the dashboard's rural/urbain ribbon filter, read off `q108`
 ("Milieu de localisation du menage"): every domain is estimated three times,
 once on the whole sample (`all`) and once on each q108 modality (`urbain`,
 `rural`). See MILIEUX.
+
+`age_group` is the dashboard's age ribbon filter, read off `vs25`: the milieu
+split above is repeated for each AGE_GROUPS window (6-24, 6-11 and 12-23
+months), so every domain carries 3 x 3 rows per year. `--age-groups 6-24`
+reproduces the output from before the age split.
 
 The 17 antigen metrics come straight from the `<vaccine>_merg` columns, which
 merge the vaccination card with the mother's recall and are coded
@@ -79,7 +84,7 @@ COLLECTION_YEAR = {"2022": "2023", "2023": "2024"}
 # the file rather than the 12-23 subset the coverage module reports on. Widen
 # or narrow it per run with --age-min / --age-max.
 AGE_MIN_MONTHS = 6
-AGE_MAX_MONTHS = 24
+AGE_MAX_MONTHS = 23
 
 # Survey design + geography columns.
 STRATUM_COL = "q101"  # "Nom de la strate (de la province)"
@@ -102,6 +107,14 @@ MILIEU_BY_CODE = {1: "urbain", 2: "rural"}
 # so expect empty cells and wide intervals there; the CI fallback in the R
 # script handles them the same way it handles small zones.
 MILIEUX = ("all", *MILIEU_BY_CODE.values())
+
+# The dashboard's age ribbon filter. Every (milieu) domain is estimated once per
+# entry, on the children whose `vs25` falls inside the inclusive window. "6-24"
+# is the whole load window -- the only thing the file carried before the age
+# split -- and the other two are the classic infant / second-year cohorts.
+# A 24-month-old sits in "6-24" only, so the two cohorts do not add up to it.
+AGE_GROUPS = {"6-24": (6, 23), "6-11": (6, 11), "12-23": (12, 23)}
+DEFAULT_AGE_GROUP = "6-23"
 
 # Dashboard metric key -> `<vaccine>_merg` column.
 # The 2023 file additionally carries `vpi2_merg` / `var2_merg` (second doses);
@@ -639,6 +652,7 @@ def load_year(
     df["weight"] = pd.to_numeric(df[WEIGHT_COL], errors="coerce")
     df["nb_as"] = pd.to_numeric(df[AREAS_TOTAL_COL], errors="coerce")
     df["as_enq_file"] = pd.to_numeric(df[AREAS_SURVEYED_COL], errors="coerce")
+    df["age"] = age[in_range]
     df["milieu"] = pd.to_numeric(df[MILIEU_COL], errors="coerce").map(MILIEU_BY_CODE)
 
     # The milieu split is a filter, not an indicator: a child whose `q108` is
@@ -685,6 +699,7 @@ def load_year(
         "weight",
         "nb_as",
         "as_enq_file",
+        "age",
         "milieu",
         "zero_dose_ref",
         *METRICS,
@@ -982,6 +997,7 @@ def check_against_reference(
 def process_milieu(
     df: pd.DataFrame,
     year: str,
+    age_group: str,
     milieu: str,
     metrics: list[str],
     rscript: str,
@@ -994,7 +1010,9 @@ def process_milieu(
     does for the province and zone domains (see the `domain()` comment there),
     so a milieu domain is estimated exactly the way a zone domain is.
     """
-    counts = build_counts(df, check_as_enq=milieu == "all")
+    counts = build_counts(
+        df, check_as_enq=milieu == "all" and age_group == DEFAULT_AGE_GROUP
+    )
     print(
         f"  domains: {int((counts['level'] == 'province').sum())} provinces, "
         f"{int((counts['level'] == 'zone').sum())} zones, 1 national"
@@ -1002,12 +1020,14 @@ def process_milieu(
 
     print("  running the R survey estimation ...")
     if workdir is None:
-        with tempfile.TemporaryDirectory(prefix=f"ecv-{year}-{milieu}-") as tmp:
+        with tempfile.TemporaryDirectory(
+            prefix=f"ecv-{year}-{age_group}-{milieu}-"
+        ) as tmp:
             est = run_survey_r(df, metrics, rscript, Path(tmp))
     else:
         # Keep the extract, the generated R script and the raw estimates so the
         # R step can be re-run and debugged by hand.
-        run_dir = workdir / year / milieu
+        run_dir = workdir / year / age_group / milieu
         run_dir.mkdir(parents=True, exist_ok=True)
         est = run_survey_r(df, metrics, rscript, run_dir)
         print(f"  kept the R inputs/outputs in {run_dir}")
@@ -1021,8 +1041,9 @@ def process_milieu(
         print(f"  WARNING: {unmatched} domain(s) got no estimate from R")
     out[COUNT_COLS] = out[COUNT_COLS].astype("Int64")
     out["year"] = COLLECTION_YEAR.get(year, year)
+    out["age_group"] = age_group
     out["milieu"] = milieu
-    print(f"  {len(out)} rows for {year} / {milieu}")
+    print(f"  {len(out)} rows for {year} / {age_group} months / {milieu}")
     return out.drop(columns=["domain_key"])
 
 
@@ -1031,6 +1052,7 @@ def process_file(
     year: str,
     metrics: list[str],
     milieux: list[str],
+    age_groups: list[str],
     rscript: str,
     workdir: Path | None,
     age_min: int,
@@ -1047,18 +1069,29 @@ def process_file(
     report_indicators(df, metrics)
 
     frames = []
-    for milieu in milieux:
-        subset = df if milieu == "all" else df[df["milieu"] == milieu]
-        print(
-            f"\n--- {year} / milieu={milieu}: {len(subset):,} children in "
-            f"{subset['province'].nunique()} provinces / "
-            f"{subset['zone_key'].nunique()} zones / "
-            f"{subset['psu_key'].nunique()} areas ---"
-        )
-        if subset.empty:
-            print(f"  WARNING: no child with milieu={milieu}; no rows emitted")
-            continue
-        frames.append(process_milieu(subset, year, milieu, metrics, rscript, workdir))
+    for age_group in age_groups:
+        lo, hi = AGE_GROUPS[age_group]
+        in_age = df[df["age"].between(lo, hi)]
+        for milieu in milieux:
+            subset = in_age if milieu == "all" else in_age[in_age["milieu"] == milieu]
+            print(
+                f"\n--- {year} / age={age_group} / milieu={milieu}: "
+                f"{len(subset):,} children in "
+                f"{subset['province'].nunique()} provinces / "
+                f"{subset['zone_key'].nunique()} zones / "
+                f"{subset['psu_key'].nunique()} areas ---"
+            )
+            if subset.empty:
+                print(
+                    f"  WARNING: no child aged {age_group} months with "
+                    f"milieu={milieu}; no rows emitted"
+                )
+                continue
+            frames.append(
+                process_milieu(
+                    subset, year, age_group, milieu, metrics, rscript, workdir
+                )
+            )
 
     return pd.concat(frames, ignore_index=True)
 
@@ -1113,6 +1146,13 @@ def main() -> None:
         f"(default: {','.join(MILIEUX)})",
     )
     parser.add_argument(
+        "--age-groups",
+        default=",".join(AGE_GROUPS),
+        help="comma-separated subset of age groups (months, inclusive) to "
+        "estimate; each one costs a full R pass per milieu "
+        f"(default: {','.join(AGE_GROUPS)})",
+    )
+    parser.add_argument(
         "--age-min",
         type=int,
         default=AGE_MIN_MONTHS,
@@ -1158,7 +1198,14 @@ def main() -> None:
         raise SystemExit(f"unknown milieu(x): {unknown}\nknown milieux: {MILIEUX}")
     print(f"  years     : {years}")
     print(f"  metrics   : {len(metrics)} -> {metrics}")
+    age_groups = [a.strip() for a in args.age_groups.split(",") if a.strip()]
+    unknown = [a for a in age_groups if a not in AGE_GROUPS]
+    if unknown:
+        raise SystemExit(
+            f"unknown age group(s): {unknown}\nknown age groups: {list(AGE_GROUPS)}"
+        )
     print(f"  milieux   : {milieux}")
+    print(f"  age groups: {age_groups}")
 
     rscript = resolve_rscript(args.rscript)
     provinces, zones = load_geojson_names(args.boundaries)
@@ -1179,6 +1226,7 @@ def main() -> None:
                 year,
                 metrics,
                 milieux,
+                age_groups,
                 rscript,
                 args.workdir,
                 args.age_min,
@@ -1193,15 +1241,32 @@ def main() -> None:
         f"{metric}_{stat}" for metric in metrics for stat in ("pct", "low", "high")
     ]
     output = output[
-        ["year", "milieu", "level", "province", "zone", *COUNT_COLS, *ordered]
+        [
+            "year",
+            "age_group",
+            "milieu",
+            "level",
+            "province",
+            "zone",
+            *COUNT_COLS,
+            *ordered,
+        ]
     ]
 
     print("\n=== output ===")
     for level in ("national", "province", "zone"):
         at_level = output[output["level"] == level]
-        for milieu in milieux:
-            by_year = at_level[at_level["milieu"] == milieu].groupby("year").size()
-            print(f"  {level:<9} {milieu:<7} rows per year: {by_year.to_dict()}")
+        for age_group in age_groups:
+            for milieu in milieux:
+                sel = at_level[
+                    (at_level["age_group"] == age_group)
+                    & (at_level["milieu"] == milieu)
+                ]
+                by_year = sel.groupby("year").size()
+                print(
+                    f"  {level:<9} {age_group:<5} {milieu:<7} rows per year: "
+                    f"{by_year.to_dict()}"
+                )
     empty = [c for c in ordered if output[c].isna().all()]
     if empty:
         print(f"  WARNING: {len(empty)} column(s) are entirely empty: {empty}")

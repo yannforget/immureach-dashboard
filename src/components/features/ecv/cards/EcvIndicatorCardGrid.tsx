@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 import { EcvIndicatorCard } from './EcvIndicatorCard'
 import { useKeyEcvData } from '@/hooks'
+import { useDashboardStore } from '@/store/dashboardStore'
+import { AGE_GROUP_LABELS } from '@/types'
 
 const formatNumber = (v: number | null): string => (v == null ? '—' : Math.round(v).toLocaleString())
 const formatPercent = (v: number | null): string => (v == null ? '—' : `${Math.round(v)}%`)
@@ -9,6 +11,7 @@ const formatCi = (low: number | null, high: number | null): string | undefined =
 
 export function EcvIndicatorCardGrid() {
     const row = useKeyEcvData()
+    const selectedAgeGroup = useDashboardStore(s => s.selectedAgeGroup)
 
     const cards = useMemo(
         () => [
@@ -17,7 +20,7 @@ export function EcvIndicatorCardGrid() {
                 label: 'Enfants enquêtés',
                 value: formatNumber(row?.nb_people ?? null),
                 confidenceInterval: undefined,
-                description: "Nombre d'enfants âgés de 6 à 24 mois couverts par l'enquête ECV pour la sélection courante (année, province, zone).",
+                description: `Nombre d'enfants âgés de ${AGE_GROUP_LABELS[selectedAgeGroup]} couverts par l'enquête ECV pour la sélection courante (année, âge, milieu, province, zone).`,
             },
             {
                 key: 'nb_zones',
@@ -50,7 +53,7 @@ export function EcvIndicatorCardGrid() {
                 description: "Proportion d'enfants zéro dose mesurée par l'enquête ECV (aucune dose d'aucun vaccin).",
             },
         ],
-        [row]
+        [row, selectedAgeGroup]
     )
 
     return (

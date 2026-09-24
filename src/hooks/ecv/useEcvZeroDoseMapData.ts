@@ -29,7 +29,7 @@ export interface EcvMapFeatureValue {
 // Nord Ubangi's estimate (and Kasaï Central's Lubunga with Tshopo's),
 // whichever of the two the CSV happened to list last.
 //
-// Only rows of the ribbon's milieu are joined, so a zone with no child of that
+// Only rows of the ribbon's milieu (and age group) are joined, so a zone with no child of that
 // milieu — most of them, for `urbain` — resolves to a null pct and renders as
 // a no-data shape rather than borrowing the whole-sample figure.
 export function useEcvZeroDoseMapData(): {
@@ -40,6 +40,7 @@ export function useEcvZeroDoseMapData(): {
   const { ecvVaccCov } = useData()
   const selectedYear = useDashboardStore(s => s.selectedYear)
   const selectedMilieu = useDashboardStore(s => s.selectedMilieu)
+  const selectedAgeGroup = useDashboardStore(s => s.selectedAgeGroup)
   const selectedProvince = useDashboardStore(s => s.selectedProvince)
   const provinces = useProvinceData()
   const zones = useZoneData(selectedProvince)
@@ -56,7 +57,11 @@ export function useEcvZeroDoseMapData(): {
     // Keep every row of the selected level so dimmed (out-of-province) zones
     // still resolve their real data for the tooltip.
     const rows = ecvVaccCov.filter(
-      r => r.level === level && r.year === selectedYear && r.milieu === selectedMilieu,
+      r =>
+        r.level === level &&
+        r.year === selectedYear &&
+        r.ageGroup === selectedAgeGroup &&
+        r.milieu === selectedMilieu,
     )
 
     const byKey = new Map<string, (typeof rows)[number]>()
@@ -92,7 +97,7 @@ export function useEcvZeroDoseMapData(): {
     // Zone level: map over every DRC zone so out-of-province zones keep their
     // data in the tooltip, but dim (grey) the ones outside the province.
     return allZones.map(f => toValue(f, f.provinceId !== selectedProvince))
-  }, [ecvVaccCov, selectedYear, selectedMilieu, selectedProvince, features, allZones])
+  }, [ecvVaccCov, selectedYear, selectedAgeGroup, selectedMilieu, selectedProvince, features, allZones])
 
   return { features, values, mapName }
 }

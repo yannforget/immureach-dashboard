@@ -7,6 +7,7 @@ export { useZoneData } from './common/useZoneData';
 export { type EcvLineSeries, type EcvLineData, useEcvEvolutionLineData } from './ecv/useEcvEvolutionLineData';
 export { type EcvCaracteristicGroup, type EcvCaracteristicBar, type EcvCaracteristicsData, useEcvCaracteristicsData } from './ecv/useEcvCaracteristicsData';
 export { useAvailableMilieux } from './ecv/useAvailableMilieux';
+export { useAvailableAgeGroups } from './ecv/useAvailableAgeGroups';
 export { type EcvScope, useEcvScope } from './ecv/useEcvScope';
 export { useEcvVaccCovRow } from './ecv/useEcvVaccCovRow';
 export { type EcvMapFeatureValue, useEcvZeroDoseMapData } from './ecv/useEcvZeroDoseMapData';

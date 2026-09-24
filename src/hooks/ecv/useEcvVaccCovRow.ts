@@ -6,7 +6,7 @@ import { useEcvScope } from './useEcvScope'
 import type { EcvVaccCovRow } from '@/types'
 
 // Picks the single ecv_vaccination_coverage.csv row matching the ribbon's
-// filters (year, milieu, province, zone), used by the ECV vaccine bar chart.
+// filters (year, age group, milieu, province, zone), used by the ECV vaccine bar chart.
 // Falls back progressively: zone -> province -> national, mirroring
 // useKeyEcvData's drill-down logic.
 //
@@ -16,11 +16,15 @@ export function useEcvVaccCovRow(): EcvVaccCovRow | null {
   const { ecvVaccCov } = useData()
   const selectedYear = useDashboardStore(s => s.selectedYear)
   const selectedMilieu = useDashboardStore(s => s.selectedMilieu)
+  const selectedAgeGroup = useDashboardStore(s => s.selectedAgeGroup)
   const { provinceKey, zoneKey } = useEcvScope()
 
   return useMemo(() => {
     const rows = ecvVaccCov.filter(
-      r => r.year === selectedYear && r.milieu === selectedMilieu,
+      r =>
+        r.year === selectedYear &&
+        r.ageGroup === selectedAgeGroup &&
+        r.milieu === selectedMilieu,
     )
 
     if (zoneKey) {
@@ -39,5 +43,5 @@ export function useEcvVaccCovRow(): EcvVaccCovRow | null {
     }
 
     return rows.find(r => r.level === 'national') ?? null
-  }, [ecvVaccCov, selectedYear, selectedMilieu, provinceKey, zoneKey])
+  }, [ecvVaccCov, selectedYear, selectedAgeGroup, selectedMilieu, provinceKey, zoneKey])
 }

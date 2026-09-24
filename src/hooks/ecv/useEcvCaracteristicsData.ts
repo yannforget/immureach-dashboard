@@ -94,7 +94,7 @@ function buildGroups(variables: string[]): EcvCaracteristicGroup[] {
 
 // Feeds the ECV characteristics chart from public/data/ecv_caracteristics.csv.
 // Resolves rows for the scope implied by the ribbon (province zones -> province
-// rows -> national), filtered to the selected year and milieu, and projects
+// rows -> national), filtered to the selected year, age group and milieu, and projects
 // them onto one bar per area with the pct of each variable rooted in `values`.
 // When a zone is selected, all of its province's zones are still shown, with
 // the selected zone's bar flagged as `highlighted`. An area with no child of
@@ -106,6 +106,7 @@ export function useEcvCaracteristicsData(): EcvCaracteristicsData {
   const { ecvCaracteristics } = useData()
   const selectedYear = useDashboardStore(s => s.selectedYear)
   const selectedMilieu = useDashboardStore(s => s.selectedMilieu)
+  const selectedAgeGroup = useDashboardStore(s => s.selectedAgeGroup)
   const { provinceName, provinceKey, zoneKey } = useEcvScope()
 
   return useMemo(() => {
@@ -116,7 +117,10 @@ export function useEcvCaracteristicsData(): EcvCaracteristicsData {
     const groups = buildGroups(variables)
 
     const rows = ecvCaracteristics.filter(
-      r => r.year === selectedYear && r.milieu === selectedMilieu,
+      r =>
+        r.year === selectedYear &&
+        r.ageGroup === selectedAgeGroup &&
+        r.milieu === selectedMilieu,
     )
 
     const toBar = (row: EcvCaracteristicsRow, name: string, highlighted = false): EcvCaracteristicBar => {
@@ -151,5 +155,5 @@ export function useEcvCaracteristicsData(): EcvCaracteristicsData {
     )
 
     return { groups, areas, scopeLabel }
-  }, [ecvCaracteristics, selectedYear, selectedMilieu, provinceName, provinceKey, zoneKey])
+  }, [ecvCaracteristics, selectedYear, selectedAgeGroup, selectedMilieu, provinceName, provinceKey, zoneKey])
 }

@@ -6,7 +6,7 @@ import { useData } from '@/context/DataContext'
 import { useEcvCaracteristicsData, useZoneData } from '@/hooks'
 import { buildEcvCaracteristicsOptions } from '@/lib/charts/ecvCaracteristicsOptions'
 import { buildEcvCaracteristicsCsv, buildScopeSlug, downloadText } from '@/lib/utils/download'
-import { milieuSlug, withMilieu } from '@/lib/utils/ecvScope'
+import { ageGroupSlug, milieuSlug, withAgeGroup, withMilieu } from '@/lib/utils/ecvScope'
 import { Button } from '@/components/ui/button'
 
 export function EcvCaracteristicsChart() {
@@ -16,6 +16,7 @@ export function EcvCaracteristicsChart() {
   const selectedZoneId = useDashboardStore(s => s.selectedZoneId)
   const selectedYear = useDashboardStore(s => s.selectedYear)
   const selectedMilieu = useDashboardStore(s => s.selectedMilieu)
+  const selectedAgeGroup = useDashboardStore(s => s.selectedAgeGroup)
 
   const { groups, areas } = useEcvCaracteristicsData()
   const groupsKey = groups.map(g => g.key).join('|')
@@ -38,12 +39,15 @@ export function EcvCaracteristicsChart() {
     ? zones.find(z => z.id === selectedZoneId)?.displayName ?? null
     : null
 
-  const scopeLabelDisplay = withMilieu(
-    selectedZoneId ? 'zone sélectionnée' : selectedProvince ?? 'national',
-    selectedMilieu,
+  const scopeLabelDisplay = withAgeGroup(
+    withMilieu(
+      selectedZoneId ? 'zone sélectionnée' : selectedProvince ?? 'national',
+      selectedMilieu,
+    ),
+    selectedAgeGroup,
   )
 
-  const scopeSlug = `${buildScopeSlug(selectedProvince, zoneName)}${milieuSlug(selectedMilieu)}`
+  const scopeSlug = `${buildScopeSlug(selectedProvince, zoneName)}${milieuSlug(selectedMilieu)}${ageGroupSlug(selectedAgeGroup)}`
   const baseFilename = activeGroup
     ? `ecv-caracteristiques-${activeGroup.key}-${scopeSlug}-${selectedYear}`
     : `ecv-caracteristiques-${scopeSlug}-${selectedYear}`

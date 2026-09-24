@@ -5,8 +5,8 @@ import { normalizeAreaName, zoneJoinKey } from '@/lib/utils/ecvVaccCov'
 import { useEcvScope } from './useEcvScope'
 import type { KeyEcvRow } from '@/types'
 
-// Picks the single key_ecv.csv row matching the ribbon's 4 filters
-// (year, milieu, province, zone). Falls back progressively:
+// Picks the single key_ecv.csv row matching the ribbon's 5 filters
+// (year, age group, milieu, province, zone). Falls back progressively:
 // zone -> province -> national. A domain with no child of the selected milieu
 // has no row at all, so the result is null and the cards read as empty rather
 // than silently showing the whole-sample figure.
@@ -17,11 +17,15 @@ export function useKeyEcvData(): KeyEcvRow | null {
     const { keyEcv } = useData()
     const selectedYear = useDashboardStore(s => s.selectedYear)
     const selectedMilieu = useDashboardStore(s => s.selectedMilieu)
+    const selectedAgeGroup = useDashboardStore(s => s.selectedAgeGroup)
     const { provinceKey, zoneKey } = useEcvScope()
 
     return useMemo(() => {
         const rows = keyEcv.filter(
-            r => r.year === selectedYear && r.milieu === selectedMilieu
+            r =>
+                r.year === selectedYear &&
+                r.ageGroup === selectedAgeGroup &&
+                r.milieu === selectedMilieu
         )
 
         if (zoneKey) {
@@ -43,5 +47,5 @@ export function useKeyEcvData(): KeyEcvRow | null {
         }
 
         return rows.find(r => r.level === 'national') ?? null
-    }, [keyEcv, selectedYear, selectedMilieu, provinceKey, zoneKey])
+    }, [keyEcv, selectedYear, selectedAgeGroup, selectedMilieu, provinceKey, zoneKey])
 }

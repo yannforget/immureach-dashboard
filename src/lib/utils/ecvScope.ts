@@ -1,5 +1,5 @@
-import { MILIEU_LABELS } from '@/types'
-import type { Milieu } from '@/types'
+import { AGE_GROUP_LABELS, DEFAULT_AGE_GROUP, MILIEU_LABELS } from '@/types'
+import type { AgeGroup, Milieu } from '@/types'
 
 // The ECV panels title themselves with the scope the ribbon has selected
 // (national / a province / the selected zone). Since every ECV figure is now
@@ -14,4 +14,13 @@ export function withMilieu(scopeLabel: string, milieu: Milieu): string {
 // overwrite the whole-sample one in the browser's download folder.
 export function milieuSlug(milieu: Milieu): string {
   return milieu === 'all' ? '' : `-${milieu}`
+}
+
+// Same for the age filter: the default 6-24 month sample adds nothing.
+export function withAgeGroup(scopeLabel: string, ageGroup: AgeGroup): string {
+  return ageGroup === DEFAULT_AGE_GROUP ? scopeLabel : `${scopeLabel} · ${AGE_GROUP_LABELS[ageGroup]}`
+}
+
+export function ageGroupSlug(ageGroup: AgeGroup): string {
+  return ageGroup === DEFAULT_AGE_GROUP ? '' : `-${ageGroup}m`
 }

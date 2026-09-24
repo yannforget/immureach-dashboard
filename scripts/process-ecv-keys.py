@@ -24,14 +24,19 @@ zones the *survey* reached, so it is taken from the whole sample and repeated
 unchanged on the urbain/rural rows (see build_counts).
 
 Output mirrors the KeyEcvRow schema consumed by the dashboard
-(src/types/index.ts): one row per national / province / zone domain, year and
-milieu.
+(src/types/index.ts): one row per national / province / zone domain, year,
+age group and milieu.
 
 `milieu` is the dashboard's rural/urbain ribbon filter, read off `q108`
 ("Milieu de localisation du menage"): every domain is estimated three times,
 once on the whole sample (`all`) and once on each q108 modality (`urbain`,
 `rural`). See MILIEUX. Each milieu costs a full R pass, so the run takes about
 three times as long as it used to; `--milieux all` reproduces the old output.
+
+`age_group` is the dashboard's age ribbon filter, read off `vs25`: the milieu
+split above is repeated for each AGE_GROUPS window (6-24, 6-11 and 12-23
+months), so every domain carries 3 x 3 rows per year. `--age-groups 6-24`
+reproduces the output from before the age split.
 
 Requires R with the `survey` package installed:
 
@@ -75,7 +80,7 @@ COLLECTION_YEAR = {"2022": "2023", "2023": "2024"}
 # used previously selected only the ~48k-per-year subset (2022: 47,880 /
 # 2023: 48,326); pass --age-min 12 to reproduce it.
 AGE_MIN_MONTHS = 6
-AGE_MAX_MONTHS = 24
+AGE_MAX_MONTHS = 23
 
 # `<vaccine>_merg` columns common to the 2022 and 2023 questionnaires: card
 # and history merged, coded 1 = vaccinated / 2 = not vaccinated. A child is
@@ -123,6 +128,13 @@ MILIEU_BY_CODE = {1: "urbain", 2: "rural"}
 # the q108 modalities. Urban zone domains are sparse (only ~190 of the ~505
 # zones have any urban child), so expect empty cells and wide intervals there.
 MILIEUX = ("all", *MILIEU_BY_CODE.values())
+
+# The dashboard's age ribbon filter. Every (milieu) domain is estimated once per
+# entry, on the children whose `vs25` falls inside the inclusive window. "6-24"
+# is the whole load window -- the only thing the file carried before the age
+# split -- and the other two are the classic infant / second-year cohorts.
+# A 24-month-old sits in "6-24" only, so the two cohorts do not add up to it.
+AGE_GROUPS = {"6-24": (6, 23), "6-11": (6, 11), "12-23": (12, 23)}
 
 LOAD_COLUMNS = [
     STRATUM_COL,
@@ -382,6 +394,7 @@ def load_year(
         f"{age_min}-{age_max} months ({int((~in_range).sum()):,} dropped)"
     )
     df = raw[in_range].copy()
+    df["age"] = age[in_range]
 
     df["province"] = clean_name(df[STRATUM_COL])
     df["zone"] = clean_name(df[ZONE_COL])
@@ -422,6 +435,7 @@ def load_year(
             "psu_key",
             "weight",
             "nb_areas_tot",
+            "age",
             "milieu",
             "penta3",
             "zero_dose",
@@ -705,6 +719,7 @@ def check_against_reference(
 def process_milieu(
     df: pd.DataFrame,
     year: str,
+    age_group: str,
     milieu: str,
     workdir: Path | None = None,
     zone_frame: pd.DataFrame | None = None,
@@ -720,12 +735,14 @@ def process_milieu(
 
     print("  running R survey estimation ...")
     if workdir is None:
-        with tempfile.TemporaryDirectory(prefix=f"ecv-{year}-{milieu}-") as tmp:
+        with tempfile.TemporaryDirectory(
+            prefix=f"ecv-{year}-{age_group}-{milieu}-"
+        ) as tmp:
             est = run_survey_r(df, Path(tmp))
     else:
         # Keep the extract, the generated R script and the raw estimates so the
         # R step can be re-run and debugged by hand.
-        run_dir = workdir / year / milieu
+        run_dir = workdir / year / age_group / milieu
         run_dir.mkdir(parents=True, exist_ok=True)
         est = run_survey_r(df, run_dir)
         print(f"  kept R inputs/outputs in {run_dir}")
@@ -736,6 +753,7 @@ def process_milieu(
     count_cols = ["nb_people", "nb_zones", "nb_areas", "nb_areas_tot"]
     out[count_cols] = out[count_cols].astype("Int64")
     out["year"] = COLLECTION_YEAR.get(year, year)
+    out["age_group"] = age_group
     out["milieu"] = milieu
     return out.drop(columns=["domain_key"])
 
@@ -744,6 +762,7 @@ def process_file(
     dta_path: Path,
     year: str,
     milieux: list[str],
+    age_groups: list[str],
     workdir: Path | None = None,
     age_min: int = AGE_MIN_MONTHS,
     age_max: int = AGE_MAX_MONTHS,
@@ -756,18 +775,26 @@ def process_file(
     )
 
     frames = []
-    for milieu in milieux:
-        subset = df if milieu == "all" else df[df["milieu"] == milieu]
-        print(
-            f"  --- milieu={milieu}: {len(subset):,} children in "
-            f"{subset['zone_key'].nunique()} zones / "
-            f"{subset['psu_key'].nunique()} areas ---"
-        )
-        if subset.empty:
-            print(f"  WARNING: no child with milieu={milieu}; no rows emitted")
-            continue
-        # `df`, not `subset`, so nb_zones stays the whole-sample count.
-        frames.append(process_milieu(subset, year, milieu, workdir, zone_frame=df))
+    for age_group in age_groups:
+        lo, hi = AGE_GROUPS[age_group]
+        in_age = df[df["age"].between(lo, hi)]
+        for milieu in milieux:
+            subset = in_age if milieu == "all" else in_age[in_age["milieu"] == milieu]
+            print(
+                f"  --- age={age_group} / milieu={milieu}: {len(subset):,} children in "
+                f"{subset['zone_key'].nunique()} zones / "
+                f"{subset['psu_key'].nunique()} areas ---"
+            )
+            if subset.empty:
+                print(
+                    f"  WARNING: no child aged {age_group} months with "
+                    f"milieu={milieu}; no rows emitted"
+                )
+                continue
+            # `df`, not `subset`, so nb_zones stays the whole-sample count.
+            frames.append(
+                process_milieu(subset, year, age_group, milieu, workdir, zone_frame=df)
+            )
 
     return pd.concat(frames, ignore_index=True)
 
@@ -786,6 +813,13 @@ def main() -> None:
         help="comma-separated subset of milieu domains to estimate; each one "
         "costs a full R pass over every province and zone "
         f"(default: {','.join(MILIEUX)})",
+    )
+    parser.add_argument(
+        "--age-groups",
+        default=",".join(AGE_GROUPS),
+        help="comma-separated subset of age groups (months, inclusive) to "
+        "estimate; each one costs a full R pass per milieu "
+        f"(default: {','.join(AGE_GROUPS)})",
     )
     parser.add_argument(
         "--age-min",
@@ -815,6 +849,12 @@ def main() -> None:
     unknown = [m for m in milieux if m not in MILIEUX]
     if unknown:
         raise SystemExit(f"unknown milieu(x): {unknown}\nknown milieux: {MILIEUX}")
+    age_groups = [a.strip() for a in args.age_groups.split(",") if a.strip()]
+    unknown = [a for a in age_groups if a not in AGE_GROUPS]
+    if unknown:
+        raise SystemExit(
+            f"unknown age group(s): {unknown}\nknown age groups: {list(AGE_GROUPS)}"
+        )
 
     frames = []
     for year in COLLECTION_YEAR:
@@ -823,7 +863,13 @@ def main() -> None:
             raise FileNotFoundError(f"no ECV_{year}_*.dta in {INPUT_DIR}")
         frames.append(
             process_file(
-                matches[0], year, milieux, args.workdir, args.age_min, args.age_max
+                matches[0],
+                year,
+                milieux,
+                age_groups,
+                args.workdir,
+                args.age_min,
+                args.age_max,
             )
         )
 
@@ -831,6 +877,7 @@ def main() -> None:
     output = output[
         [
             "year",
+            "age_group",
             "milieu",
             "level",
             "province",

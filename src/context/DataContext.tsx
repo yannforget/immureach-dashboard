@@ -3,7 +3,7 @@ import * as echarts from 'echarts'
 import { cleanName } from '@/lib/utils/dataUtils'
 import { parseCsv } from '@/lib/utils/csv'
 // import type { KeyEcvRow, ProfileData, ProfileScopeLevel, ProvinceRow, Year, ZoneRow } from '@/types'
-import { parseEcvVaccCovCsv, parseMilieu } from '@/lib/utils/ecvVaccCov'
+import { parseAgeGroup, parseEcvVaccCovCsv, parseMilieu } from '@/lib/utils/ecvVaccCov'
 import { parseEcvCaracteristicsCsv } from '@/lib/utils/ecvCaracteristics'
 import type { EcvCaracteristicsRow, EcvVaccCovRow, KeyEcvRow, ProfileData, ProfileScopeLevel, ProvinceRow, Year, ZoneRow } from '@/types'
 
@@ -27,6 +27,7 @@ function parseKeyEcvCsv(text: string): KeyEcvRow[] {
 
   return parseCsv(text).map(r => ({
     year: Number(r.year) as Year,
+    ageGroup: parseAgeGroup(r.age_group),
     milieu: parseMilieu(r.milieu),
     level: r.level as ProfileScopeLevel,
     province: toStr(r.province),

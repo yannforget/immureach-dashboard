@@ -161,13 +161,31 @@ export const MILIEU_LABELS: Record<Milieu, string> = {
   rural: 'Rural',
 };
 
-// One row of public/data/key_ecv.csv (columns: year, milieu, level, province,
+// Age filter, from the ECV survey's `vs25` (age in completed months, inclusive
+// bounds). Like `milieu`, every ECV domain is published once per age group, so
+// a row is only comparable to another row of the same `ageGroup`. '6-24' is the
+// whole sample; rows written before the split carried no column and parse as
+// '6-24'. Listed in ribbon order.
+export type AgeGroup = '6-11' | '12-23' | '6-23';
+
+export const AGE_GROUPS: AgeGroup[] = ['6-11', '12-23', '6-23'];
+
+export const DEFAULT_AGE_GROUP: AgeGroup = '6-23';
+
+export const AGE_GROUP_LABELS: Record<AgeGroup, string> = {
+  '6-11': '6-11 mois',
+  '12-23': '12-23 mois',
+  '6-23': '6-23 mois',
+};
+
+// One row of public/data/key_ecv.csv (columns: year, age_group, milieu, level, province,
 // zone, nb_people, nb_zones, penta_cov, zdc_cov, penta_cov_low/high,
 // zdc_cov_low/high). `province`/`zone` are only populated for the matching
 // `level`; penta_cov/zdc_cov and the *_low/_high pairs bound their 95%
 // confidence interval, all as 0-100 percentages.
 export interface KeyEcvRow {
   year: Year;
+  ageGroup: AgeGroup;
   milieu: Milieu;
   level: ProfileScopeLevel;
   province: string | null;
@@ -224,6 +242,7 @@ export type EcvMetricKey =
 // only populated for the matching `level`, mirroring KeyEcvRow.
 export interface EcvVaccCovRow {
   year: number;
+  ageGroup: AgeGroup;
   milieu: Milieu;
   level: ProfileScopeLevel;
   province: string | null;
@@ -249,6 +268,7 @@ export interface EcvCaracteristicValue {
 // `<root>_pct/_low/_high` columns are picked up without type changes.
 export interface EcvCaracteristicsRow {
   year: number;
+  ageGroup: AgeGroup;
   milieu: Milieu;
   level: ProfileScopeLevel;
   province: string | null;

@@ -4,13 +4,18 @@ Reads the Stata exports in data/input/ecv/ (ECV_2022_* and ECV_2023_*), keeps
 children inside the age window (`vs25`, age in completed months; 6-23 by
 default, which is the population both files were collected on), and writes
 public/data/ecv_caracteristics.csv -- one row per national / province / zone
-domain, year and milieu, with a `_pct` / `_low` / `_high` triplet per variable
+domain, year, age group and milieu, with a `_pct` / `_low` / `_high` triplet per variable
 (point estimate and 95% confidence interval, 0-100).
 
 `milieu` is the dashboard's rural/urbain ribbon filter, read off `q108`
 ("Milieu de localisation du menage"): every domain is estimated three times,
 once on the whole sample (`all`) and once on each q108 modality (`urbain`,
 `rural`). See MILIEUX.
+
+`age_group` is the dashboard's age ribbon filter, read off `vs25`: the milieu
+split above is repeated for each AGE_GROUPS window (6-24, 6-11 and 12-23
+months), so every domain carries 3 x 3 rows per year. `--age-groups 6-24`
+reproduces the output from before the age split.
 
 This is the file behind the characteristics bar chart at the bottom right of
 the dashboard's first tab. Adding a variable to INDICATORS below puts a
@@ -160,6 +165,13 @@ MILIEU_BY_CODE = {1: "urbain", 2: "rural"}
 # the q108 modalities. Urban zone domains are sparse (only ~190 of the ~505
 # zones have any urban child), so expect empty cells and wide intervals there.
 MILIEUX = ("all", *MILIEU_BY_CODE.values())
+
+# The dashboard's age ribbon filter. Every (milieu) domain is estimated once per
+# entry, on the children whose `vs25` falls inside the inclusive window. "6-24"
+# is the whole load window -- the only thing the file carried before the age
+# split -- and the other two are the classic infant / second-year cohorts.
+# A 24-month-old sits in "6-24" only, so the two cohorts do not add up to it.
+AGE_GROUPS = {"6-24": (6, 23), "6-11": (6, 11), "12-23": (12, 23)}
 
 
 @dataclass(frozen=True)
@@ -955,6 +967,7 @@ def load_year(
     df["zone"] = clean_name(df[ZONE_COL])
     df["area"] = clean_name(df[AREA_COL])
     df["weight"] = pd.to_numeric(df[WEIGHT_COL], errors="coerce")
+    df["age"] = age[in_range]
     df["milieu"] = pd.to_numeric(df[MILIEU_COL], errors="coerce").map(MILIEU_BY_CODE)
 
     # The milieu split is a filter, not an indicator: a child whose `q108` is
@@ -993,6 +1006,7 @@ def load_year(
         "zone_key",
         "psu_key",
         "weight",
+        "age",
         "milieu",
         *variables,
     ]
@@ -1230,6 +1244,7 @@ def check_against_reference(
 def process_milieu(
     df: pd.DataFrame,
     year: str,
+    age_group: str,
     milieu: str,
     variables: list[str],
     rscript: str,
@@ -1250,10 +1265,12 @@ def process_milieu(
 
     print("  running the R survey estimation ...")
     if workdir is None:
-        with tempfile.TemporaryDirectory(prefix=f"ecv-carac-{year}-{milieu}-") as tmp:
+        with tempfile.TemporaryDirectory(
+            prefix=f"ecv-carac-{year}-{age_group}-{milieu}-"
+        ) as tmp:
             est = run_survey_r(df, variables, rscript, Path(tmp))
     else:
-        run_dir = workdir / year / milieu
+        run_dir = workdir / year / age_group / milieu
         run_dir.mkdir(parents=True, exist_ok=True)
         est = run_survey_r(df, variables, rscript, run_dir)
         print(f"  kept the R inputs/outputs in {run_dir}")
@@ -1267,8 +1284,9 @@ def process_milieu(
         print(f"  WARNING: {unmatched} domain(s) got no estimate from R")
     out["nb_children"] = out["nb_children"].astype("Int64")
     out["year"] = COLLECTION_YEAR.get(year, year)
+    out["age_group"] = age_group
     out["milieu"] = milieu
-    print(f"  {len(out)} rows for {year} / {milieu}")
+    print(f"  {len(out)} rows for {year} / {age_group} months / {milieu}")
     return out.drop(columns=["domain_key"])
 
 
@@ -1277,6 +1295,7 @@ def process_file(
     year: str,
     variables: list[str],
     milieux: list[str],
+    age_groups: list[str],
     rscript: str,
     workdir: Path | None,
     age_min: int,
@@ -1293,18 +1312,29 @@ def process_file(
     report_indicators(df, variables)
 
     frames = []
-    for milieu in milieux:
-        subset = df if milieu == "all" else df[df["milieu"] == milieu]
-        print(
-            f"\n--- {year} / milieu={milieu}: {len(subset):,} children in "
-            f"{subset['province'].nunique()} provinces / "
-            f"{subset['zone_key'].nunique()} zones / "
-            f"{subset['psu_key'].nunique()} areas ---"
-        )
-        if subset.empty:
-            print(f"  WARNING: no child with milieu={milieu}; no rows emitted")
-            continue
-        frames.append(process_milieu(subset, year, milieu, variables, rscript, workdir))
+    for age_group in age_groups:
+        lo, hi = AGE_GROUPS[age_group]
+        in_age = df[df["age"].between(lo, hi)]
+        for milieu in milieux:
+            subset = in_age if milieu == "all" else in_age[in_age["milieu"] == milieu]
+            print(
+                f"\n--- {year} / age={age_group} / milieu={milieu}: "
+                f"{len(subset):,} children in "
+                f"{subset['province'].nunique()} provinces / "
+                f"{subset['zone_key'].nunique()} zones / "
+                f"{subset['psu_key'].nunique()} areas ---"
+            )
+            if subset.empty:
+                print(
+                    f"  WARNING: no child aged {age_group} months with "
+                    f"milieu={milieu}; no rows emitted"
+                )
+                continue
+            frames.append(
+                process_milieu(
+                    subset, year, age_group, milieu, variables, rscript, workdir
+                )
+            )
 
     return pd.concat(frames, ignore_index=True)
 
@@ -1359,6 +1389,13 @@ def main() -> None:
         f"(default: {','.join(MILIEUX)})",
     )
     parser.add_argument(
+        "--age-groups",
+        default=",".join(AGE_GROUPS),
+        help="comma-separated subset of age groups (months, inclusive) to "
+        "estimate; each one costs a full R pass per milieu "
+        f"(default: {','.join(AGE_GROUPS)})",
+    )
+    parser.add_argument(
         "--age-min",
         type=int,
         default=AGE_MIN_MONTHS,
@@ -1406,7 +1443,14 @@ def main() -> None:
         raise SystemExit(f"unknown milieu(x): {unknown}\nknown milieux: {MILIEUX}")
     print(f"  years     : {years}")
     print(f"  variables : {len(variables)} -> {variables}")
+    age_groups = [a.strip() for a in args.age_groups.split(",") if a.strip()]
+    unknown = [a for a in age_groups if a not in AGE_GROUPS]
+    if unknown:
+        raise SystemExit(
+            f"unknown age group(s): {unknown}\nknown age groups: {list(AGE_GROUPS)}"
+        )
     print(f"  milieux   : {milieux}")
+    print(f"  age groups: {age_groups}")
 
     rscript = resolve_rscript(args.rscript)
     provinces, zones = load_geojson_names(args.boundaries)
@@ -1427,6 +1471,7 @@ def main() -> None:
                 year,
                 variables,
                 milieux,
+                age_groups,
                 rscript,
                 args.workdir,
                 args.age_min,
@@ -1443,15 +1488,32 @@ def main() -> None:
         for stat in ("pct", "low", "high")
     ]
     output = output[
-        ["year", "milieu", "level", "province", "zone", "nb_children", *ordered]
+        [
+            "year",
+            "age_group",
+            "milieu",
+            "level",
+            "province",
+            "zone",
+            "nb_children",
+            *ordered,
+        ]
     ]
 
     print("\n=== output ===")
     for level in ("national", "province", "zone"):
         at_level = output[output["level"] == level]
-        for milieu in milieux:
-            by_year = at_level[at_level["milieu"] == milieu].groupby("year").size()
-            print(f"  {level:<9} {milieu:<7} rows per year: {by_year.to_dict()}")
+        for age_group in age_groups:
+            for milieu in milieux:
+                sel = at_level[
+                    (at_level["age_group"] == age_group)
+                    & (at_level["milieu"] == milieu)
+                ]
+                by_year = sel.groupby("year").size()
+                print(
+                    f"  {level:<9} {age_group:<5} {milieu:<7} rows per year: "
+                    f"{by_year.to_dict()}"
+                )
     empty = [c for c in ordered if output[c].isna().all()]
     if empty:
         print(f"  WARNING: {len(empty)} column(s) are entirely empty: {empty}")
@@ -1469,7 +1531,8 @@ def main() -> None:
     print("\n  national percentages:")
     for _, row in output[output["level"] == "national"].iterrows():
         print(
-            f"    --- {row['year']} / {row['milieu']} ({row['nb_children']:,} children)"
+            f"    --- {row['year']} / {row['age_group']} / {row['milieu']} "
+            f"({row['nb_children']:,} children)"
         )
         for variable in variables:
             print(

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import type { DashboardSection, Milieu, MetricKey, ViewMode, Year } from '@/types';
+import type { AgeGroup, DashboardSection, Milieu, MetricKey, ViewMode, Year } from '@/types';
+import { DEFAULT_AGE_GROUP } from '@/types';
 import { MODEL_METRIC_KEYS } from '@/lib/utils/constants';
 import { resolveSectionYear } from '@/lib/utils/years';
 
@@ -21,6 +22,10 @@ interface DashboardState {
   // published per milieu, so this is inert outside the ECV section.
   selectedMilieu: Milieu;
 
+  // ECV child-age filter (survey question vs25, months). Same scope as the
+  // milieu: inert outside the ECV section.
+  selectedAgeGroup: AgeGroup;
+
   // Map-only Antenne overlay (purely visual; resets when province changes).
   showAntenne: boolean;
 
@@ -33,6 +38,7 @@ interface DashboardState {
   setViewMode: (mode: ViewMode) => void;
   setSelectedYear: (year: Year) => void;
   setSelectedMilieu: (milieu: Milieu) => void;
+  setSelectedAgeGroup: (ageGroup: AgeGroup) => void;
   setShowAntenne: (show: boolean) => void;
 }
 
@@ -45,6 +51,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   viewMode: 'data',
   selectedYear: 2023,
   selectedMilieu: 'all',
+  selectedAgeGroup: DEFAULT_AGE_GROUP,
   showAntenne: true,
 
   // Sections do not all publish every year (the zero-dose model covers the
@@ -73,6 +80,8 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   setSelectedYear: (year) => set({ selectedYear: year }),
 
   setSelectedMilieu: (milieu) => set({ selectedMilieu: milieu }),
+
+  setSelectedAgeGroup: (ageGroup) => set({ selectedAgeGroup: ageGroup }),
 
   setShowAntenne: (show) => set({ showAntenne: show }),
 }));

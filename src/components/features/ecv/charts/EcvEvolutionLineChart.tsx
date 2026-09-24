@@ -7,7 +7,7 @@ import { useEcvEvolutionLineData, useZoneData } from '@/hooks'
 import { ECV_LINE_METRIC_KEYS, ECV_METRIC_META } from '@/lib/utils/constants'
 import { buildEcvEvolutionLineOptions } from '@/lib/charts/ecvLineOptions'
 import { buildEcvEvolutionCsv, buildScopeSlug, downloadDataUrl, downloadText } from '@/lib/utils/download'
-import { milieuSlug, withMilieu } from '@/lib/utils/ecvScope'
+import { ageGroupSlug, milieuSlug, withAgeGroup, withMilieu } from '@/lib/utils/ecvScope'
 import { Button } from '@/components/ui/button'
 import type { EcvMetricKey } from '@/types'
 
@@ -18,6 +18,7 @@ export function EcvEvolutionLineChart() {
   const selectedZoneId = useDashboardStore(s => s.selectedZoneId)
   const selectedYear = useDashboardStore(s => s.selectedYear)
   const selectedMilieu = useDashboardStore(s => s.selectedMilieu)
+  const selectedAgeGroup = useDashboardStore(s => s.selectedAgeGroup)
 
   // Multi-select state lives here — no other component reads it.
   const [selectedKeys, setSelectedKeys] = useState<EcvMetricKey[]>(['zero_dose'])
@@ -36,12 +37,15 @@ export function EcvEvolutionLineChart() {
     )
   }
 
-  const scopeLabel = withMilieu(
-    selectedZoneId ? 'zone sélectionnée' : selectedProvince ?? 'national',
-    selectedMilieu,
+  const scopeLabel = withAgeGroup(
+    withMilieu(
+      selectedZoneId ? 'zone sélectionnée' : selectedProvince ?? 'national',
+      selectedMilieu,
+    ),
+    selectedAgeGroup,
   )
 
-  const baseFilename = `ecv-evolution-${buildScopeSlug(selectedProvince, zoneName)}${milieuSlug(selectedMilieu)}-${selectedYear}`
+  const baseFilename = `ecv-evolution-${buildScopeSlug(selectedProvince, zoneName)}${milieuSlug(selectedMilieu)}${ageGroupSlug(selectedAgeGroup)}-${selectedYear}`
   const downloadDisabled = data.series.length === 0
 
   const options = useMemo(
@@ -67,7 +71,7 @@ export function EcvEvolutionLineChart() {
     downloadText(
       buildEcvEvolutionCsv(
         data,
-        { province: selectedProvince, zone: zoneName, milieu: selectedMilieu },
+        { province: selectedProvince, zone: zoneName, milieu: selectedMilieu, ageGroup: selectedAgeGroup },
         ecvVaccCov,
         zones,
       ),
