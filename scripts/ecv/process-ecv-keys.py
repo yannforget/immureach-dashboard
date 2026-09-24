@@ -39,10 +39,8 @@ Requires R with the `survey` package installed:
 
 Run from the project root:
 
-    python scripts/process_ecv.py
+    python scripts/process-ecv-keys.py
 """
-
-from __future__ import annotations
 
 import argparse
 import re
@@ -54,28 +52,8 @@ from pathlib import Path
 
 import pandas as pd
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-INPUT_DIR = PROJECT_ROOT / "data" / "input" / "ecv"
-OUT_CSV = PROJECT_ROOT / "public" / "data" / "key_ecv.csv"
-
-# The ECV_<year>_*.dta exports are named after the year the file was produced,
-# which is the year *before* the survey actually went to the field. Rows are
-# labelled with that collection year, so the dashboard reports when the data
-# was gathered rather than when the export was cut. A file already named
-# after its fieldwork year (ECV2026) is passed through unchanged.
-COLLECTION_YEAR = {"2022": "2023", "2023": "2024"}
-
-# Age window in completed months, read off `vs25` ("Quel age a ... en mois ?").
-# Override per run with --age-min / --age-max.
-#
-# Note on the source files: the 2022 export is *already* confined to 6-24
-# months (81,438 children, vs25 spans exactly 6..24) and the 2023 export very
-# nearly so (83,371 of 83,414 rows), so the 6-23 window below is close to a
-# no-op and keeps every child the survey collected. The narrower 12-23 window
-# used previously selected only the ~48k-per-year subset (2022: 47,880 /
-# 2023: 48,326); pass --age-min 12 to reproduce it.
-AGE_MIN_MONTHS = 6
-AGE_MAX_MONTHS = 24
+import scripts.ecv.constants as cst
+from scripts.ecv import utils
 
 # `<vaccine>_merg` columns common to the 2022 and 2023 questionnaires: card
 # and history merged, coded 1 = vaccinated / 2 = not vaccinated. A child is
@@ -83,297 +61,28 @@ AGE_MAX_MONTHS = 24
 # `vpi2_merg` / `var2_merg`; those are second doses, so they cannot turn a
 # zero-dose child into a vaccinated one and are left out to keep the two years
 # on the same definition.
-MERG_COLUMNS = [
-    "bcg_merg",
-    "penta1_merg",
-    "penta2_merg",
-    "penta3_merg",
-    "vpo0_merg",
-    "vpo1_merg",
-    "vpo2_merg",
-    "vpo3_merg",
-    "pcv1_merg",
-    "pcv2_merg",
-    "pcv3_merg",
-    "vpi_merg",
-    "rota1_merg",
-    "rota2_merg",
-    "rota3_merg",
-    "var_merg",
-    "vaa_merg",
-]
-
-VACCINATED = 1
-NOT_VACCINATED = 2
-
-# Survey design + geography columns.
-STRATUM_COL = "q101"  # "Nom de la strate (de la province)"
-ZONE_COL = "q103"  # "Nom de la zone de sante"
-AREA_COL = "q105"  # "Nom de la grappe (de l'Aire de sante)" -- the PSU
-WEIGHT_COL = "ponderation"
-AGE_COL = "vs25"
-AREAS_TOTAL_COL = "nbre_as"  # health areas in the zone (sampling frame)
-MILIEU_COL = "q108"  # "Milieu de localisation du menage"
-
-# `q108` modalities, per the Stata value labels: 1 = Urbain, 2 = Rurale.
-MILIEU_BY_CODE = {1: "urbain", 2: "rural"}
-
-# Every domain is estimated once per entry: "all" is the whole sample -- the
-# only thing the file carried before the milieu split -- and the other two are
-# the q108 modalities. Urban zone domains are sparse (only ~190 of the ~505
-# zones have any urban child), so expect empty cells and wide intervals there.
-MILIEUX = ("all", *MILIEU_BY_CODE.values())
+VACCINES_COLUMNS = list(cst.VACCINES_MAPPING.values())
 
 LOAD_COLUMNS = [
-    STRATUM_COL,
-    ZONE_COL,
-    AREA_COL,
-    WEIGHT_COL,
-    AGE_COL,
-    AREAS_TOTAL_COL,
-    MILIEU_COL,
-] + MERG_COLUMNS
-
-# Names arrive as "kl Kwilu Province" / "bu Aketi Zone de Sante": a two-letter
-# province code, the name, then the level suffix.
-NAME_PREFIX_RE = re.compile(r"^[A-Za-z]{2}\s+")
-NAME_SUFFIX_RE = re.compile(
-    r"\s+(Province|Zone\s+de\s+Sant\w*|Aire\s+de\s+Sant\w*)\s*$",
-    flags=re.IGNORECASE,
-)
-
-R_SCRIPT = r"""
-# Design-based estimation of Penta3 coverage and zero-dose prevalence with 95%
-# confidence intervals. Called by scripts/process_ecv.py; not meant to be run
-# by hand. Reads the child-level extract, writes one row per
-# (domain, indicator) with the point estimate and CI bounds as proportions.
-if (!requireNamespace("survey", quietly = TRUE)) {
-  stop("the R package 'survey' is not installed: install.packages(\"survey\")")
-}
-suppressPackageStartupMessages(library(survey))
-
-# Subsetting to a single zone can leave a stratum contributing one PSU; centre
-# those on the grand mean rather than dropping the variance contribution.
-options(survey.lonely.psu = "adjust")
-
-# R defers warnings and keeps only the last 50 by default, then prints the
-# unhelpful "There were 50 or more warnings" line and exits, taking them with
-# it. Estimating ~1000 small domains legitimately produces thousands, so trap
-# each one as it is signalled, tally it by message, and print a deduplicated
-# summary at the end instead of relying on that buffer.
-options(nwarnings = 10000L)
-
-# Which estimator actually produced each domain's figure. Reported at the end
-# so a silent mass fallback (the symptom of a broken domain subset) is visible.
-tally <- new.env(parent = emptyenv())
-tally$logit <- 0L
-tally$beta <- 0L
-tally$failed <- 0L
-
-warn_log <- new.env(parent = emptyenv())
-
-# Called from withCallingHandlers: record the warning against the domain that
-# raised it, then muffle it so it does not also fill R's deferred buffer.
-record_warning <- function(w, context) {
-  key <- conditionMessage(w)
-  entry <- warn_log[[key]]
-  if (is.null(entry)) {
-    warn_log[[key]] <- list(count = 1L, example = context)
-  } else {
-    entry$count <- entry$count + 1L
-    warn_log[[key]] <- entry
-  }
-  invokeRestart("muffleWarning")
-}
-
-# message() writes to stderr, which process_ecv.py forwards to the terminal.
-report_warnings <- function() {
-  keys <- ls(warn_log, all.names = TRUE)
-  if (length(keys) == 0L) {
-    return(invisible(NULL))
-  }
-  counts <- vapply(keys, function(k) warn_log[[k]]$count, integer(1))
-  message(sprintf(
-    "\n%d distinct warning(s), %d in total, from the survey estimation:",
-    length(keys), sum(counts)
-  ))
-  for (k in keys[order(-counts)]) {
-    entry <- warn_log[[k]]
-    message(sprintf("  [%dx] %s", entry$count, k))
-    message(sprintf("        first seen at: %s", entry$example))
-  }
-}
-
-args <- commandArgs(trailingOnly = TRUE)
-in_csv <- args[1]
-out_csv <- args[2]
-
-d <- read.csv(in_csv, stringsAsFactors = FALSE)
-
-# Stratified two-stage design: strata = province, PSU = aire de sante,
-# weights = `ponderation`. nest = TRUE because PSU ids are only unique within a stratum.
-design <- svydesign(
-  ids = ~psu_id,
-  strata = ~stratum_id,
-  weights = ~weight,
-  data = d,
-  nest = TRUE
-)
-
-# Take a domain (subpopulation) of the design, i.e. what subset() does: drop
-# the rows outside it. The theoretically tidier alternative, `drop = FALSE`,
-# keeps every row and sets the excluded weights to zero so each stratum retains
-# its full PSU count -- but with svyciprop it returns NaN or degenerate 0/100
-# for most zone domains (whole strata end up entirely zero-weighted), so this
-# uses the documented subset() behaviour instead. The cost is that a zone's
-# stratum is reduced to that zone's PSUs, which makes its interval slightly
-# conservative; survey.lonely.psu = "adjust" covers the resulting small strata.
-domain <- function(dsn, keep) suppressWarnings(dsn[keep, ])
-
-# svyciprop's logit interval keeps the bounds inside [0, 1] and stays sensible
-# for the small, near-degenerate zone domains; fall back to the Wald interval
-# on the rare domain where the logit fit cannot be evaluated.
-prop_ci <- function(indicator, dsn) {
-  values <- dsn$variables[[indicator]]
-  keep <- !is.na(values) & is.finite(dsn$prob)
-  if (!any(keep)) {
-    return(c(NA_real_, NA_real_, NA_real_))
-  }
-  dsn <- domain(dsn, keep)
-  f <- as.formula(paste0("~", indicator))
-
-  # A degenerate fit does not necessarily raise: svyciprop can return NaN, or a
-  # point estimate with NaN bounds, without erroring. So tryCatch alone is not
-  # enough -- every tier's result is validated before it is accepted.
-  #
-  # "Collapsed" (lo == hi) is rejected as well as non-finite. When a domain has
-  # zero events -- ~15% of zones have no zero-dose child at all -- the logit
-  # fit runs its intercept off to -Inf and returns the interval [0, 0], which
-  # claims certainty the true rate is exactly 0. With ~120 children the honest
-  # upper bound is around 3/120, so [0, 0] is false precision, not a tight
-  # estimate. Those are the domains the "algorithm did not converge" warnings
-  # point at.
-  usable <- function(v) {
-    length(v) == 3L && all(is.finite(v)) && v[3] > v[2] &&
-      v[2] >= 0 && v[3] <= 1
-  }
-
-  estimate <- function(method) {
-    tryCatch(
-      {
-        est <- svyciprop(f, dsn, method = method, level = 0.95)
-        ci <- as.numeric(confint(est))
-        c(as.numeric(est), ci[1], ci[2])
-      },
-      error = function(e) c(NA_real_, NA_real_, NA_real_)
-    )
-  }
-
-  logit <- estimate("logit")
-  if (usable(logit)) {
-    tally$logit <- tally$logit + 1L
-    return(logit)
-  }
-
-  # The beta method inverts the incomplete beta function against the effective
-  # sample size, the way binom.test does. It fits no glm, so it cannot fail to
-  # converge, and it stays inside [0, 1] and gives a real upper bound at zero
-  # events -- the two things the logit and Wald intervals get wrong here.
-  beta <- estimate("beta")
-  if (usable(beta)) {
-    tally$beta <- tally$beta + 1L
-    return(beta)
-  }
-
-  # Keep a usable point estimate even when neither interval is trustworthy.
-  point <- if (is.finite(logit[1])) logit[1] else beta[1]
-  tally$failed <- tally$failed + 1L
-  c(point, NA_real_, NA_real_)
-}
-
-indicators <- c("penta3", "zero_dose")
-
-# Domains to estimate: the whole sample, then each province, then each zone.
-province_ids <- sort(unique(d$province_id))
-zone_ids <- sort(unique(d$zone_id))
-
-domains <- c(
-  list(list(level = "national", id = -1L, keep = rep(TRUE, nrow(d)))),
-  lapply(province_ids, function(pid) {
-    list(level = "province", id = pid, keep = d$province_id == pid)
-  }),
-  lapply(zone_ids, function(zid) {
-    list(level = "zone", id = zid, keep = d$zone_id == zid)
-  })
-)
-
-n <- length(domains) * length(indicators)
-res_level <- character(n)
-res_id <- integer(n)
-res_indicator <- character(n)
-res_est <- numeric(n)
-res_low <- numeric(n)
-res_high <- numeric(n)
-
-row <- 1L
-for (dom in domains) {
-  dsn <- if (dom$level == "national") design else domain(design, dom$keep)
-  for (ind in indicators) {
-    context <- paste0(dom$level, " id=", dom$id, ", indicator=", ind)
-    v <- withCallingHandlers(
-      prop_ci(ind, dsn),
-      warning = function(w) record_warning(w, context)
-    )
-    res_level[row] <- dom$level
-    res_id[row] <- as.integer(dom$id)
-    res_indicator[row] <- ind
-    res_est[row] <- v[1]
-    res_low[row] <- v[2]
-    res_high[row] <- v[3]
-    row <- row + 1L
-  }
-}
-
-out <- data.frame(
-  level = res_level,
-  domain_id = res_id,
-  indicator = res_indicator,
-  est = res_est,
-  low = res_low,
-  high = res_high,
-  stringsAsFactors = FALSE
-)
-
-write.csv(out, out_csv, row.names = FALSE, na = "")
-
-message(sprintf(
-  "estimates: %d logit CI, %d beta CI (boundary domains), %d without a CI",
-  tally$logit, tally$beta, tally$failed
-))
-
-report_warnings()
-"""
-
-
-def clean_name(series: pd.Series) -> pd.Series:
-    """Strip the province code prefix and the level suffix off a geography name."""
-    return (
-        series.astype(str)
-        .str.replace(NAME_PREFIX_RE, "", regex=True)
-        .str.replace(NAME_SUFFIX_RE, "", regex=True)
-        .str.strip()
-    )
+    cst.STRATUM_COL,
+    cst.ZONE_COL,
+    cst.AREA_COL,
+    cst.WEIGHT_COL,
+    cst.AGE_COL,
+    cst.AREAS_TOTAL_COL,
+    cst.MILIEU_COL,
+] + VACCINES_COLUMNS
 
 
 def load_year(
     dta_path: Path,
-    age_min: int = AGE_MIN_MONTHS,
-    age_max: int = AGE_MAX_MONTHS,
+    age_min: int = cst.AGE_MIN_MONTHS,
+    age_max: int = cst.AGE_MAX_MONTHS,
 ) -> pd.DataFrame:
     """Read one ECV Stata export into the tidy child-level frame used downstream."""
     raw = pd.read_stata(dta_path, columns=LOAD_COLUMNS, convert_categoricals=False)
 
-    age = pd.to_numeric(raw[AGE_COL], errors="coerce")
+    age = pd.to_numeric(raw[cst.AGE_COL], errors="coerce")
     in_range = age.between(age_min, age_max)
     # Report what the age filter actually removed, so a window that silently
     # matches (or drops) the whole file is obvious from the run log.
@@ -383,29 +92,28 @@ def load_year(
     )
     df = raw[in_range].copy()
 
-    df["province"] = clean_name(df[STRATUM_COL])
-    df["zone"] = clean_name(df[ZONE_COL])
-    df["area"] = clean_name(df[AREA_COL])
-    df["weight"] = pd.to_numeric(df[WEIGHT_COL], errors="coerce")
-    df["nb_areas_tot"] = pd.to_numeric(df[AREAS_TOTAL_COL], errors="coerce")
-    # The milieu split is a filter, not an indicator: a child whose `q108` is
-    # missing or carries an unexpected code still counts in the "all" domain,
-    # it just never lands in a urbain/rural one.
-    df["milieu"] = pd.to_numeric(df[MILIEU_COL], errors="coerce").map(MILIEU_BY_CODE)
+    df["province"] = utils.clean_name(df[cst.STRATUM_COL])
+    df["zone"] = utils.clean_name(df[cst.ZONE_COL])
+    df["area"] = utils.clean_name(df[cst.AREA_COL])
+    df["weight"] = pd.to_numeric(df[cst.WEIGHT_COL], errors="coerce")
+    df["nb_areas_tot"] = pd.to_numeric(df[cst.AREAS_TOTAL_COL], errors="coerce")
+    df["milieu"] = pd.to_numeric(df[cst.MILIEU_COL], errors="coerce").map(
+        cst.MILIEU_BY_CODE
+    )
     print(
-        f"  milieu `{MILIEU_COL}`: "
+        f"  milieu `{cst.MILIEU_COL}`: "
         + ", ".join(
             f"{name} {n:,}" for name, n in sorted(df["milieu"].value_counts().items())
         )
         + f" ({int(df['milieu'].isna().sum()):,} with no milieu)"
     )
 
-    merg = df[MERG_COLUMNS].apply(pd.to_numeric, errors="coerce")
-    df["penta3"] = (merg["penta3_merg"] == VACCINATED).astype("Int64")
+    merg = df[VACCINES_COLUMNS].apply(pd.to_numeric, errors="coerce")
+    df["penta3"] = (merg["penta3_merg"] == cst.VACCINATED).astype("Int64")
     df.loc[merg["penta3_merg"].isna(), "penta3"] = pd.NA
     # Zero-dose: no antigen at all, i.e. every merged vaccine column says "not
     # vaccinated". Unknown as soon as one column is missing.
-    df["zero_dose"] = (merg == NOT_VACCINATED).all(axis=1).astype("Int64")
+    df["zero_dose"] = (merg == cst.NOT_VACCINATED).all(axis=1).astype("Int64")
     df.loc[merg.isna().any(axis=1), "zero_dose"] = pd.NA
 
     # An aire de sante name is not unique nationally, so key the PSU on the zone.
@@ -555,12 +263,16 @@ def run_survey_r(df: pd.DataFrame, workdir: Path) -> pd.DataFrame:
 
     in_csv = workdir / "ecv_extract.csv"
     out_csv = workdir / "ecv_estimates.csv"
-    r_file = workdir / "ecv_survey.R"
     extract.to_csv(in_csv, index=False)
-    r_file.write_text(R_SCRIPT, encoding="utf-8")
 
     proc = subprocess.run(
-        [rscript, "--vanilla", str(r_file), str(in_csv), str(out_csv)],
+        [
+            rscript,
+            "--vanilla",
+            str(cst.R_KEY_PATH),
+            str(in_csv),
+            str(out_csv),
+        ],
         capture_output=True,
         text=True,
     )
@@ -735,7 +447,7 @@ def process_milieu(
     out = counts.merge(wide, on=["level", "domain_key"], how="left")
     count_cols = ["nb_people", "nb_zones", "nb_areas", "nb_areas_tot"]
     out[count_cols] = out[count_cols].astype("Int64")
-    out["year"] = COLLECTION_YEAR.get(year, year)
+    out["year"] = cst.COLLECTION_YEAR.get(year, year)
     out["milieu"] = milieu
     return out.drop(columns=["domain_key"])
 
@@ -745,8 +457,8 @@ def process_file(
     year: str,
     milieux: list[str],
     workdir: Path | None = None,
-    age_min: int = AGE_MIN_MONTHS,
-    age_max: int = AGE_MAX_MONTHS,
+    age_min: int = cst.AGE_MIN_MONTHS,
+    age_max: int = cst.AGE_MAX_MONTHS,
 ) -> pd.DataFrame:
     print(f"reading {dta_path.name} ...")
     df = load_year(dta_path, age_min, age_max)
@@ -777,27 +489,27 @@ def main() -> None:
     parser.add_argument(
         "--output",
         type=Path,
-        default=OUT_CSV,
-        help=f"destination CSV (default: {OUT_CSV.relative_to(PROJECT_ROOT)})",
+        default=cst.OUT_KEY_ECV_PATH,
+        help=f"destination CSV (default: {cst.OUT_KEY_ECV_PATH.relative_to(cst.PROJECT_ROOT)})",
     )
     parser.add_argument(
         "--milieux",
-        default=",".join(MILIEUX),
+        default=",".join(cst.MILIEUX),
         help="comma-separated subset of milieu domains to estimate; each one "
         "costs a full R pass over every province and zone "
-        f"(default: {','.join(MILIEUX)})",
+        f"(default: {','.join(cst.MILIEUX)})",
     )
     parser.add_argument(
         "--age-min",
         type=int,
-        default=AGE_MIN_MONTHS,
-        help=f"youngest age in completed months (default: {AGE_MIN_MONTHS})",
+        default=cst.AGE_MIN_MONTHS,
+        help=f"youngest age in completed months (default: {cst.AGE_MIN_MONTHS})",
     )
     parser.add_argument(
         "--age-max",
         type=int,
-        default=AGE_MAX_MONTHS,
-        help=f"oldest age in completed months (default: {AGE_MAX_MONTHS})",
+        default=cst.AGE_MAX_MONTHS,
+        help=f"oldest age in completed months (default: {cst.AGE_MAX_MONTHS})",
     )
     parser.add_argument(
         "--workdir",
@@ -812,15 +524,15 @@ def main() -> None:
     args = parser.parse_args()
 
     milieux = [m.strip() for m in args.milieux.split(",") if m.strip()]
-    unknown = [m for m in milieux if m not in MILIEUX]
+    unknown = [m for m in milieux if m not in cst.MILIEUX]
     if unknown:
-        raise SystemExit(f"unknown milieu(x): {unknown}\nknown milieux: {MILIEUX}")
+        raise SystemExit(f"unknown milieu(x): {unknown}\nknown milieux: {cst.MILIEUX}")
 
     frames = []
-    for year in COLLECTION_YEAR:
-        matches = sorted(INPUT_DIR.glob(f"ECV_{year}_*.dta"))
+    for year in cst.COLLECTION_YEAR:
+        matches = sorted(cst.INPUT_DIR.glob(f"ECV_{year}_*.dta"))
         if not matches:
-            raise FileNotFoundError(f"no ECV_{year}_*.dta in {INPUT_DIR}")
+            raise FileNotFoundError(f"no ECV_{year}_*.dta in {cst.INPUT_DIR}")
         frames.append(
             process_file(
                 matches[0], year, milieux, args.workdir, args.age_min, args.age_max

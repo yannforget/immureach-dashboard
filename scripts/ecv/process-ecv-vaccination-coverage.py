@@ -44,418 +44,40 @@ can be re-run by hand):
     python scripts/process-ecv-vaccination-coverage.py --workdir /tmp/ecv-debug
 """
 
-from __future__ import annotations
-
 import argparse
-import json
-import re
 import shutil
 import subprocess
 import sys
 import tempfile
-import time
-import unicodedata
 from pathlib import Path
 
 import pandas as pd
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-INPUT_DIR = PROJECT_ROOT / "data" / "input" / "ecv"
-ZONES_GEOJSON = PROJECT_ROOT / "data" / "output" / "boundaries" / "zones.geojson"
-OUT_CSV = PROJECT_ROOT / "public" / "data" / "ecv_vaccination_coverage.csv"
+import scripts.ecv.constants as cst
+from scripts.ecv import utils
 
-YEARS = ("2022", "2023")
-
-# The ECV_<year>_*.dta exports are named after the year the file was produced,
-# which is the year *before* the survey actually went to the field. Rows are
-# labelled with that collection year, so the dashboard reports when the data
-# was gathered rather than when the export was cut. A file already named
-# after its fieldwork year (ECV2026) is passed through unchanged.
-COLLECTION_YEAR = {"2022": "2023", "2023": "2024"}
-
-# Age window in completed months, read off `vs25` ("Quel âge a ... en mois ?").
-# Both exports were collected on 6-23 month olds (2022 spans exactly 6..23;
-# 2023 has 43 rows outside it), so this window keeps essentially every child in
-# the file rather than the 12-23 subset the coverage module reports on. Widen
-# or narrow it per run with --age-min / --age-max.
-AGE_MIN_MONTHS = 6
-AGE_MAX_MONTHS = 24
-
-# Survey design + geography columns.
-STRATUM_COL = "q101"  # "Nom de la strate (de la province)"
-ZONE_COL = "q103"  # "Nom de la zone de santé"
-AREA_COL = "q105"  # "Nom de la grappe (de l'Aire de santé)" -- the PSU
-WEIGHT_COL = "ponderation"
-AGE_COL = "vs25"
-AREAS_TOTAL_COL = "nbre_as"  # health areas in the zone (sampling frame)
-AREAS_SURVEYED_COL = "nbre_asenq"  # health areas actually surveyed, per the file
-MILIEU_COL = "q108"  # "Milieu de localisation du ménage"
-
-# `q108` modalities, per the Stata value labels: 1 = Urbain, 2 = Rurale. The
-# dashboard's milieu ribbon filter reads the `milieu` column built from them.
-MILIEU_BY_CODE = {1: "urbain", 2: "rural"}
-
-# Every domain is estimated once per entry: "all" is the whole sample -- the
-# only thing the file carried before the milieu split -- and the other two are
-# the q108 modalities. Urban zone domains are sparse (only ~190 of the ~505
-# zones have any urban child, a third of those from a single aire de santé),
-# so expect empty cells and wide intervals there; the CI fallback in the R
-# script handles them the same way it handles small zones.
-MILIEUX = ("all", *MILIEU_BY_CODE.values())
-
-# Dashboard metric key -> `<vaccine>_merg` column.
-# The 2023 file additionally carries `vpi2_merg` / `var2_merg` (second doses);
-# they have no 2022 counterpart and no dashboard metric, so they are ignored.
-MERG_BY_METRIC = {
-    "bcg": "bcg_merg",
-    "penta1": "penta1_merg",
-    "penta2": "penta2_merg",
-    "penta3": "penta3_merg",
-    "polio0": "vpo0_merg",
-    "polio1": "vpo1_merg",
-    "polio2": "vpo2_merg",
-    "polio3": "vpo3_merg",
-    "pcv1": "pcv1_merg",
-    "pcv2": "pcv2_merg",
-    "pcv3": "pcv3_merg",
-    "rota1": "rota1_merg",
-    "rota2": "rota2_merg",
-    "rota3": "rota3_merg",
-    "vpi": "vpi_merg",
-    "var": "var_merg",
-    "vaa": "vaa_merg",
-}
-MERG_COLUMNS = list(MERG_BY_METRIC.values())
-
-# Output metric order (EcvMetricKey order, minus the three keys the dashboard
-# never reads).
-METRICS = ["zero_dose", *MERG_BY_METRIC]
-
-VACCINATED = 1
-NOT_VACCINATED = 2
+# Output metric order (EcvMetricKey order, minus the three keys the dashboard never reads).
+METRICS = ["zero_dose", *cst.VACCINES_MAPPING]
+VACCINES_COLUMNS = list(cst.VACCINES_MAPPING.values())
 
 # The file's own zero-dose flag. Not an output metric: it exists only so the
 # derived zero_dose can be checked against it (see report_indicators).
 ZERO_DOSE_REF_COL = "dose0_1"
 
 LOAD_COLUMNS = [
-    STRATUM_COL,
-    ZONE_COL,
-    AREA_COL,
-    WEIGHT_COL,
-    AGE_COL,
-    AREAS_TOTAL_COL,
-    AREAS_SURVEYED_COL,
-    MILIEU_COL,
+    cst.STRATUM_COL,
+    cst.ZONE_COL,
+    cst.AREA_COL,
+    cst.WEIGHT_COL,
+    cst.AGE_COL,
+    cst.AREAS_TOTAL_COL,
+    cst.AREAS_SURVEYED_COL,
+    cst.MILIEU_COL,
     ZERO_DOSE_REF_COL,
-    *MERG_COLUMNS,
+    *VACCINES_COLUMNS,
 ]
 
-NAME_PREFIX_RE = re.compile(r"^[A-Za-z]{2}\s+")
-NAME_SUFFIX_RE = re.compile(
-    r"\s+(Province|Zone\s+de\s+Sant\w*|Aire\s+de\s+Sant\w*)\s*$",
-    flags=re.IGNORECASE,
-)
-
 COUNT_COLS = ["nb_children", "nb_as", "as_enq"]
-
-R_SCRIPT = r"""
-# Design-based estimation of vaccination coverage with 95% confidence
-# intervals. Called by scripts/process-ecv-vaccination-coverage.py. 
-# Reads the child-level extract, writes one row per (domain, indicator) 
-# with the point estimate and CI bounds as proportions.
-if (!requireNamespace("survey", quietly = TRUE)) {
-  stop("the R package 'survey' is not installed: install.packages(\"survey\")")
-}
-suppressPackageStartupMessages(library(survey))
-
-# Subsetting to a single zone can leave a stratum contributing one PSU; centre
-# those on the grand mean rather than dropping the variance contribution.
-options(survey.lonely.psu = "adjust")
-options(nwarnings = 10000L)
-
-# Which estimator actually produced each figure. Reported at the end so a
-# silent mass fallback (the symptom of a broken domain subset) is visible.
-tally <- new.env(parent = emptyenv())
-tally$logit <- 0L
-tally$beta <- 0L
-tally$failed <- 0L
-
-warn_log <- new.env(parent = emptyenv())
-
-# Called from withCallingHandlers: record the warning against the domain that
-# raised it, then muffle it so it does not also fill R's deferred buffer.
-record_warning <- function(w, context) {
-  key <- conditionMessage(w)
-  entry <- warn_log[[key]]
-  if (is.null(entry)) {
-    warn_log[[key]] <- list(count = 1L, example = context)
-  } else {
-    entry$count <- entry$count + 1L
-    warn_log[[key]] <- entry
-  }
-  invokeRestart("muffleWarning")
-}
-
-# message() writes to stderr, which the Python side forwards to the terminal.
-report_warnings <- function() {
-  keys <- ls(warn_log, all.names = TRUE)
-  if (length(keys) == 0L) {
-    message("no warnings from the survey estimation")
-    return(invisible(NULL))
-  }
-  counts <- vapply(keys, function(k) warn_log[[k]]$count, integer(1))
-  message(sprintf(
-    "\n%d distinct warning(s), %d in total, from the survey estimation:",
-    length(keys), sum(counts)
-  ))
-  for (k in keys[order(-counts)]) {
-    entry <- warn_log[[k]]
-    message(sprintf("  [%dx] %s", entry$count, k))
-    message(sprintf("        first seen at: %s", entry$example))
-  }
-}
-
-args <- commandArgs(trailingOnly = TRUE)
-in_csv <- args[1]
-out_csv <- args[2]
-indicators <- strsplit(args[3], ",", fixed = TRUE)[[1]]
-labels_csv <- args[4]
-
-# Domains travel as integer ids (accents do not survive the round trip
-# reliably), so read the id -> name table back in: a warning that names a
-# number the reader cannot act on is not worth printing.
-labels <- read.csv(labels_csv, stringsAsFactors = FALSE, encoding = "UTF-8")
-label_of <- function(level, id) {
-  hit <- labels$name[labels$level == level & labels$id == id]
-  if (length(hit) == 0L) paste0(level, " id=", id) else paste0(level, " ", hit[1])
-}
-
-d <- read.csv(in_csv, stringsAsFactors = FALSE)
-message(sprintf(
-  "  [R] %d rows, %d indicator(s): %s",
-  nrow(d), length(indicators), paste(indicators, collapse = ", ")
-))
-
-missing <- setdiff(indicators, names(d))
-if (length(missing) > 0L) {
-  stop(sprintf("indicator column(s) absent from the extract: %s",
-               paste(missing, collapse = ", ")))
-}
-
-# Stratified two-stage design: strata = province, PSU = aire de santé,
-# weights = the survey's `ponderation`. nest = TRUE because PSU ids are only
-# unique within a stratum.
-design <- svydesign(
-  ids = ~psu_id,
-  strata = ~stratum_id,
-  weights = ~weight,
-  data = d,
-  nest = TRUE
-)
-
-# Take a domain (subpopulation) of the design, i.e. what subset() does: drop
-# the rows outside it. The theoretically tidier alternative, `drop = FALSE`,
-# keeps every row and sets the excluded weights to zero so each stratum retains
-# its full PSU count -- but with svyciprop it returns NaN or degenerate 0/100
-# for most zone domains (whole strata end up entirely zero-weighted), so this
-# uses the documented subset() behaviour instead. The cost is that a zone's
-# stratum is reduced to that zone's PSUs, which makes its interval slightly
-# conservative; survey.lonely.psu = "adjust" covers the resulting small strata.
-domain <- function(dsn, keep) suppressWarnings(dsn[keep, ])
-
-# svyciprop's logit interval keeps the bounds inside [0, 1] and stays sensible
-# for the small, near-degenerate zone domains; fall back to the beta interval
-# on the domains where the logit fit cannot be evaluated.
-prop_ci <- function(indicator, dsn) {
-  values <- dsn$variables[[indicator]]
-  keep <- !is.na(values) & is.finite(dsn$prob)
-  if (!any(keep)) {
-    return(c(NA_real_, NA_real_, NA_real_))
-  }
-  dsn <- domain(dsn, keep)
-  f <- as.formula(paste0("~", indicator))
-
-  # A degenerate fit does not necessarily raise: svyciprop can return NaN, or a
-  # point estimate with NaN bounds, without erroring. So tryCatch alone is not
-  # enough -- every tier's result is validated before it is accepted.
-  #
-  # "Collapsed" (lo == hi) is rejected as well as non-finite. When a domain has
-  # zero events, the logit fit runs its intercept off to -Inf and returns the
-  # interval [0, 0], which claims certainty the true rate is exactly 0. With
-  # ~120 children the honest upper bound is around 3/120, so [0, 0] is false
-  # precision, not a tight estimate. Those are the domains the "algorithm did
-  # not converge" warnings point at.
-  usable <- function(v) {
-    length(v) == 3L && all(is.finite(v)) && v[3] > v[2] &&
-      v[2] >= 0 && v[3] <= 1
-  }
-
-  estimate <- function(method) {
-    tryCatch(
-      {
-        est <- svyciprop(f, dsn, method = method, level = 0.95)
-        ci <- as.numeric(confint(est))
-        c(as.numeric(est), ci[1], ci[2])
-      },
-      error = function(e) c(NA_real_, NA_real_, NA_real_)
-    )
-  }
-
-  logit <- estimate("logit")
-  if (usable(logit)) {
-    tally$logit <- tally$logit + 1L
-    return(logit)
-  }
-
-  # The beta method inverts the incomplete beta function against the effective
-  # sample size, the way binom.test does. It fits no glm, so it cannot fail to
-  # converge, and it stays inside [0, 1] and gives a real upper bound at zero
-  # events -- the two things the logit and Wald intervals get wrong here.
-  beta <- estimate("beta")
-  if (usable(beta)) {
-    tally$beta <- tally$beta + 1L
-    return(beta)
-  }
-
-  # Keep a usable point estimate even when neither interval is trustworthy.
-  point <- if (is.finite(logit[1])) logit[1] else beta[1]
-  tally$failed <- tally$failed + 1L
-  c(point, NA_real_, NA_real_)
-}
-
-# Domains to estimate: the whole sample, then each province, then each zone.
-province_ids <- sort(unique(d$province_id))
-zone_ids <- sort(unique(d$zone_id))
-
-domains <- c(
-  list(list(level = "national", id = -1L, label = "national",
-            keep = rep(TRUE, nrow(d)))),
-  lapply(province_ids, function(pid) {
-    list(level = "province", id = pid, label = label_of("province", pid),
-         keep = d$province_id == pid)
-  }),
-  lapply(zone_ids, function(zid) {
-    list(level = "zone", id = zid, label = label_of("zone", zid),
-         keep = d$zone_id == zid)
-  })
-)
-message(sprintf(
-  "  [R] %d domains (1 national, %d provinces, %d zones) x %d indicators = %d estimates",
-  length(domains), length(province_ids), length(zone_ids), length(indicators),
-  length(domains) * length(indicators)
-))
-
-n <- length(domains) * length(indicators)
-res_level <- character(n)
-res_id <- integer(n)
-res_indicator <- character(n)
-res_est <- numeric(n)
-res_low <- numeric(n)
-res_high <- numeric(n)
-
-started <- Sys.time()
-row <- 1L
-for (i in seq_along(domains)) {
-  dom <- domains[[i]]
-  dsn <- if (dom$level == "national") design else domain(design, dom$keep)
-  for (ind in indicators) {
-    context <- paste0(dom$label, ", indicator=", ind)
-    v <- withCallingHandlers(
-      prop_ci(ind, dsn),
-      warning = function(w) record_warning(w, context)
-    )
-    res_level[row] <- dom$level
-    res_id[row] <- as.integer(dom$id)
-    res_indicator[row] <- ind
-    res_est[row] <- v[1]
-    res_low[row] <- v[2]
-    res_high[row] <- v[3]
-    row <- row + 1L
-  }
-  # Progress, so a run that is merely slow is distinguishable from one stuck.
-  if (i %% 50L == 0L || i == length(domains)) {
-    elapsed <- max(0, as.numeric(difftime(Sys.time(), started, units = "secs")))
-    message(sprintf(
-      "  [R] %d/%d domains, %d estimates, %.0fs elapsed (~%.0fs left)",
-      i, length(domains), row - 1L, elapsed,
-      elapsed / i * (length(domains) - i)
-    ))
-  }
-}
-
-out <- data.frame(
-  level = res_level,
-  domain_id = res_id,
-  indicator = res_indicator,
-  est = res_est,
-  low = res_low,
-  high = res_high,
-  stringsAsFactors = FALSE
-)
-
-write.csv(out, out_csv, row.names = FALSE, na = "")
-
-message(sprintf(
-  "  [R] estimates: %d logit CI, %d beta CI (boundary domains), %d without a CI",
-  tally$logit, tally$beta, tally$failed
-))
-
-report_warnings()
-"""
-
-
-def clean_name(series: pd.Series) -> pd.Series:
-    """Strip the province code prefix and the level suffix off."""
-    return (
-        series.astype(str)
-        .str.replace(NAME_PREFIX_RE, "", regex=True)
-        .str.replace(NAME_SUFFIX_RE, "", regex=True)
-        .str.strip()
-    )
-
-
-def normalize(name: str) -> str:
-    """Accent- and case-insensitive key for joining names across sources."""
-    stripped = NAME_SUFFIX_RE.sub("", NAME_PREFIX_RE.sub("", str(name))).strip()
-    decomposed = unicodedata.normalize("NFD", stripped)
-    return "".join(c for c in decomposed if not unicodedata.combining(c)).lower()
-
-
-def load_geojson_names(path: Path) -> tuple[dict[str, str], dict[str, tuple[str, str]]]:
-    """Canonical province / zone names from the dashboard's zone boundaries."""
-    if not path.exists():
-        raise FileNotFoundError(
-            f"zone boundaries not found: {path}\n"
-            "Run scripts/generate-boundaries.py first."
-        )
-    geo = json.loads(path.read_text(encoding="utf-8"))
-    features = geo.get("features", [])
-    provinces: dict[str, str] = {}
-    zones: dict[str, tuple[str, str]] = {}
-    for feature in features:
-        props = feature.get("properties", {})
-        raw_province = props.get("level_2_name")
-        raw_zone = props.get("level_3_name")
-        if not raw_province or not raw_zone:
-            print(f"  WARNING: geojson feature without a name: {props}")
-            continue
-        province = NAME_SUFFIX_RE.sub(
-            "", NAME_PREFIX_RE.sub("", str(raw_province))
-        ).strip()
-        zone = NAME_SUFFIX_RE.sub("", NAME_PREFIX_RE.sub("", str(raw_zone))).strip()
-        provinces[normalize(province)] = province
-        zones[f"{normalize(province)}|{normalize(zone)}"] = (province, zone)
-    print(
-        f"  {path.relative_to(PROJECT_ROOT)}: {len(features)} features -> "
-        f"{len(provinces)} provinces, {len(zones)} zones"
-    )
-    if len(zones) != len(features):
-        print(
-            f"  WARNING: {len(features) - len(zones)} feature(s) collapsed onto an "
-            "existing province|zone key (duplicate geometry?)"
-        )
-    return provinces, zones
 
 
 def canonicalize_names(
@@ -469,7 +91,7 @@ def canonicalize_names(
     could not be drawn on the map anyway, and keeping them would quietly
     inflate the province and national totals.
     """
-    key = df["province"].map(normalize) + "|" + df["zone"].map(normalize)
+    key = df["province"].map(utils.normalize) + "|" + df["zone"].map(utils.normalize)
     matched = key.map(zones)
     unknown = matched.isna()
 
@@ -492,7 +114,9 @@ def canonicalize_names(
     else:
         print("  every survey zone matched a boundary zone")
 
-    unknown_provinces = sorted(set(df["province"].map(normalize)) - set(provinces))
+    unknown_provinces = sorted(
+        set(df["province"].map(utils.normalize)) - set(provinces)
+    )
     if unknown_provinces:
         print(f"  WARNING: province(s) absent from the boundaries: {unknown_provinces}")
 
@@ -504,7 +128,11 @@ def canonicalize_names(
 
     covered = set(
         df["zone_key"].map(
-            lambda k: normalize(k.split(" | ")[0]) + "|" + normalize(k.split(" | ")[1])
+            lambda k: (
+                utils.normalize(k.split(" | ")[0])
+                + "|"
+                + utils.normalize(k.split(" | ")[1])
+            )
         )
     )
     never_surveyed = sorted(
@@ -526,11 +154,11 @@ def build_indicators(df: pd.DataFrame) -> pd.DataFrame:
     the column is the coverage proportion which is exactly what svyciprop
     estimates on the R side.
     """
-    merg = df[MERG_COLUMNS].apply(pd.to_numeric, errors="coerce")
+    merg = df[VACCINES_COLUMNS].apply(pd.to_numeric, errors="coerce")
 
     unexpected = {}
-    for col in MERG_COLUMNS:
-        bad = merg[col].notna() & ~merg[col].isin([VACCINATED, NOT_VACCINATED])
+    for col in VACCINES_COLUMNS:
+        bad = merg[col].notna() & ~merg[col].isin([cst.VACCINATED, cst.NOT_VACCINATED])
         if bad.any():
             unexpected[col] = sorted(merg.loc[bad, col].unique())[:5]
     if unexpected:
@@ -539,14 +167,14 @@ def build_indicators(df: pd.DataFrame) -> pd.DataFrame:
             f"vaccinated'): {unexpected}"
         )
 
-    for metric, col in MERG_BY_METRIC.items():
-        values = (merg[col] == VACCINATED).astype("Int64")
+    for metric, col in cst.VACCINES_MAPPING.items():
+        values = (merg[col] == cst.VACCINATED).astype("Int64")
         values[merg[col].isna()] = pd.NA
         df[metric] = values
 
     # Zero-dose: no antigen at all, i.e. every merged vaccine column says "not
     # vaccinated".
-    zero_dose = (merg == NOT_VACCINATED).all(axis=1).astype("Int64")
+    zero_dose = (merg == cst.NOT_VACCINATED).all(axis=1).astype("Int64")
     zero_dose[merg.isna().any(axis=1)] = pd.NA
     df["zero_dose"] = zero_dose
 
@@ -610,36 +238,34 @@ def load_year(
 ) -> pd.DataFrame:
     """Read one ECV Stata export into the tidy child-level frame used downstream."""
     print(f"  reading {dta_path.name} ...")
-    started = time.perf_counter()
     raw = pd.read_stata(dta_path, columns=LOAD_COLUMNS, convert_categoricals=False)
-    print(
-        f"  loaded {len(raw):,} rows x {len(raw.columns)} columns in "
-        f"{time.perf_counter() - started:.1f}s"
-    )
+    print(f"  loaded {len(raw):,} rows x {len(raw.columns)} columns in ")
 
-    age = pd.to_numeric(raw[AGE_COL], errors="coerce")
+    age = pd.to_numeric(raw[cst.AGE_COL], errors="coerce")
     in_range = age.between(age_min, age_max)
     # Report what the age filter actually removed, so a window that silently
     # matches (or drops) the whole file is obvious from the run log.
     print(
-        f"  age filter `{AGE_COL}`: {len(raw):,} children -> "
+        f"  age filter `{cst.AGE_COL}`: {len(raw):,} children -> "
         f"{int(in_range.sum()):,} aged {age_min}-{age_max} months "
         f"({int((~in_range).sum()):,} dropped, {int(age.isna().sum()):,} with no age)"
     )
     if in_range.sum() == 0:
         raise ValueError(
             f"no child aged {age_min}-{age_max} months in {dta_path.name}; "
-            f"`{AGE_COL}` spans {age.min()}-{age.max()}"
+            f"`{cst.AGE_COL}` spans {age.min()}-{age.max()}"
         )
     df = raw[in_range].copy()
 
-    df["province"] = clean_name(df[STRATUM_COL])
-    df["zone"] = clean_name(df[ZONE_COL])
-    df["area"] = clean_name(df[AREA_COL])
-    df["weight"] = pd.to_numeric(df[WEIGHT_COL], errors="coerce")
-    df["nb_as"] = pd.to_numeric(df[AREAS_TOTAL_COL], errors="coerce")
-    df["as_enq_file"] = pd.to_numeric(df[AREAS_SURVEYED_COL], errors="coerce")
-    df["milieu"] = pd.to_numeric(df[MILIEU_COL], errors="coerce").map(MILIEU_BY_CODE)
+    df["province"] = utils.clean_name(df[cst.STRATUM_COL])
+    df["zone"] = utils.clean_name(df[cst.ZONE_COL])
+    df["area"] = utils.clean_name(df[cst.AREA_COL])
+    df["weight"] = pd.to_numeric(df[cst.WEIGHT_COL], errors="coerce")
+    df["nb_as"] = pd.to_numeric(df[cst.AREAS_TOTAL_COL], errors="coerce")
+    df["as_enq_file"] = pd.to_numeric(df[cst.AREAS_SURVEYED_COL], errors="coerce")
+    df["milieu"] = pd.to_numeric(df[cst.MILIEU_COL], errors="coerce").map(
+        cst.MILIEU_BY_CODE
+    )
 
     # The milieu split is a filter, not an indicator: a child whose `q108` is
     # missing or carries an unexpected code still counts in the "all" domain,
@@ -648,20 +274,20 @@ def load_year(
     unknown_milieu = df["milieu"].isna()
     counts = df["milieu"].value_counts().to_dict()
     print(
-        f"  milieu `{MILIEU_COL}`: "
+        f"  milieu `{cst.MILIEU_COL}`: "
         + ", ".join(f"{name} {n:,}" for name, n in sorted(counts.items()))
         + f" ({int(unknown_milieu.sum()):,} with no milieu)"
     )
     if unknown_milieu.any():
         codes = sorted(
-            pd.to_numeric(df.loc[unknown_milieu, MILIEU_COL], errors="coerce")
+            pd.to_numeric(df.loc[unknown_milieu, cst.MILIEU_COL], errors="coerce")
             .dropna()
             .unique()
             .tolist()
         )
         print(
-            f"  WARNING: {int(unknown_milieu.sum()):,} children carry a `{MILIEU_COL}` "
-            f"outside {sorted(MILIEU_BY_CODE)} (codes seen: {codes or 'none, all blank'}); "
+            f"  WARNING: {int(unknown_milieu.sum()):,} children carry a `{cst.MILIEU_COL}` "
+            f"outside {sorted(cst.MILIEU_BY_CODE)} (codes seen: {codes or 'none, all blank'}); "
             "they are counted in the `all` milieu only"
         )
 
@@ -670,7 +296,9 @@ def load_year(
 
     no_weight = int(df["weight"].isna().sum())
     if no_weight:
-        print(f"  WARNING: dropping {no_weight:,} children without a `{WEIGHT_COL}`")
+        print(
+            f"  WARNING: dropping {no_weight:,} children without a `{cst.WEIGHT_COL}`"
+        )
         df = df.dropna(subset=["weight"])
     nonpositive = int((df["weight"] <= 0).sum())
     if nonpositive:
@@ -723,7 +351,7 @@ def build_counts(df: pd.DataFrame, check_as_enq: bool = True) -> pd.DataFrame:
         if len(mismatch):
             print(
                 f"  WARNING: {len(mismatch)} zone(s) where the distinct PSU count "
-                f"differs from `{AREAS_SURVEYED_COL}`:"
+                f"differs from `{cst.AREAS_SURVEYED_COL}`:"
             )
             for zone_key, row in mismatch.head(10).iterrows():
                 print(
@@ -731,7 +359,7 @@ def build_counts(df: pd.DataFrame, check_as_enq: bool = True) -> pd.DataFrame:
                     f"{row['declared']:.0f}"
                 )
         else:
-            print(f"  as_enq matches `{AREAS_SURVEYED_COL}` in every zone")
+            print(f"  as_enq matches `{cst.AREAS_SURVEYED_COL}` in every zone")
 
     province = (
         df.groupby("province")
@@ -811,16 +439,13 @@ def run_survey_r(
     in_csv = workdir / "ecv_extract.csv"
     out_csv = workdir / "ecv_estimates.csv"
     labels_csv = workdir / "ecv_domains.csv"
-    r_file = workdir / "ecv_survey.R"
     extract.to_csv(in_csv, index=False)
     labels.to_csv(labels_csv, index=False, encoding="utf-8")
-    r_file.write_text(R_SCRIPT, encoding="utf-8")
     print(
         f"  wrote the R extract: {len(extract):,} rows, "
         f"{len(provinces)} strata, {len(psus)} PSUs -> {in_csv}"
     )
 
-    started = time.perf_counter()
     # R writes its progress, warnings *and* its fatal error to stderr, so tee
     # it: echo each line as it arrives (the run takes minutes and the progress
     # lines are the only sign it is alive) and keep a copy for the exception
@@ -834,7 +459,7 @@ def run_survey_r(
         [
             rscript,
             "--vanilla",
-            str(r_file),
+            str(cst.R_VACC_COV_PATH),
             str(in_csv),
             str(out_csv),
             ",".join(metrics),
@@ -851,7 +476,7 @@ def run_survey_r(
         stderr_lines.append(line)
     sys.stderr.flush()
     stdout, _ = proc.communicate()
-    print(f"  R finished in {time.perf_counter() - started:.1f}s")
+    print("  R finished running")
     if proc.returncode != 0:
         # Keep the tail: a failure late in the run is preceded by thousands of
         # progress lines, and the message that matters is the last one.
@@ -1005,8 +630,6 @@ def process_milieu(
         with tempfile.TemporaryDirectory(prefix=f"ecv-{year}-{milieu}-") as tmp:
             est = run_survey_r(df, metrics, rscript, Path(tmp))
     else:
-        # Keep the extract, the generated R script and the raw estimates so the
-        # R step can be re-run and debugged by hand.
         run_dir = workdir / year / milieu
         run_dir.mkdir(parents=True, exist_ok=True)
         est = run_survey_r(df, metrics, rscript, run_dir)
@@ -1020,7 +643,7 @@ def process_milieu(
     if unmatched:
         print(f"  WARNING: {unmatched} domain(s) got no estimate from R")
     out[COUNT_COLS] = out[COUNT_COLS].astype("Int64")
-    out["year"] = COLLECTION_YEAR.get(year, year)
+    out["year"] = cst.COLLECTION_YEAR.get(year, year)
     out["milieu"] = milieu
     print(f"  {len(out)} rows for {year} / {milieu}")
     return out.drop(columns=["domain_key"])
@@ -1066,13 +689,12 @@ def process_file(
 def resolve_rscript(explicit: str | None) -> str:
     """Locate Rscript, failing with something actionable if it is missing."""
     rscript = explicit or shutil.which("Rscript")
+    if not cst.R_VACC_COV_PATH.exists():
+        raise RuntimeError(f"R survey script not found: {cst.R_VACC_COV_PATH}")
     if rscript is None or not Path(rscript).exists():
         raise RuntimeError(
             "Rscript not found on PATH. This script delegates the survey-design "
-            "estimation to R's `survey` package; install R and then run:\n"
-            '  Rscript -e \'install.packages("survey", '
-            'repos = "https://cloud.r-project.org")\'\n'
-            "Or point at an existing interpreter with --rscript."
+            "estimation to R's `survey` package"
         )
     version = subprocess.run([rscript, "--version"], capture_output=True, text=True)
     print(f"  Rscript: {rscript} ({(version.stdout or version.stderr).strip()})")
@@ -1084,20 +706,20 @@ def main() -> None:
     parser.add_argument(
         "--output",
         type=Path,
-        default=OUT_CSV,
-        help=f"destination CSV (default: {OUT_CSV.relative_to(PROJECT_ROOT)})",
+        default=cst.OUT_VACC_COV_PATH,
+        help=f"destination CSV (default: {cst.OUT_VACC_COV_PATH.relative_to(cst.PROJECT_ROOT)})",
     )
     parser.add_argument(
         "--boundaries",
         type=Path,
-        default=ZONES_GEOJSON,
-        help=f"zone boundaries (default: {ZONES_GEOJSON.relative_to(PROJECT_ROOT)})",
+        default=cst.ZONES_GEOJSON,
+        help=f"zone boundaries (default: {cst.ZONES_GEOJSON.relative_to(cst.PROJECT_ROOT)})",
     )
     parser.add_argument(
         "--years",
-        default=",".join(YEARS),
+        default=",".join(cst.YEARS),
         help=f"comma-separated source-file years to process, as named in the\n"
-        f"ECV_<year>_*.dta filenames (default: {','.join(YEARS)})",
+        f"ECV_<year>_*.dta filenames (default: {','.join(cst.YEARS)})",
     )
     parser.add_argument(
         "--metrics",
@@ -1107,22 +729,21 @@ def main() -> None:
     )
     parser.add_argument(
         "--milieux",
-        default=",".join(MILIEUX),
-        help="comma-separated subset of milieu domains to estimate; each one "
-        "costs a full R pass over every province and zone "
-        f"(default: {','.join(MILIEUX)})",
+        default=",".join(cst.MILIEUX),
+        help="comma-separated subset of milieu domains to estimate; each one"
+        f"(default: {','.join(cst.MILIEUX)})",
     )
     parser.add_argument(
         "--age-min",
         type=int,
-        default=AGE_MIN_MONTHS,
-        help=f"youngest age in completed months (default: {AGE_MIN_MONTHS})",
+        default=cst.AGE_MIN_MONTHS,
+        help=f"youngest age in completed months (default: {cst.AGE_MIN_MONTHS})",
     )
     parser.add_argument(
         "--age-max",
         type=int,
-        default=AGE_MAX_MONTHS,
-        help=f"oldest age in completed months (default: {AGE_MAX_MONTHS})",
+        default=cst.AGE_MAX_MONTHS,
+        help=f"oldest age in completed months (default: {cst.AGE_MAX_MONTHS})",
     )
     parser.add_argument(
         "--rscript",
@@ -1135,15 +756,13 @@ def main() -> None:
         default=None,
         help=(
             "keep each year's R extract, script and raw estimates in this "
-            "directory instead of a temporary one (useful for re-running the "
-            "R step by hand, e.g. to chase down warnings)"
+            "directory instead of a temporary one"
         ),
     )
     args = parser.parse_args()
 
-    started = time.perf_counter()
     print("ECV vaccination coverage")
-    print(f"  input dir : {INPUT_DIR}")
+    print(f"  input dir : {cst.INPUT_DIR}")
     print(f"  output    : {args.output}")
     print(f"  age window: {args.age_min}-{args.age_max} completed months")
 
@@ -1153,21 +772,21 @@ def main() -> None:
     if unknown:
         raise SystemExit(f"unknown metric(s): {unknown}\nknown metrics: {METRICS}")
     milieux = [m.strip() for m in args.milieux.split(",") if m.strip()]
-    unknown = [m for m in milieux if m not in MILIEUX]
+    unknown = [m for m in milieux if m not in cst.MILIEUX]
     if unknown:
-        raise SystemExit(f"unknown milieu(x): {unknown}\nknown milieux: {MILIEUX}")
+        raise SystemExit(f"unknown milieu(x): {unknown}\nknown milieux: {cst.MILIEUX}")
     print(f"  years     : {years}")
     print(f"  metrics   : {len(metrics)} -> {metrics}")
     print(f"  milieux   : {milieux}")
 
     rscript = resolve_rscript(args.rscript)
-    provinces, zones = load_geojson_names(args.boundaries)
+    provinces, zones = utils.load_geojson_names(args.boundaries)
 
     frames = []
     for year in years:
-        matches = sorted(INPUT_DIR.glob(f"ECV_{year}_*.dta"))
+        matches = sorted(cst.INPUT_DIR.glob(f"ECV_{year}_*.dta"))
         if not matches:
-            raise FileNotFoundError(f"no ECV_{year}_*.dta in {INPUT_DIR}")
+            raise FileNotFoundError(f"no ECV_{year}_*.dta in {cst.INPUT_DIR}")
         if len(matches) > 1:
             print(
                 f"  WARNING: {len(matches)} files match ECV_{year}_*.dta, using "
@@ -1218,10 +837,7 @@ def main() -> None:
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     output.to_csv(args.output, index=False)
-    print(
-        f"wrote {args.output} ({len(output)} rows x {len(output.columns)} columns) "
-        f"in {time.perf_counter() - started:.1f}s"
-    )
+    print(f"wrote {args.output} ({len(output)} rows x {len(output.columns)} columns) ")
 
 
 if __name__ == "__main__":

@@ -13,85 +13,14 @@ once on the whole sample (`all`) and once on each q108 modality (`urbain`,
 `rural`). See MILIEUX.
 
 This is the file behind the characteristics bar chart at the bottom right of
-the dashboard's first tab. Adding a variable to INDICATORS below puts a
-`<root>_pct/_low/_high` family in the header; to chart it, list the root in
+the dashboard's first tab. What each variable means, which column it is read
+off and how the two rounds differ all live in scripts/indicators.py; adding an
+entry to its INDICATORS table puts a `<root>_pct/_low/_high` family in the
+header; to chart it, list the root in
 ECV_CARACTERISTIC_KEYS and give it a French label in
 ECV_CARACTERISTIC_VARIABLE_LABELS, plus an ECV_CARACTERISTIC_GROUPS entry when
 several variables belong on one tab (src/lib/utils/constants.ts). Roots absent
 from ECV_CARACTERISTIC_KEYS are parsed but never drawn.
-
-WHAT THE VARIABLES ARE. Grouped by theme; the source column and the codes
-counted as "yes" are in INDICATORS, and every code outside the yes/no lists
-("ne sait pas", "non-reponse", ...) becomes a missing value rather than a "no".
-
-  Document de vaccination
-    possession_carte      has a vaccination card/booklet (`vs26`), whether or
-                          not the interviewer got to see it
-    carte_ou_document     has a card *or* any other document from a health
-                          worker -- the wider definition of the same question
-
-  Mere / gardienne (who answered for the child)
-    mere                  the respondent is the child's mother (`qa100`)
-    gardienne             the respondent is another caregiver (same question);
-                          mere + gardienne sum to 100% by construction
-
-  Enregistrement de la naissance
-    certificat_naissance  the child has a birth certificate (`vs25d`, seen or
-                          declared)
-    naissance_enregistree the birth was registered with the civil authority
-                          (`vs25e`)
-
-  Importance percue des vaccins -- BeSD4, one variable per modality of the
-  4-point scale, so the four add up to 100% of the children who answered:
-    besd4_pas_important / besd4_peu_important / besd4_moyen_important /
-    besd4_tres_important
-
-  Confiance dans les agents de sante -- BeSD6, same 4-modality shape:
-    besd6_aucune_confiance / besd6_confiance_limitee /
-    besd6_confiance_moyenne / besd6_grande_confiance
-
-  Difficultes d'acces a la vaccination -- BeSD19, the multi-select battery
-  BeSD19_a .. BeSD19_e. These are *not* a partition: a caregiver can name
-  several reasons, so the five variables do not add up to 100% and the chart
-  draws them side by side rather than stacked.
-    besd19_aucune_difficulte  nothing, access is not difficult (BeSD19_a)
-    besd19_trajet             getting to the facility is difficult (BeSD19_b)
-    besd19_horaires           opening hours are inconvenient (BeSD19_c)
-    besd19_refoulement        the facility sometimes turns people away
-                              without vaccinating them (BeSD19_d)
-    besd19_attente            the wait at the facility is too long (BeSD19_e)
-
-  Problemes des services de vaccination -- BeSD20, the multi-select battery
-  BeSD21_a .. BeSD21_h (same non-partition caveat):
-    besd21_satisfait    nothing, the caregiver is satisfied (BeSD21_a)
-    besd21_rupture      the vaccine is not always available (BeSD21_b)
-    besd21_ouverture    the facility does not open on time (BeSD21_c)
-    besd21_attente      waiting times are long (BeSD21_d)
-    besd21_proprete     the facility is not clean (BeSD21_e)
-    besd21_formation    staff are poorly trained (BeSD21_f)
-    besd21_respect      staff are not respectful (BeSD21_g)
-    besd21_temps        staff do not spend enough time with people (BeSD21_h)
-
-HOW THE TWO ROUNDS DIFFER ON THE BeSD BATTERIES -- read this before comparing
-2022 and 2023 on any besd19_* / besd21_* variable. In 2022 both batteries were
-read out to every caregiver, and "rien, ce n'est pas difficile" (BeSD19_a) /
-"rien, vous etes satisfait(e)" (BeSD21_a) were simply two of the options. In
-2023 those two options are gone and a filter question was put in front of each
-battery instead: the reasons were only asked of the caregivers who answered
-that access is difficult (BeSD19 = oui) or that they are not at all satisfied
-(BeSD20 = "pas du tout satisfait(e)"). This script therefore
-
-  - reads besd19_aucune_difficulte / besd21_satisfait off BeSD19_a / BeSD21_a
-    in 2022 and off the 2023 filter questions (BeSD19 = non, BeSD20 != "pas du
-    tout satisfait(e)"), and
-  - counts a 2023 child the battery was never read out to as a "no" on each
-    reason rather than as a missing value, so every variable keeps the same
-    denominator -- all children in the age window -- in both years.
-
-That keeps each year internally consistent, but it does not make the two years
-equivalent: 2023 only let the most dissatisfied 5% name a problem, so its
-besd21_* rates are structurally far below 2022's. Compare within a year, across
-provinces and zones, rather than across years.
 
 Province and zone names are canonicalised against
 data/output/boundaries/zones.geojson so the output joins directly onto the
@@ -111,606 +40,28 @@ R step can be re-run by hand:
     python scripts/process-ecv-caracteristics.py --workdir /tmp/ecv-carac-debug
 """
 
-from __future__ import annotations
-
 import argparse
-import json
-import re
 import shutil
 import subprocess
 import sys
 import tempfile
 import time
-import unicodedata
-from collections.abc import Mapping
-from dataclasses import dataclass
 from pathlib import Path
 
 import pandas as pd
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-INPUT_DIR = PROJECT_ROOT / "data" / "input" / "ecv"
-ZONES_GEOJSON = PROJECT_ROOT / "data" / "output" / "boundaries" / "zones.geojson"
-OUT_CSV = PROJECT_ROOT / "public" / "data" / "ecv_caracteristics.csv"
-
-YEARS = ("2022", "2023")
-
-# The ECV_<year>_*.dta exports are named after the year the file was produced,
-# which is the year *before* the survey actually went to the field. Rows are
-# labelled with that collection year, so the dashboard reports when the data
-# was gathered rather than when the export was cut. A file already named
-# after its fieldwork year (ECV2026) is passed through unchanged.
-COLLECTION_YEAR = {"2022": "2023", "2023": "2024"}
-AGE_MIN_MONTHS = 6
-AGE_MAX_MONTHS = 24
-
-# Survey design + geography columns, identical to the coverage script.
-STRATUM_COL = "q101"  # "Nom de la strate (de la province)"
-ZONE_COL = "q103"  # "Nom de la zone de santé"
-AREA_COL = "q105"  # "Nom de la grappe (de l'Aire de santé)" -- the PSU
-WEIGHT_COL = "ponderation"
-AGE_COL = "vs25"
-MILIEU_COL = "q108"  # "Milieu de localisation du ménage"
-
-# `q108` modalities, per the Stata value labels: 1 = Urbain, 2 = Rurale.
-MILIEU_BY_CODE = {1: "urbain", 2: "rural"}
-
-# Every domain is estimated once per entry: "all" is the whole sample -- the
-# only thing the file carried before the milieu split -- and the other two are
-# the q108 modalities. Urban zone domains are sparse (only ~190 of the ~505
-# zones have any urban child), so expect empty cells and wide intervals there.
-MILIEUX = ("all", *MILIEU_BY_CODE.values())
-
-
-@dataclass(frozen=True)
-class Source:
-    """Where one indicator's answer sits in one survey file, and how it is coded.
-
-    `yes` and `no` are the source codes counted as 1 and 0; every other code
-    (and a blank cell) becomes a missing value, which drops the child from that
-    variable's denominator only -- "ne sait pas" is not evidence of "no".
-
-    `gate` names the filter question that decides whether `column` was asked at
-    all, as (column, the codes meaning "asked"). A child whose gate answer sits
-    outside those codes was skipped by the questionnaire's own routing, so the
-    blank cell means "did not report this" -- a 0, not a missing value.
-    """
-
-    column: str
-    yes: tuple[int, ...]
-    no: tuple[int, ...]
-    gate: tuple[str, tuple[int, ...]] | None = None
-
-
-@dataclass(frozen=True)
-class Indicator:
-    """One yes/no variable and the per-year columns it is built from.
-
-    `sources` is keyed by survey year, with ANY_YEAR as the fallback for the
-    years that have no entry of their own. The two ECV rounds re-cut several of
-    the BeSD questions (see the module docstring), so the same variable can
-    legitimately come from a different column -- or from a filter question --
-    depending on the year.
-    """
-
-    key: str
-    label: str
-    sources: Mapping[str, Source]
-
-    def source(self, year: str) -> Source | None:
-        return self.sources.get(year) or self.sources.get(ANY_YEAR)
-
-
-ANY_YEAR = "*"
-
-
-def every_year(
-    column: str,
-    yes: tuple[int, ...],
-    no: tuple[int, ...],
-) -> dict[str, Source]:
-    """Same column, same coding, in every survey round."""
-    return {ANY_YEAR: Source(column, yes, no)}
-
-
-def scale_modality(column: str, code: int, scale: tuple[int, ...]) -> dict[str, Source]:
-    """One modality of an ordered scale: this code vs every other code.
-
-    Charted as a stacked bar, so the modalities of one question add up to 100%
-    of the children who answered it.
-    """
-    return every_year(column, (code,), tuple(c for c in scale if c != code))
-
-
-# In 2022 the "why is it difficult / what is the problem" batteries were read
-# out to every caregiver. In 2023 they are filtered: only the caregivers who
-# said access is difficult (BeSD19 = 1) or that they are not at all satisfied
-# (BeSD20 = 1) were asked, so everyone else has a blank cell that means "did
-# not report this problem".
-GATE_ACCES = ("BeSD19", (1,))
-GATE_SATISFACTION = ("BeSD20", (1,))
-
-LIKERT4 = (1, 2, 3, 4)
-
-
-def reason(column: str, gate: tuple[str, tuple[int, ...]]) -> dict[str, Source]:
-    """One option of a multi-select battery: asked of everyone in 2022, gated in 2023."""
-    return {
-        "2022": Source(column, (1,), (2,)),
-        "2023": Source(column, (1,), (2,), gate),
-    }
-
-
-# Output order: this is the order the chart's variables appear in.
-INDICATORS: tuple[Indicator, ...] = (
-    # -- Document de vaccination -------------------------------------------
-    # vs26: 1 = carte seule, 2 = autre document seul, 3 = les deux, 4 = rien.
-    Indicator(
-        "possession_carte", "Possession de carte", every_year("vs26", (1, 3), (2, 4))
-    ),
-    Indicator(
-        "carte_ou_document", "Carte ou document", every_year("vs26", (1, 2, 3), (4,))
-    ),
-    # -- Mere / gardienne ---------------------------------------------------
-    Indicator("mere", "Mère", every_year("qa100", (1,), (2,))),
-    Indicator("gardienne", "Gardienne", every_year("qa100", (2,), (1,))),
-    # -- Enregistrement de la naissance -------------------------------------
-    # vs25d: 1 = oui vu, 2 = oui pas vu, 3 = non (8 = ne sait pas -> missing).
-    Indicator(
-        "certificat_naissance",
-        "Certificat de naissance",
-        every_year("vs25d", (1, 2), (3,)),
-    ),
-    # vs25e: 1 = oui, 2 = non (99 = NSP -> missing).
-    Indicator(
-        "naissance_enregistree",
-        "Naissance enregistrée",
-        every_year("vs25e", (1,), (2,)),
-    ),
-    # -- BeSD4: importance percue des vaccins -------------------------------
-    # 1 = pas du tout, 2 = quelque peu, 3 = moyennement, 4 = tres important.
-    Indicator(
-        "besd4_pas_important",
-        "Pas du tout important",
-        scale_modality("BeSD4", 1, LIKERT4),
-    ),
-    Indicator(
-        "besd4_peu_important",
-        "Quelque peu important",
-        scale_modality("BeSD4", 2, LIKERT4),
-    ),
-    Indicator(
-        "besd4_moyen_important",
-        "Moyennement important",
-        scale_modality("BeSD4", 3, LIKERT4),
-    ),
-    Indicator(
-        "besd4_tres_important", "Très important", scale_modality("BeSD4", 4, LIKERT4)
-    ),
-    # -- BeSD6: confiance dans les agents de sante --------------------------
-    # 1 = aucune, 2 = limitee, 3 = moyenne, 4 = grande confiance.
-    Indicator(
-        "besd6_aucune_confiance",
-        "Aucune confiance",
-        scale_modality("BeSD6", 1, LIKERT4),
-    ),
-    Indicator(
-        "besd6_confiance_limitee",
-        "Confiance limitée",
-        scale_modality("BeSD6", 2, LIKERT4),
-    ),
-    Indicator(
-        "besd6_confiance_moyenne",
-        "Confiance moyenne",
-        scale_modality("BeSD6", 3, LIKERT4),
-    ),
-    Indicator(
-        "besd6_grande_confiance",
-        "Grande confiance",
-        scale_modality("BeSD6", 4, LIKERT4),
-    ),
-    # -- BeSD19: difficultes d'acces (BeSD19_a .. BeSD19_e) -----------------
-    # "Aucune difficulte" is its own option in 2022 (BeSD19a) and the "Non"
-    # answer of the 2023 filter question (BeSD19); the four reasons follow.
-    Indicator(
-        "besd19_aucune_difficulte",
-        "Aucune difficulté",
-        {"2022": Source("BeSD19a", (1,), (2,)), "2023": Source("BeSD19", (2,), (1,))},
-    ),
-    Indicator("besd19_trajet", "Trajet difficile", reason("BeSD19b", GATE_ACCES)),
-    Indicator(
-        "besd19_horaires", "Horaires peu pratiques", reason("BeSD19c", GATE_ACCES)
-    ),
-    Indicator("besd19_refoulement", "Refoulement", reason("BeSD19d", GATE_ACCES)),
-    Indicator("besd19_attente", "Attente trop longue", reason("BeSD19e", GATE_ACCES)),
-    # -- BeSD20: problemes des services (BeSD21_a .. BeSD21_h) --------------
-    # Same shape: "Rien, vous etes satisfait(e)" is BeSD21a in 2022 and, in
-    # 2023, every caregiver the BeSD21 battery was not read out to.
-    Indicator(
-        "besd21_satisfait",
-        "Rien, satisfait(e)",
-        {
-            "2022": Source("BeSD21a", (1,), (2,)),
-            "2023": Source("BeSD20", (2, 3, 4), (1,)),
-        },
-    ),
-    Indicator(
-        "besd21_rupture", "Vaccin indisponible", reason("BeSD21b", GATE_SATISFACTION)
-    ),
-    Indicator(
-        "besd21_ouverture", "Ouverture tardive", reason("BeSD21c", GATE_SATISFACTION)
-    ),
-    Indicator(
-        "besd21_attente", "Attente trop longue", reason("BeSD21d", GATE_SATISFACTION)
-    ),
-    Indicator(
-        "besd21_proprete", "Manque de propreté", reason("BeSD21e", GATE_SATISFACTION)
-    ),
-    Indicator(
-        "besd21_formation", "Personnel mal formé", reason("BeSD21f", GATE_SATISFACTION)
-    ),
-    Indicator(
-        "besd21_respect",
-        "Personnel irrespectueux",
-        reason("BeSD21g", GATE_SATISFACTION),
-    ),
-    Indicator(
-        "besd21_temps",
-        "Trop peu de temps accordé",
-        reason("BeSD21h", GATE_SATISFACTION),
-    ),
-)
-
-INDICATOR_BY_KEY = {ind.key: ind for ind in INDICATORS}
-VARIABLES = [ind.key for ind in INDICATORS]
-
-# Variable sets that carve up a single question, one variable per modality, so
-# their rates have to add up to 100% of the children who answered it. Checked
-# on every run by report_indicators(). The multi-select BeSD19 / BeSD21
-# batteries are deliberately absent: a caregiver can pick several options
-# there, so those variables overlap and do not sum to anything in particular.
-PARTITIONS: tuple[tuple[str, tuple[str, ...]], ...] = (
-    ("qa100", ("mere", "gardienne")),
-    (
-        "BeSD4",
-        (
-            "besd4_pas_important",
-            "besd4_peu_important",
-            "besd4_moyen_important",
-            "besd4_tres_important",
-        ),
-    ),
-    (
-        "BeSD6",
-        (
-            "besd6_aucune_confiance",
-            "besd6_confiance_limitee",
-            "besd6_confiance_moyenne",
-            "besd6_grande_confiance",
-        ),
-    ),
-)
+import scripts.ecv.constants as cst
+from scripts.ecv import indicators, utils
 
 # Survey design + geography columns, required in every file.
-GEO_COLUMNS = [STRATUM_COL, ZONE_COL, AREA_COL, WEIGHT_COL, AGE_COL, MILIEU_COL]
-
-
-def source_columns(variables: list[str], year: str) -> list[str]:
-    """Columns `year`'s file has to provide for `variables`: answers and gates."""
-    needed: list[str] = []
-    for key in variables:
-        src = INDICATOR_BY_KEY[key].source(year)
-        if src is None:
-            continue
-        needed.append(src.column)
-        if src.gate is not None:
-            needed.append(src.gate[0])
-    return sorted(set(needed))
-
-
-NAME_PREFIX_RE = re.compile(r"^[A-Za-z]{2}\s+")
-NAME_SUFFIX_RE = re.compile(
-    r"\s+(Province|Zone\s+de\s+Sant\w*|Aire\s+de\s+Sant\w*)\s*$",
-    flags=re.IGNORECASE,
-)
-
-R_SCRIPT = r"""
-# Design-based estimation of the ECV characteristics with 95% confidence intervals. 
-# Called by scripts/process-ecv-caracteristics.py. Reads the child-level extract, 
-# writes one row per (domain, indicator) with the point estimate and CI bounds as proportions.
-
-if (!requireNamespace("survey", quietly = TRUE)) {
-  stop("the R package `survey` is not installed; run: ",
-       'install.packages("survey", repos = "https://cloud.r-project.org")')
-}
-suppressPackageStartupMessages(library(survey))
-
-# Subsetting to a single zone can leave a stratum contributing one PSU; centre
-# those on the grand mean rather than dropping the variance contribution.
-options(survey.lonely.psu = "adjust")
-options(nwarnings = 10000L)
-
-# Which estimator actually produced each figure. Reported at the end so a
-# silent mass fallback (the symptom of a broken domain subset) is visible.
-tally <- new.env(parent = emptyenv())
-tally$logit <- 0L
-tally$beta <- 0L
-tally$failed <- 0L
-
-warn_log <- new.env(parent = emptyenv())
-
-# Called from withCallingHandlers: record the warning against the domain that
-# raised it, then muffle it so it does not also fill R's deferred buffer.
-record_warning <- function(w, context) {
-  key <- conditionMessage(w)
-  entry <- warn_log[[key]]
-  if (is.null(entry)) {
-    warn_log[[key]] <- list(count = 1L, example = context)
-  } else {
-    entry$count <- entry$count + 1L
-    warn_log[[key]] <- entry
-  }
-  invokeRestart("muffleWarning")
-}
-
-# message() writes to stderr, which the Python side forwards to the terminal.
-report_warnings <- function() {
-  keys <- ls(warn_log, all.names = TRUE)
-  if (length(keys) == 0L) {
-    message("no warnings from the survey estimation")
-    return(invisible(NULL))
-  }
-  counts <- vapply(keys, function(k) warn_log[[k]]$count, integer(1))
-  message(sprintf(
-    "\n%d distinct warning(s), %d in total, from the survey estimation:",
-    length(keys), sum(counts)
-  ))
-  for (k in keys[order(-counts)]) {
-    entry <- warn_log[[k]]
-    message(sprintf("  [%dx] %s", entry$count, k))
-    message(sprintf("        first seen at: %s", entry$example))
-  }
-}
-
-args <- commandArgs(trailingOnly = TRUE)
-in_csv <- args[1]
-out_csv <- args[2]
-indicators <- strsplit(args[3], ",", fixed = TRUE)[[1]]
-labels_csv <- args[4]
-
-# Domains travel as integer ids (accents do not survive the round trip
-# reliably), so read the id -> name table back in: a warning that names a
-# number the reader cannot act on is not worth printing.
-labels <- read.csv(labels_csv, stringsAsFactors = FALSE, encoding = "UTF-8")
-label_of <- function(level, id) {
-  hit <- labels$name[labels$level == level & labels$id == id]
-  if (length(hit) == 0L) paste0(level, " id=", id) else paste0(level, " ", hit[1])
-}
-
-d <- read.csv(in_csv, stringsAsFactors = FALSE)
-message(sprintf(
-  "  [R] %d rows, %d indicator(s): %s",
-  nrow(d), length(indicators), paste(indicators, collapse = ", ")
-))
-
-missing <- setdiff(indicators, names(d))
-if (length(missing) > 0L) {
-  stop(sprintf("indicator column(s) absent from the extract: %s",
-               paste(missing, collapse = ", ")))
-}
-
-# Stratified two-stage design: strata = province, PSU = aire de santé,
-# weights = `ponderation`. nest = TRUE because PSU ids are only
-# unique within a stratum.
-design <- svydesign(
-  ids = ~psu_id,
-  strata = ~stratum_id,
-  weights = ~weight,
-  data = d,
-  nest = TRUE
-)
-
-# Take a domain (subpopulation) of the design, i.e. what subset() does: drop
-# the rows outside it. The theoretically tidier alternative, `drop = FALSE`,
-# keeps every row and sets the excluded weights to zero so each stratum retains
-# its full PSU count -- but with svyciprop it returns NaN or degenerate 0/100
-# for most zone domains (whole strata end up entirely zero-weighted), so this
-# uses the documented subset() behaviour instead. The cost is that a zone's
-# stratum is reduced to that zone's PSUs, which makes its interval slightly
-# conservative; survey.lonely.psu = "adjust" covers the resulting small strata.
-domain <- function(dsn, keep) suppressWarnings(dsn[keep, ])
-
-# svyciprop's logit interval keeps the bounds inside [0, 1] and stays sensible
-# for the small, near-degenerate zone domains; fall back to the beta interval
-# on the domains where the logit fit cannot be evaluated.
-prop_ci <- function(indicator, dsn) {
-  values <- dsn$variables[[indicator]]
-  keep <- !is.na(values) & is.finite(dsn$prob)
-  if (!any(keep)) {
-    return(c(NA_real_, NA_real_, NA_real_))
-  }
-  dsn <- domain(dsn, keep)
-  f <- as.formula(paste0("~", indicator))
-
-  # A degenerate fit does not necessarily raise: svyciprop can return NaN, or a
-  # point estimate with NaN bounds, without erroring. So tryCatch alone is not
-  # enough -- every tier's result is validated before it is accepted.
-  #
-  # "Collapsed" (lo == hi) is rejected as well as non-finite. When a domain has
-  # zero events, the logit fit runs its intercept off to -Inf and returns the
-  # interval [0, 0], which claims certainty the true rate is exactly 0. With
-  # ~120 children the honest upper bound is around 3/120, so [0, 0] is false
-  # precision, not a tight estimate.
-  usable <- function(v) {
-    length(v) == 3L && all(is.finite(v)) && v[3] > v[2] &&
-      v[2] >= 0 && v[3] <= 1
-  }
-
-  estimate <- function(method) {
-    tryCatch(
-      {
-        est <- svyciprop(f, dsn, method = method, level = 0.95)
-        ci <- as.numeric(confint(est))
-        c(as.numeric(est), ci[1], ci[2])
-      },
-      error = function(e) c(NA_real_, NA_real_, NA_real_)
-    )
-  }
-
-  logit <- estimate("logit")
-  if (usable(logit)) {
-    tally$logit <- tally$logit + 1L
-    return(logit)
-  }
-
-  # The beta method inverts the incomplete beta function against the effective
-  # sample size, the way binom.test does. It fits no glm, so it cannot fail to
-  # converge, and it stays inside [0, 1] and gives a real upper bound at zero
-  # events -- the two things the logit and Wald intervals get wrong here.
-  beta <- estimate("beta")
-  if (usable(beta)) {
-    tally$beta <- tally$beta + 1L
-    return(beta)
-  }
-
-  # Keep a usable point estimate even when neither interval is trustworthy.
-  point <- if (is.finite(logit[1])) logit[1] else beta[1]
-  tally$failed <- tally$failed + 1L
-  c(point, NA_real_, NA_real_)
-}
-
-# Domains to estimate: the whole sample, then each province, then each zone.
-province_ids <- sort(unique(d$province_id))
-zone_ids <- sort(unique(d$zone_id))
-
-domains <- c(
-  list(list(level = "national", id = -1L, label = "national",
-            keep = rep(TRUE, nrow(d)))),
-  lapply(province_ids, function(pid) {
-    list(level = "province", id = pid, label = label_of("province", pid),
-         keep = d$province_id == pid)
-  }),
-  lapply(zone_ids, function(zid) {
-    list(level = "zone", id = zid, label = label_of("zone", zid),
-         keep = d$zone_id == zid)
-  })
-)
-message(sprintf(
-  "  [R] %d domains (1 national, %d provinces, %d zones) x %d indicators = %d estimates",
-  length(domains), length(province_ids), length(zone_ids), length(indicators),
-  length(domains) * length(indicators)
-))
-
-n <- length(domains) * length(indicators)
-res_level <- character(n)
-res_id <- integer(n)
-res_indicator <- character(n)
-res_est <- numeric(n)
-res_low <- numeric(n)
-res_high <- numeric(n)
-
-started <- Sys.time()
-row <- 1L
-for (i in seq_along(domains)) {
-  dom <- domains[[i]]
-  dsn <- if (dom$level == "national") design else domain(design, dom$keep)
-  for (ind in indicators) {
-    context <- paste0(dom$label, ", indicator=", ind)
-    v <- withCallingHandlers(
-      prop_ci(ind, dsn),
-      warning = function(w) record_warning(w, context)
-    )
-    res_level[row] <- dom$level
-    res_id[row] <- as.integer(dom$id)
-    res_indicator[row] <- ind
-    res_est[row] <- v[1]
-    res_low[row] <- v[2]
-    res_high[row] <- v[3]
-    row <- row + 1L
-  }
-  # Progress, so a run that is merely slow is distinguishable from one stuck.
-  if (i %% 50L == 0L || i == length(domains)) {
-    elapsed <- max(0, as.numeric(difftime(Sys.time(), started, units = "secs")))
-    message(sprintf(
-      "  [R] %d/%d domains, %d estimates, %.0fs elapsed (~%.0fs left)",
-      i, length(domains), row - 1L, elapsed,
-      elapsed / i * (length(domains) - i)
-    ))
-  }
-}
-
-out <- data.frame(
-  level = res_level,
-  domain_id = res_id,
-  indicator = res_indicator,
-  est = res_est,
-  low = res_low,
-  high = res_high,
-  stringsAsFactors = FALSE
-)
-
-write.csv(out, out_csv, row.names = FALSE, na = "")
-
-message(sprintf(
-  "  [R] estimates: %d logit CI, %d beta CI (boundary domains), %d without a CI",
-  tally$logit, tally$beta, tally$failed
-))
-
-report_warnings()
-"""
-
-
-def clean_name(series: pd.Series) -> pd.Series:
-    """Strip the province code prefix and the level suffix off."""
-    return (
-        series.astype(str)
-        .str.replace(NAME_PREFIX_RE, "", regex=True)
-        .str.replace(NAME_SUFFIX_RE, "", regex=True)
-        .str.strip()
-    )
-
-
-def normalize(name: str) -> str:
-    """Accent- and case-insensitive key for joining names across sources."""
-    stripped = NAME_SUFFIX_RE.sub("", NAME_PREFIX_RE.sub("", str(name))).strip()
-    decomposed = unicodedata.normalize("NFD", stripped)
-    return "".join(c for c in decomposed if not unicodedata.combining(c)).lower()
-
-
-def load_geojson_names(path: Path) -> tuple[dict[str, str], dict[str, tuple[str, str]]]:
-    """Canonical province / zone names from the dashboard's zone boundaries."""
-    if not path.exists():
-        raise FileNotFoundError(
-            f"zone boundaries not found: {path}\n"
-            "Run scripts/generate-boundaries.py first."
-        )
-    geo = json.loads(path.read_text(encoding="utf-8"))
-    features = geo.get("features", [])
-    provinces: dict[str, str] = {}
-    zones: dict[str, tuple[str, str]] = {}
-    for feature in features:
-        props = feature.get("properties", {})
-        raw_province = props.get("level_2_name")
-        raw_zone = props.get("level_3_name")
-        if not raw_province or not raw_zone:
-            print(f"  WARNING: geojson feature without a name: {props}")
-            continue
-        province = NAME_SUFFIX_RE.sub(
-            "", NAME_PREFIX_RE.sub("", str(raw_province))
-        ).strip()
-        zone = NAME_SUFFIX_RE.sub("", NAME_PREFIX_RE.sub("", str(raw_zone))).strip()
-        provinces[normalize(province)] = province
-        zones[f"{normalize(province)}|{normalize(zone)}"] = (province, zone)
-    print(
-        f"  {path.relative_to(PROJECT_ROOT)}: {len(features)} features -> "
-        f"{len(provinces)} provinces, {len(zones)} zones"
-    )
-    if len(zones) != len(features):
-        print(
-            f"  WARNING: {len(features) - len(zones)} feature(s) collapsed onto an "
-            "existing province|zone key (duplicate geometry?)"
-        )
-    return provinces, zones
+GEO_COLUMNS = [
+    cst.STRATUM_COL,
+    cst.ZONE_COL,
+    cst.AREA_COL,
+    cst.WEIGHT_COL,
+    cst.AGE_COL,
+    cst.MILIEU_COL,
+]
 
 
 def canonicalize_names(
@@ -724,7 +75,7 @@ def canonicalize_names(
     could not be drawn on the map anyway, and keeping them would quietly
     inflate the province and national totals.
     """
-    key = df["province"].map(normalize) + "|" + df["zone"].map(normalize)
+    key = df["province"].map(utils.normalize) + "|" + df["zone"].map(utils.normalize)
     matched = key.map(zones)
     unknown = matched.isna()
 
@@ -747,7 +98,9 @@ def canonicalize_names(
     else:
         print("  every survey zone matched a boundary zone")
 
-    unknown_provinces = sorted(set(df["province"].map(normalize)) - set(provinces))
+    unknown_provinces = sorted(
+        set(df["province"].map(utils.normalize)) - set(provinces)
+    )
     if unknown_provinces:
         print(f"  WARNING: province(s) absent from the boundaries: {unknown_provinces}")
 
@@ -759,7 +112,11 @@ def canonicalize_names(
 
     covered = set(
         df["zone_key"].map(
-            lambda k: normalize(k.split(" | ")[0]) + "|" + normalize(k.split(" | ")[1])
+            lambda k: (
+                utils.normalize(k.split(" | ")[0])
+                + "|"
+                + utils.normalize(k.split(" | ")[1])
+            )
         )
     )
     never_surveyed = sorted(
@@ -787,8 +144,8 @@ def build_indicators(df: pd.DataFrame, variables: list[str], year: str) -> pd.Da
     missing_source: list[str] = []
 
     for key in variables:
-        ind = INDICATOR_BY_KEY[key]
-        src = ind.source(year)
+        indicator = indicators.BY_KEY[key]
+        src = indicator.source(year)
 
         # A variable the round simply does not carry: leave it entirely
         # missing rather than guess, and say so.
@@ -844,7 +201,7 @@ def build_indicators(df: pd.DataFrame, variables: list[str], year: str) -> pd.Da
     if unexpected:
         print("  codes outside the yes/no lists (dropped as missing):")
         for key, pairs in unexpected.items():
-            src = INDICATOR_BY_KEY[key].source(year)
+            src = indicators.BY_KEY[key].source(year)
             shown = ", ".join(f"{code:g} x{count:,}" for code, count in pairs)
             print(f"    {key:<26} ({src.column if src else '?'}) {shown}")
 
@@ -879,7 +236,7 @@ def report_indicators(df: pd.DataFrame, variables: list[str]) -> None:
     # The modalities of one question have to add up: exactly one of them is a
     # 1 for every child who answered. A drift here means the source column
     # picked up a code the modality lists do not cover.
-    for column, keys in PARTITIONS:
+    for column, keys in indicators.PARTITIONS:
         if not set(keys) <= set(variables):
             continue
         answered = df[list(keys)].notna().all(axis=1)
@@ -922,7 +279,7 @@ def load_year(
             f"{dta_path.name} is missing the design/geography column(s) "
             f"{absent_geo}; it cannot be used for a design-based estimate."
         )
-    wanted = source_columns(variables, year)
+    wanted = indicators.source_columns(variables, year)
     absent = [c for c in wanted if c not in available]
     if absent:
         print(
@@ -937,25 +294,27 @@ def load_year(
         f"{time.perf_counter() - started:.1f}s"
     )
 
-    age = pd.to_numeric(raw[AGE_COL], errors="coerce")
+    age = pd.to_numeric(raw[cst.AGE_COL], errors="coerce")
     in_range = age.between(age_min, age_max)
     print(
-        f"  age filter `{AGE_COL}`: {len(raw):,} children -> "
+        f"  age filter `{cst.AGE_COL}`: {len(raw):,} children -> "
         f"{int(in_range.sum()):,} aged {age_min}-{age_max} months "
         f"({int((~in_range).sum()):,} dropped, {int(age.isna().sum()):,} with no age)"
     )
     if in_range.sum() == 0:
         raise ValueError(
             f"no child aged {age_min}-{age_max} months in {dta_path.name}; "
-            f"`{AGE_COL}` spans {age.min()}-{age.max()}"
+            f"`{cst.AGE_COL}` spans {age.min()}-{age.max()}"
         )
     df = raw[in_range].copy()
 
-    df["province"] = clean_name(df[STRATUM_COL])
-    df["zone"] = clean_name(df[ZONE_COL])
-    df["area"] = clean_name(df[AREA_COL])
-    df["weight"] = pd.to_numeric(df[WEIGHT_COL], errors="coerce")
-    df["milieu"] = pd.to_numeric(df[MILIEU_COL], errors="coerce").map(MILIEU_BY_CODE)
+    df["province"] = utils.clean_name(df[cst.STRATUM_COL])
+    df["zone"] = utils.clean_name(df[cst.ZONE_COL])
+    df["area"] = utils.clean_name(df[cst.AREA_COL])
+    df["weight"] = pd.to_numeric(df[cst.WEIGHT_COL], errors="coerce")
+    df["milieu"] = pd.to_numeric(df[cst.MILIEU_COL], errors="coerce").map(
+        cst.MILIEU_BY_CODE
+    )
 
     # The milieu split is a filter, not an indicator: a child whose `q108` is
     # missing or carries an unexpected code still counts in the "all" domain,
@@ -964,14 +323,14 @@ def load_year(
     unknown_milieu = df["milieu"].isna()
     seen = df["milieu"].value_counts().to_dict()
     print(
-        f"  milieu `{MILIEU_COL}`: "
+        f"  milieu `{cst.MILIEU_COL}`: "
         + ", ".join(f"{name} {n:,}" for name, n in sorted(seen.items()))
         + f" ({int(unknown_milieu.sum()):,} with no milieu)"
     )
     if unknown_milieu.any():
         print(
             f"  WARNING: {int(unknown_milieu.sum()):,} children carry a "
-            f"`{MILIEU_COL}` outside {sorted(MILIEU_BY_CODE)}; they are counted "
+            f"`{cst.MILIEU_COL}` outside {sorted(cst.MILIEU_BY_CODE)}; they are counted "
             "in the `all` milieu only"
         )
 
@@ -980,7 +339,9 @@ def load_year(
 
     no_weight = int(df["weight"].isna().sum())
     if no_weight:
-        print(f"  WARNING: dropping {no_weight:,} children without a `{WEIGHT_COL}`")
+        print(
+            f"  WARNING: dropping {no_weight:,} children without a `{cst.WEIGHT_COL}`"
+        )
         df = df.dropna(subset=["weight"])
     nonpositive = int((df["weight"] <= 0).sum())
     if nonpositive:
@@ -1078,10 +439,8 @@ def run_survey_r(
     in_csv = workdir / "ecv_carac_extract.csv"
     out_csv = workdir / "ecv_carac_estimates.csv"
     labels_csv = workdir / "ecv_carac_domains.csv"
-    r_file = workdir / "ecv_carac_survey.R"
     extract.to_csv(in_csv, index=False)
     labels.to_csv(labels_csv, index=False, encoding="utf-8")
-    r_file.write_text(R_SCRIPT, encoding="utf-8")
     print(
         f"  wrote the R extract: {len(extract):,} rows, "
         f"{len(provinces)} strata, {len(psus)} PSUs -> {in_csv}"
@@ -1093,7 +452,7 @@ def run_survey_r(
         [
             rscript,
             "--vanilla",
-            str(r_file),
+            str(cst.R_CARACTERISTICS_PATH),
             str(in_csv),
             str(out_csv),
             ",".join(variables),
@@ -1266,7 +625,7 @@ def process_milieu(
     if unmatched:
         print(f"  WARNING: {unmatched} domain(s) got no estimate from R")
     out["nb_children"] = out["nb_children"].astype("Int64")
-    out["year"] = COLLECTION_YEAR.get(year, year)
+    out["year"] = cst.COLLECTION_YEAR.get(year, year)
     out["milieu"] = milieu
     print(f"  {len(out)} rows for {year} / {milieu}")
     return out.drop(columns=["domain_key"])
@@ -1330,45 +689,45 @@ def main() -> None:
     parser.add_argument(
         "--output",
         type=Path,
-        default=OUT_CSV,
-        help=f"destination CSV (default: {OUT_CSV.relative_to(PROJECT_ROOT)})",
+        default=cst.OUT_CARACTERISTICS_PATH,
+        help=f"destination CSV (default: {cst.OUT_CARACTERISTICS_PATH.relative_to(cst.PROJECT_ROOT)})",
     )
     parser.add_argument(
         "--boundaries",
         type=Path,
-        default=ZONES_GEOJSON,
-        help=f"zone boundaries (default: {ZONES_GEOJSON.relative_to(PROJECT_ROOT)})",
+        default=cst.ZONES_GEOJSON,
+        help=f"zone boundaries (default: {cst.ZONES_GEOJSON.relative_to(cst.PROJECT_ROOT)})",
     )
     parser.add_argument(
         "--years",
-        default=",".join(YEARS),
+        default=",".join(cst.YEARS),
         help=f"comma-separated source-file years to process, as named in the\n"
-        f"ECV_<year>_*.dta filenames (default: {','.join(YEARS)})",
+        f"ECV_<year>_*.dta filenames (default: {','.join(cst.YEARS)})",
     )
     parser.add_argument(
         "--variables",
-        default=",".join(VARIABLES),
+        default=",".join(indicators.VARIABLES),
         help="comma-separated subset of variables, for quick debugging runs "
-        f"(default: all {len(VARIABLES)})",
+        f"(default: all {len(indicators.VARIABLES)})",
     )
     parser.add_argument(
         "--milieux",
-        default=",".join(MILIEUX),
+        default=",".join(cst.MILIEUX),
         help="comma-separated subset of milieu domains to estimate; each one "
         "costs a full R pass over every province and zone "
-        f"(default: {','.join(MILIEUX)})",
+        f"(default: {','.join(cst.MILIEUX)})",
     )
     parser.add_argument(
         "--age-min",
         type=int,
-        default=AGE_MIN_MONTHS,
-        help=f"youngest age in completed months (default: {AGE_MIN_MONTHS})",
+        default=cst.AGE_MIN_MONTHS,
+        help=f"youngest age in completed months (default: {cst.AGE_MIN_MONTHS})",
     )
     parser.add_argument(
         "--age-max",
         type=int,
-        default=AGE_MAX_MONTHS,
-        help=f"oldest age in completed months (default: {AGE_MAX_MONTHS})",
+        default=cst.AGE_MAX_MONTHS,
+        help=f"oldest age in completed months (default: {cst.AGE_MAX_MONTHS})",
     )
     parser.add_argument(
         "--rscript",
@@ -1389,33 +748,33 @@ def main() -> None:
 
     started = time.perf_counter()
     print("ECV caracteristics")
-    print(f"  input dir : {INPUT_DIR}")
+    print(f"  input dir : {cst.INPUT_DIR}")
     print(f"  output    : {args.output}")
     print(f"  age window: {args.age_min}-{args.age_max} completed months")
 
     years = [y.strip() for y in args.years.split(",") if y.strip()]
     variables = [v.strip() for v in args.variables.split(",") if v.strip()]
-    unknown = [v for v in variables if v not in INDICATOR_BY_KEY]
+    unknown = [v for v in variables if v not in indicators.BY_KEY]
     if unknown:
         raise SystemExit(
-            f"unknown variable(s): {unknown}\nknown variables: {VARIABLES}"
+            f"unknown variable(s): {unknown}\nknown variables: {indicators.VARIABLES}"
         )
     milieux = [m.strip() for m in args.milieux.split(",") if m.strip()]
-    unknown = [m for m in milieux if m not in MILIEUX]
+    unknown = [m for m in milieux if m not in cst.MILIEUX]
     if unknown:
-        raise SystemExit(f"unknown milieu(x): {unknown}\nknown milieux: {MILIEUX}")
+        raise SystemExit(f"unknown milieu(x): {unknown}\nknown milieux: {cst.MILIEUX}")
     print(f"  years     : {years}")
     print(f"  variables : {len(variables)} -> {variables}")
     print(f"  milieux   : {milieux}")
 
     rscript = resolve_rscript(args.rscript)
-    provinces, zones = load_geojson_names(args.boundaries)
+    provinces, zones = utils.load_geojson_names(args.boundaries)
 
     frames = []
     for year in years:
-        matches = sorted(INPUT_DIR.glob(f"ECV_{year}_*.dta"))
+        matches = sorted(cst.INPUT_DIR.glob(f"ECV_{year}_*.dta"))
         if not matches:
-            raise FileNotFoundError(f"no ECV_{year}_*.dta in {INPUT_DIR}")
+            raise FileNotFoundError(f"no ECV_{year}_*.dta in {cst.INPUT_DIR}")
         if len(matches) > 1:
             print(
                 f"  WARNING: {len(matches)} files match ECV_{year}_*.dta, using "
@@ -1473,7 +832,7 @@ def main() -> None:
         )
         for variable in variables:
             print(
-                f"      {INDICATOR_BY_KEY[variable].label:<28} "
+                f"      {indicators.BY_KEY[variable].label:<28} "
                 f"{row[f'{variable}_pct']:>5} "
                 f"[{row[f'{variable}_low']}, {row[f'{variable}_high']}]"
             )
