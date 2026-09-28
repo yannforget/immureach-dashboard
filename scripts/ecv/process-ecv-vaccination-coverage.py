@@ -500,7 +500,9 @@ def run_survey_r(
         else (id_to_province[did] if level == "province" else id_to_zone[did])
         for level, did in zip(est["level"], est["domain_id"])
     ]
-    missing_ci = int(est["low"].isna().sum())
+    # An observed 0% / 100% has no CI by design; only flag the other domains.
+    boundary = est["est"].isin([0, 1])
+    missing_ci = int((est["low"].isna() & ~boundary).sum())
     if missing_ci:
         print(f"  WARNING: {missing_ci:,} estimate(s) came back without a CI")
     return est

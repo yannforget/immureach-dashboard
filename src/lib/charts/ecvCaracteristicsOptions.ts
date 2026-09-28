@@ -98,6 +98,8 @@ function buildHeatmapOptions(config: EcvCaracteristicsConfig): EChartsOption {
         const ci = area.values[series.key]
         if (ci?.low != null && ci?.high != null) {
           html += `<br/>IC 95%: ${ci.low.toFixed(1)}% – ${ci.high.toFixed(1)}%`
+        } else if (pct != null) {
+          html += '<br/>IC 95%: NA'
         }
         // Multi-select: the rows overlap, so no column total is meaningful.
         html += '<br/><span style="opacity:.7">Choix multiples — un enfant peut compter dans plusieurs lignes</span>'

@@ -37,22 +37,22 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,all,zone,Bas Uele,Poko,161,1,5,18,41.6,32.3,51.5,37.8,32.8,43.1
 2023,all,zone,Bas Uele,Titule,155,1,5,11,21.9,10.9,39.2,18.3,12.5,26.0
 2023,all,zone,Bas Uele,Viadana,150,1,5,13,38.1,25.0,53.1,30.1,27.1,33.2
-2023,all,zone,Equateur,Basankusu,179,1,5,27,66.9,46.0,82.7,0.0,0.0,0.0
+2023,all,zone,Equateur,Basankusu,179,1,5,27,66.9,46.0,82.7,0.0,,
 2023,all,zone,Equateur,Bikoro,178,1,5,21,64.4,38.4,84.0,3.8,0.3,35.2
-2023,all,zone,Equateur,Bolenge,181,1,5,11,42.8,26.0,61.5,0.0,0.0,0.0
+2023,all,zone,Equateur,Bolenge,181,1,5,11,42.8,26.0,61.5,0.0,,
 2023,all,zone,Equateur,Bolomba,172,1,5,29,34.6,19.6,53.3,15.5,0.9,78.8
 2023,all,zone,Equateur,Bomongo,180,1,5,16,50.0,46.0,54.0,1.7,0.3,9.1
-2023,all,zone,Equateur,Djombo,179,1,5,14,48.8,23.1,75.2,0.0,0.0,0.0
+2023,all,zone,Equateur,Djombo,179,1,5,14,48.8,23.1,75.2,0.0,,
 2023,all,zone,Equateur,Iboko,181,1,5,15,67.5,62.8,72.0,5.2,0.6,34.7
-2023,all,zone,Equateur,Ingende,181,1,5,19,67.3,42.2,85.3,0.0,0.0,0.0
+2023,all,zone,Equateur,Ingende,181,1,5,19,67.3,42.2,85.3,0.0,,
 2023,all,zone,Equateur,Irebu,180,1,5,7,49.2,43.0,55.4,2.1,0.4,11.8
 2023,all,zone,Equateur,Lilanga Bobangi,183,1,5,12,44.2,33.3,55.6,6.5,3.9,10.5
-2023,all,zone,Equateur,Lotumbe,180,1,5,18,79.0,55.7,91.8,0.0,0.0,0.0
+2023,all,zone,Equateur,Lotumbe,180,1,5,18,79.0,55.7,91.8,0.0,,
 2023,all,zone,Equateur,Lukolela,180,1,5,14,49.6,42.0,57.1,2.5,0.3,19.7
-2023,all,zone,Equateur,Makanza,180,1,5,17,36.2,19.4,57.1,0.0,0.0,0.0
-2023,all,zone,Equateur,Mampoko,179,1,5,13,28.3,16.1,44.8,0.0,0.0,0.0
+2023,all,zone,Equateur,Makanza,180,1,5,17,36.2,19.4,57.1,0.0,,
+2023,all,zone,Equateur,Mampoko,179,1,5,13,28.3,16.1,44.8,0.0,,
 2023,all,zone,Equateur,Mbandaka,176,1,5,16,47.0,19.0,77.1,21.1,1.9,78.8
-2023,all,zone,Equateur,Monieka,180,1,5,12,65.9,38.2,85.8,0.0,0.0,0.0
+2023,all,zone,Equateur,Monieka,180,1,5,12,65.9,38.2,85.8,0.0,,
 2023,all,zone,Equateur,Ntondo,164,1,5,14,62.1,39.6,80.5,15.2,4.4,41.5
 2023,all,zone,Equateur,Wangata,180,1,5,11,69.1,53.1,81.6,1.5,0.1,14.6
 2023,all,zone,Haut Katanga,Kafubu,151,1,5,13,58.3,36.4,77.3,12.7,7.0,21.9
@@ -82,7 +82,7 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,all,zone,Haut Katanga,Sakania,171,1,5,17,66.0,45.1,82.1,21.5,11.2,37.3
 2023,all,zone,Haut Katanga,Tshamilemba,150,1,5,15,72.8,60.9,82.1,3.5,1.8,6.9
 2023,all,zone,Haut Katanga,Vangu,155,1,5,11,66.8,33.4,89.0,18.4,5.5,46.7
-2023,all,zone,Haut Lomami,Baka,130,1,4,4,97.4,83.9,99.6,0.0,0.0,0.0
+2023,all,zone,Haut Lomami,Baka,130,1,4,4,97.4,83.9,99.6,0.0,,
 2023,all,zone,Haut Lomami,Bukama,151,1,5,23,95.0,84.2,98.5,0.8,0.1,8.2
 2023,all,zone,Haut Lomami,Butumba,150,1,5,16,81.3,50.0,95.0,9.6,4.5,19.3
 2023,all,zone,Haut Lomami,Kabondo Dianda,151,1,5,20,97.6,89.8,99.5,0.8,0.1,8.2
@@ -94,10 +94,10 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,all,zone,Haut Lomami,Kinkondja,151,1,5,29,95.4,90.6,97.8,4.0,1.5,10.5
 2023,all,zone,Haut Lomami,Kitenge,150,1,5,29,79.5,69.2,87.1,7.6,4.2,13.2
 2023,all,zone,Haut Lomami,Lwamba,159,1,5,20,92.7,73.5,98.3,0.6,0.0,6.7
-2023,all,zone,Haut Lomami,Malemba Nkulu,150,1,5,23,97.2,95.4,98.3,0.0,0.0,0.0
-2023,all,zone,Haut Lomami,Mukanga,150,1,5,19,95.5,89.2,98.2,0.0,0.0,0.0
-2023,all,zone,Haut Lomami,Mulongo,150,1,5,23,98.6,84.7,99.9,0.0,0.0,0.0
-2023,all,zone,Haut Lomami,Songa,160,1,5,29,96.5,85.9,99.2,0.0,0.0,0.0
+2023,all,zone,Haut Lomami,Malemba Nkulu,150,1,5,23,97.2,95.4,98.3,0.0,,
+2023,all,zone,Haut Lomami,Mukanga,150,1,5,19,95.5,89.2,98.2,0.0,,
+2023,all,zone,Haut Lomami,Mulongo,150,1,5,23,98.6,84.7,99.9,0.0,,
+2023,all,zone,Haut Lomami,Songa,160,1,5,29,96.5,85.9,99.2,0.0,,
 2023,all,zone,Haut Uele,Aba,180,1,5,16,30.6,23.1,39.2,27.5,15.2,44.5
 2023,all,zone,Haut Uele,Boma Mangbetu,186,1,5,14,50.0,32.0,68.0,25.2,12.9,43.5
 2023,all,zone,Haut Uele,Doruma,179,1,5,11,31.7,4.3,82.7,39.7,19.9,63.7
@@ -124,7 +124,7 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,all,zone,Ituri,Komanda,154,1,5,17,61.2,44.0,76.0,2.6,1.3,4.9
 2023,all,zone,Ituri,Laybo,151,1,5,17,68.9,40.6,87.7,0.8,0.0,11.1
 2023,all,zone,Ituri,Linga,60,1,2,16,82.8,1.2,100.0,0.0,,
-2023,all,zone,Ituri,Lita,151,1,5,14,63.4,37.2,83.5,0.0,0.0,0.0
+2023,all,zone,Ituri,Lita,151,1,5,14,63.4,37.2,83.5,0.0,,
 2023,all,zone,Ituri,Logo,150,1,5,26,68.8,55.5,79.5,0.6,0.0,7.1
 2023,all,zone,Ituri,Mahagi,151,1,5,17,71.4,53.3,84.5,5.9,1.7,18.4
 2023,all,zone,Ituri,Mambasa,150,1,5,17,31.7,16.4,52.4,16.6,10.7,24.8
@@ -132,12 +132,12 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,all,zone,Ituri,Mangala,152,1,5,11,33.4,15.0,58.7,13.2,5.2,29.8
 2023,all,zone,Ituri,Mongbwalu,155,1,5,12,41.9,27.2,58.2,10.6,3.9,25.8
 2023,all,zone,Ituri,Nia Nia,154,1,5,9,28.8,14.4,49.3,7.8,3.4,17.2
-2023,all,zone,Ituri,Nizi,152,1,5,11,77.1,53.0,90.9,0.0,0.0,0.0
+2023,all,zone,Ituri,Nizi,152,1,5,11,77.1,53.0,90.9,0.0,,
 2023,all,zone,Ituri,Nyankunde,153,1,5,11,71.3,32.6,92.7,1.8,0.3,9.6
 2023,all,zone,Ituri,Nyarambe,149,1,5,23,61.0,48.1,72.6,9.5,3.7,22.1
 2023,all,zone,Ituri,Rethy,89,1,3,22,76.8,42.7,93.6,1.3,0.0,26.8
 2023,all,zone,Ituri,Rimba,149,1,5,22,61.7,50.0,72.1,0.7,0.1,8.1
-2023,all,zone,Ituri,Rwampara,151,1,5,14,84.5,56.4,95.8,0.0,0.0,0.0
+2023,all,zone,Ituri,Rwampara,151,1,5,14,84.5,56.4,95.8,0.0,,
 2023,all,zone,Ituri,Tchomia,153,1,5,13,71.9,68.9,74.7,3.0,0.7,11.1
 2023,all,zone,Kasai,Banga Lubaka,180,1,5,18,60.9,55.3,66.3,8.9,4.6,16.5
 2023,all,zone,Kasai,Bulape,181,1,5,19,26.8,11.5,50.8,16.3,6.0,37.0
@@ -205,18 +205,18 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,all,zone,Kinshasa,Bandalungwa,150,1,5,8,90.4,86.0,93.5,0.9,0.1,8.4
 2023,all,zone,Kinshasa,Barumbu,149,1,5,10,93.7,85.2,97.5,1.8,0.2,12.6
 2023,all,zone,Kinshasa,Binza Meteo,152,1,5,11,91.9,69.5,98.3,1.0,0.1,8.7
-2023,all,zone,Kinshasa,Binza Ozone,154,1,5,15,81.4,67.1,90.4,0.0,0.0,0.0
+2023,all,zone,Kinshasa,Binza Ozone,154,1,5,15,81.4,67.1,90.4,0.0,,
 2023,all,zone,Kinshasa,Biyela,162,1,6,11,93.4,85.9,97.0,0.5,0.0,5.1
 2023,all,zone,Kinshasa,Bumbu,149,1,5,19,95.8,91.8,97.9,0.8,0.1,8.5
 2023,all,zone,Kinshasa,Gombe,140,1,5,10,90.6,77.9,96.3,1.5,0.1,15.3
 2023,all,zone,Kinshasa,Kalamu 1,150,1,5,10,96.6,89.7,98.9,1.2,0.1,8.7
-2023,all,zone,Kinshasa,Kalamu 2,150,1,5,8,98.1,90.4,99.7,0.0,0.0,0.0
-2023,all,zone,Kinshasa,Kasa Vubu,153,1,5,7,94.8,88.7,97.7,0.0,0.0,0.0
+2023,all,zone,Kinshasa,Kalamu 2,150,1,5,8,98.1,90.4,99.7,0.0,,
+2023,all,zone,Kinshasa,Kasa Vubu,153,1,5,7,94.8,88.7,97.7,0.0,,
 2023,all,zone,Kinshasa,Kikimi,150,1,5,9,91.7,85.2,95.5,2.2,0.4,10.6
 2023,all,zone,Kinshasa,Kimbanseke,153,1,5,11,90.9,77.5,96.6,1.3,0.3,6.0
 2023,all,zone,Kinshasa,Kingabwa,151,1,5,10,70.2,61.7,77.5,1.3,0.3,6.0
-2023,all,zone,Kinshasa,Kingasani,154,1,5,8,91.8,86.6,95.1,0.0,0.0,0.0
-2023,all,zone,Kinshasa,Kinshasa,151,1,5,7,87.4,84.8,89.6,0.0,0.0,0.0
+2023,all,zone,Kinshasa,Kingasani,154,1,5,8,91.8,86.6,95.1,0.0,,
+2023,all,zone,Kinshasa,Kinshasa,151,1,5,7,87.4,84.8,89.6,0.0,,
 2023,all,zone,Kinshasa,Kintambo,148,1,5,8,70.4,55.9,81.7,0.5,0.0,6.8
 2023,all,zone,Kinshasa,Kisenso,150,1,5,17,63.2,47.7,76.4,1.4,0.3,6.7
 2023,all,zone,Kinshasa,Kokolo,150,1,5,24,74.3,65.4,81.6,2.3,1.1,4.9
@@ -226,9 +226,9 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,all,zone,Kinshasa,Makala,152,1,5,14,94.7,89.2,97.4,1.1,0.2,6.5
 2023,all,zone,Kinshasa,Maluku 1,150,1,5,17,91.2,83.1,95.7,1.7,0.2,11.8
 2023,all,zone,Kinshasa,Maluku 2,129,1,5,12,91.1,79.7,96.4,2.2,0.5,9.7
-2023,all,zone,Kinshasa,Masina 1,150,1,5,12,89.7,76.4,95.9,0.0,0.0,0.0
-2023,all,zone,Kinshasa,Masina 2,150,1,5,11,98.8,93.9,99.8,0.0,0.0,0.0
-2023,all,zone,Kinshasa,Matete,151,1,5,13,87.1,79.1,92.3,0.0,0.0,0.0
+2023,all,zone,Kinshasa,Masina 1,150,1,5,12,89.7,76.4,95.9,0.0,,
+2023,all,zone,Kinshasa,Masina 2,150,1,5,11,98.8,93.9,99.8,0.0,,
+2023,all,zone,Kinshasa,Matete,151,1,5,13,87.1,79.1,92.3,0.0,,
 2023,all,zone,Kinshasa,Mont Ngafula 1,150,1,5,17,69.6,54.9,81.2,1.1,0.1,8.4
 2023,all,zone,Kinshasa,Mont Ngafula 2,151,1,5,14,83.3,72.8,90.4,0.6,0.1,7.6
 2023,all,zone,Kinshasa,Ndjili,150,1,5,14,89.2,65.9,97.3,0.4,0.0,6.2
@@ -273,33 +273,33 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,all,zone,Kwango,Kahemba,184,1,5,28,61.8,29.8,86.0,11.7,3.3,34.4
 2023,all,zone,Kwango,Kajiji,190,1,5,20,48.5,20.5,77.5,20.2,7.8,43.3
 2023,all,zone,Kwango,Kasongo Lunda,185,1,5,21,67.2,34.3,88.9,9.7,2.2,33.4
-2023,all,zone,Kwango,Kenge,194,1,5,29,80.3,76.5,83.6,0.0,0.0,0.0
-2023,all,zone,Kwango,Kimbao,226,1,5,24,98.4,93.0,99.6,0.0,0.0,0.0
+2023,all,zone,Kwango,Kenge,194,1,5,29,80.3,76.5,83.6,0.0,,
+2023,all,zone,Kwango,Kimbao,226,1,5,24,98.4,93.0,99.6,0.0,,
 2023,all,zone,Kwango,Kisanji,178,1,5,16,62.4,43.8,78.0,9.7,2.8,28.1
 2023,all,zone,Kwango,Kitenda,184,1,5,23,48.1,15.3,82.6,21.0,9.7,39.8
-2023,all,zone,Kwango,Mwela Lembwa,233,1,5,16,96.4,88.1,99.0,0.0,0.0,0.0
-2023,all,zone,Kwango,Panzi,223,1,5,25,98.8,96.2,99.7,0.0,0.0,0.0
+2023,all,zone,Kwango,Mwela Lembwa,233,1,5,16,96.4,88.1,99.0,0.0,,
+2023,all,zone,Kwango,Panzi,223,1,5,25,98.8,96.2,99.7,0.0,,
 2023,all,zone,Kwango,Popokabaka,188,1,5,30,33.7,11.2,67.3,30.2,8.6,66.5
 2023,all,zone,Kwango,Tembo,195,1,5,15,97.2,85.9,99.5,0.3,0.0,4.5
 2023,all,zone,Kwango,Wamba Lwadi,181,1,5,19,78.5,51.4,92.6,5.9,1.2,25.4
 2023,all,zone,Kwilu,Bagata,161,1,5,23,20.4,6.5,48.6,23.8,11.9,42.0
 2023,all,zone,Kwilu,Bandundu,157,1,5,22,47.7,30.3,65.6,12.1,8.0,17.8
 2023,all,zone,Kwilu,Bulungu,142,1,5,30,85.6,69.2,94.1,1.8,0.3,11.2
-2023,all,zone,Kwilu,Djuma,148,1,5,35,98.3,90.0,99.7,0.0,0.0,0.0
+2023,all,zone,Kwilu,Djuma,148,1,5,35,98.3,90.0,99.7,0.0,,
 2023,all,zone,Kwilu,Gungu,152,1,5,31,81.7,45.0,96.0,5.5,0.7,31.1
 2023,all,zone,Kwilu,Idiofa,158,1,5,41,78.7,51.5,92.8,1.3,0.2,8.3
-2023,all,zone,Kwilu,Ipamu,153,1,5,32,95.7,66.8,99.6,0.0,0.0,0.0
+2023,all,zone,Kwilu,Ipamu,153,1,5,32,95.7,66.8,99.6,0.0,,
 2023,all,zone,Kwilu,Kikongo,152,1,5,24,49.7,13.6,86.1,9.8,1.5,43.1
 2023,all,zone,Kwilu,Kikwit Nord,149,1,5,26,61.5,32.1,84.3,1.4,0.3,6.0
 2023,all,zone,Kwilu,Kikwit Sud,150,1,5,24,58.1,41.3,73.2,5.7,1.5,19.6
 2023,all,zone,Kwilu,Kimputu,150,1,5,28,85.8,52.3,97.1,4.0,0.3,38.2
 2023,all,zone,Kwilu,Kingandu,137,1,5,20,97.9,89.8,99.6,0.7,0.1,8.0
-2023,all,zone,Kwilu,Koshibanda,150,1,5,29,89.0,62.8,97.5,0.0,0.0,0.0
+2023,all,zone,Kwilu,Koshibanda,150,1,5,29,89.0,62.8,97.5,0.0,,
 2023,all,zone,Kwilu,Lusanga,149,1,5,34,54.9,42.1,67.1,12.6,4.8,29.1
 2023,all,zone,Kwilu,Masi Manimba,157,1,5,24,77.3,69.8,83.4,6.8,2.8,16.0
 2023,all,zone,Kwilu,Moanza,150,1,5,23,85.3,76.9,91.0,6.9,2.6,17.2
 2023,all,zone,Kwilu,Mokala,146,1,5,33,91.2,79.2,96.6,0.5,0.0,7.3
-2023,all,zone,Kwilu,Mosango,152,1,5,18,95.2,78.4,99.1,0.0,0.0,0.0
+2023,all,zone,Kwilu,Mosango,152,1,5,18,95.2,78.4,99.1,0.0,,
 2023,all,zone,Kwilu,Mukedi,149,1,5,27,87.7,55.6,97.6,5.5,0.3,49.2
 2023,all,zone,Kwilu,Mungindu,152,1,5,24,69.4,33.2,91.2,8.8,2.4,27.0
 2023,all,zone,Kwilu,Pay Kongila,152,1,5,23,98.0,89.5,99.6,0.6,0.0,7.4
@@ -319,10 +319,10 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,all,zone,Lomami,Makota,154,1,5,17,60.8,40.5,77.9,7.8,4.7,12.8
 2023,all,zone,Lomami,Mulumba,150,1,5,19,55.2,28.8,79.0,7.3,3.2,15.9
 2023,all,zone,Lomami,Mweneditu,152,1,5,23,61.7,33.3,83.9,8.6,2.2,28.4
-2023,all,zone,Lomami,NGandajika,149,1,5,19,94.9,72.1,99.2,0.0,0.0,0.0
+2023,all,zone,Lomami,NGandajika,149,1,5,19,94.9,72.1,99.2,0.0,,
 2023,all,zone,Lomami,Tshofa,153,1,5,17,55.7,32.0,77.1,6.2,1.5,22.0
-2023,all,zone,Lomami,Wikong,149,1,5,16,81.3,48.0,95.4,0.0,0.0,0.0
-2023,all,zone,Lualaba,Bunkeya,154,1,5,8,75.2,50.3,90.1,0.0,0.0,0.0
+2023,all,zone,Lomami,Wikong,149,1,5,16,81.3,48.0,95.4,0.0,,
+2023,all,zone,Lualaba,Bunkeya,154,1,5,8,75.2,50.3,90.1,0.0,,
 2023,all,zone,Lualaba,Dilala,149,1,5,13,77.2,48.8,92.3,9.0,1.1,47.2
 2023,all,zone,Lualaba,Dilolo,157,1,5,23,58.2,33.6,79.2,6.5,1.6,22.6
 2023,all,zone,Lualaba,Fungurume,152,1,5,18,37.5,20.6,58.2,34.6,27.9,41.9
@@ -332,7 +332,7 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,all,zone,Lualaba,Kapanga,153,1,5,24,53.9,40.4,66.8,24.1,16.1,34.3
 2023,all,zone,Lualaba,Kasaji,150,1,5,26,61.6,37.1,81.3,5.1,1.0,22.2
 2023,all,zone,Lualaba,Lualaba,152,1,5,14,55.0,43.4,66.1,15.1,9.0,24.2
-2023,all,zone,Lualaba,Lubudi,147,1,5,16,92.2,83.5,96.5,0.0,0.0,0.0
+2023,all,zone,Lualaba,Lubudi,147,1,5,16,92.2,83.5,96.5,0.0,,
 2023,all,zone,Lualaba,Manika,151,1,5,13,66.2,38.1,86.2,9.0,6.2,12.9
 2023,all,zone,Lualaba,Mutshatsha,154,1,5,13,56.5,21.2,86.2,6.7,1.0,34.7
 2023,all,zone,Lualaba,Sandoa,149,1,5,25,43.8,35.0,53.0,30.2,23.6,37.7
@@ -380,31 +380,31 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,all,zone,Mongala,Yamaluka,160,1,5,22,9.7,4.3,20.7,55.8,45.5,65.5
 2023,all,zone,Mongala,Yambuku,151,1,5,40,6.8,0.6,46.7,79.3,57.5,91.6
 2023,all,zone,Mongala,Yamongili,156,1,5,22,9.7,4.0,21.6,54.6,42.4,66.2
-2023,all,zone,Nord Kivu,Alimbongo,153,1,5,21,95.1,77.1,99.1,0.0,0.0,0.0
+2023,all,zone,Nord Kivu,Alimbongo,153,1,5,21,95.1,77.1,99.1,0.0,,
 2023,all,zone,Nord Kivu,Beni,154,1,5,22,74.7,59.5,85.5,7.7,3.1,17.9
 2023,all,zone,Nord Kivu,Biena,151,1,5,16,80.3,48.9,94.6,2.4,0.2,22.9
-2023,all,zone,Nord Kivu,Butembo,151,1,5,16,81.4,56.7,93.6,0.0,0.0,0.0
+2023,all,zone,Nord Kivu,Butembo,151,1,5,16,81.4,56.7,93.6,0.0,,
 2023,all,zone,Nord Kivu,Goma,157,1,5,11,85.0,68.8,93.6,0.2,0.0,3.6
 2023,all,zone,Nord Kivu,Itebero,149,1,5,30,50.6,29.5,71.5,0.4,0.0,6.4
 2023,all,zone,Nord Kivu,Kalunguta,180,1,5,18,91.1,75.2,97.2,0.7,0.1,8.0
 2023,all,zone,Nord Kivu,Kamango,153,1,5,14,70.6,61.4,78.3,6.8,3.7,12.1
 2023,all,zone,Nord Kivu,Karisimbi,153,1,5,19,86.5,78.8,91.7,0.5,0.0,7.2
-2023,all,zone,Nord Kivu,Katwa,155,1,5,20,89.6,76.5,95.8,0.0,0.0,0.0
+2023,all,zone,Nord Kivu,Katwa,155,1,5,20,89.6,76.5,95.8,0.0,,
 2023,all,zone,Nord Kivu,Kayna,151,1,5,23,88.2,61.6,97.2,0.5,0.0,6.7
 2023,all,zone,Nord Kivu,Kibua,147,1,5,19,55.8,31.2,77.9,0.4,0.0,5.9
-2023,all,zone,Nord Kivu,Kirotshe,155,1,4,31,98.1,91.5,99.6,0.0,0.0,0.0
-2023,all,zone,Nord Kivu,Kyondo,168,1,5,23,91.4,84.6,95.3,0.0,0.0,0.0
-2023,all,zone,Nord Kivu,Lubero,154,1,5,21,96.6,75.8,99.6,0.0,0.0,0.0
+2023,all,zone,Nord Kivu,Kirotshe,155,1,4,31,98.1,91.5,99.6,0.0,,
+2023,all,zone,Nord Kivu,Kyondo,168,1,5,23,91.4,84.6,95.3,0.0,,
+2023,all,zone,Nord Kivu,Lubero,154,1,5,21,96.6,75.8,99.6,0.0,,
 2023,all,zone,Nord Kivu,Mabalako,296,1,6,16,85.3,74.9,91.8,0.5,0.0,5.8
 2023,all,zone,Nord Kivu,Manguredjipa,152,1,5,10,59.1,19.4,89.6,2.4,0.3,17.8
-2023,all,zone,Nord Kivu,Masereka,169,1,5,16,92.1,89.8,93.9,0.0,0.0,0.0
-2023,all,zone,Nord Kivu,Masisi,148,1,5,26,51.4,33.6,69.0,0.0,0.0,0.0
-2023,all,zone,Nord Kivu,Musienene,153,1,5,20,90.4,74.9,96.7,0.0,0.0,0.0
+2023,all,zone,Nord Kivu,Masereka,169,1,5,16,92.1,89.8,93.9,0.0,,
+2023,all,zone,Nord Kivu,Masisi,148,1,5,26,51.4,33.6,69.0,0.0,,
+2023,all,zone,Nord Kivu,Musienene,153,1,5,20,90.4,74.9,96.7,0.0,,
 2023,all,zone,Nord Kivu,Mutwanga,151,1,5,20,78.2,66.3,86.7,2.0,0.2,20.4
-2023,all,zone,Nord Kivu,Nyiragongo,150,1,5,11,81.0,67.2,89.9,0.0,0.0,0.0
-2023,all,zone,Nord Kivu,Oicha,305,1,6,27,88.7,83.7,92.4,0.0,0.0,0.0
-2023,all,zone,Nord Kivu,Pinga,150,1,5,19,54.1,45.7,62.2,0.0,0.0,0.0
-2023,all,zone,Nord Kivu,Vuhovi,161,1,5,13,93.9,85.5,97.6,0.0,0.0,0.0
+2023,all,zone,Nord Kivu,Nyiragongo,150,1,5,11,81.0,67.2,89.9,0.0,,
+2023,all,zone,Nord Kivu,Oicha,305,1,6,27,88.7,83.7,92.4,0.0,,
+2023,all,zone,Nord Kivu,Pinga,150,1,5,19,54.1,45.7,62.2,0.0,,
+2023,all,zone,Nord Kivu,Vuhovi,161,1,5,13,93.9,85.5,97.6,0.0,,
 2023,all,zone,Nord Kivu,Walikale,150,1,5,18,55.5,27.8,80.2,1.4,0.1,14.7
 2023,all,zone,Nord Ubangi,Abuzi,151,1,5,14,63.0,52.4,72.4,1.3,0.1,19.9
 2023,all,zone,Nord Ubangi,Bili,151,1,5,19,28.8,8.3,64.4,29.3,12.0,55.9
@@ -412,7 +412,7 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,all,zone,Nord Ubangi,Businga,151,1,5,13,95.7,78.5,99.3,2.4,0.4,12.2
 2023,all,zone,Nord Ubangi,Gbadolite,150,1,5,16,77.3,63.7,86.9,2.4,0.2,20.1
 2023,all,zone,Nord Ubangi,Karawa,151,1,5,24,92.9,73.1,98.4,0.4,0.0,5.8
-2023,all,zone,Nord Ubangi,Loko,150,1,5,15,93.9,76.5,98.6,0.0,0.0,0.0
+2023,all,zone,Nord Ubangi,Loko,150,1,5,15,93.9,76.5,98.6,0.0,,
 2023,all,zone,Nord Ubangi,Mobayi Mbongo,151,1,5,18,52.1,41.6,62.4,21.4,15.9,28.2
 2023,all,zone,Nord Ubangi,Wapinda,153,1,5,12,87.3,75.7,93.8,2.8,1.0,7.9
 2023,all,zone,Nord Ubangi,Wasolo,151,1,5,14,70.2,28.0,93.5,1.3,0.2,6.4
@@ -437,13 +437,13 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,all,zone,Sud Kivu,Bunyakiri,157,1,5,26,56.1,41.7,69.5,8.0,2.2,25.5
 2023,all,zone,Sud Kivu,Fizi,154,1,5,31,52.7,44.4,60.8,12.9,10.0,16.5
 2023,all,zone,Sud Kivu,Haut Plateau,157,1,4,23,43.3,29.4,58.3,15.6,9.8,23.9
-2023,all,zone,Sud Kivu,Ibanda,188,1,5,17,77.4,58.2,89.4,0.0,0.0,0.0
+2023,all,zone,Sud Kivu,Ibanda,188,1,5,17,77.4,58.2,89.4,0.0,,
 2023,all,zone,Sud Kivu,Idjwi,157,1,5,21,61.5,50.8,71.2,12.0,4.9,26.6
 2023,all,zone,Sud Kivu,Itombwe,158,1,5,18,46.4,20.8,74.0,8.3,1.1,42.3
 2023,all,zone,Sud Kivu,Kabare,191,1,5,16,79.6,72.5,85.2,2.3,0.6,7.8
 2023,all,zone,Sud Kivu,Kadutu,178,1,5,14,68.9,55.3,79.9,8.1,3.0,20.1
 2023,all,zone,Sud Kivu,Kalehe,180,1,5,16,53.1,23.1,81.0,10.5,7.4,14.6
-2023,all,zone,Sud Kivu,Kalole,181,1,5,24,72.4,59.8,82.2,0.0,0.0,0.0
+2023,all,zone,Sud Kivu,Kalole,181,1,5,24,72.4,59.8,82.2,0.0,,
 2023,all,zone,Sud Kivu,Kalonge,185,1,5,18,56.6,43.3,69.0,2.3,0.4,11.3
 2023,all,zone,Sud Kivu,Kamituga,181,1,5,23,40.7,27.9,54.9,12.6,5.5,26.1
 2023,all,zone,Sud Kivu,Kaniola,180,1,5,16,77.5,67.2,85.2,14.2,10.6,18.8
@@ -464,9 +464,9 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,all,zone,Sud Kivu,Nyangezi,183,1,5,12,82.5,56.1,94.6,5.5,0.7,31.6
 2023,all,zone,Sud Kivu,Nyantende,173,1,5,11,83.9,71.4,91.6,6.1,1.2,26.4
 2023,all,zone,Sud Kivu,Ruzizi,154,1,5,23,55.3,45.6,64.5,8.6,3.8,18.4
-2023,all,zone,Sud Kivu,Shabunda,180,1,5,23,84.4,74.9,90.8,0.0,0.0,0.0
+2023,all,zone,Sud Kivu,Shabunda,180,1,5,23,84.4,74.9,90.8,0.0,,
 2023,all,zone,Sud Kivu,Uvira,162,1,5,22,67.9,44.7,84.7,10.3,3.3,27.5
-2023,all,zone,Sud Kivu,Walungu,180,1,5,23,92.1,84.0,96.3,0.0,0.0,0.0
+2023,all,zone,Sud Kivu,Walungu,180,1,5,23,92.1,84.0,96.3,0.0,,
 2023,all,zone,Sud Ubangi,Bangabola,164,1,5,17,42.0,23.3,63.3,21.2,12.3,34.1
 2023,all,zone,Sud Ubangi,Bogosenubea,150,1,5,21,27.1,10.1,55.3,1.8,0.6,5.6
 2023,all,zone,Sud Ubangi,Bokonzi,150,1,5,24,21.2,8.6,43.4,20.9,7.7,45.5
@@ -474,23 +474,23 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,all,zone,Sud Ubangi,Boto,155,1,5,22,29.1,11.8,55.8,21.2,9.7,40.1
 2023,all,zone,Sud Ubangi,Budjala,151,1,5,16,59.2,32.0,81.8,2.1,0.3,11.6
 2023,all,zone,Sud Ubangi,Bulu,156,1,5,18,27.4,15.7,43.5,13.0,4.2,33.9
-2023,all,zone,Sud Ubangi,Bwamanda,154,1,5,21,49.9,28.7,71.0,0.0,0.0,0.0
+2023,all,zone,Sud Ubangi,Bwamanda,154,1,5,21,49.9,28.7,71.0,0.0,,
 2023,all,zone,Sud Ubangi,Gemena,156,1,5,31,47.6,27.7,68.3,6.1,1.2,25.2
 2023,all,zone,Sud Ubangi,Kungu,150,1,5,21,10.3,4.5,22.0,20.8,5.8,53.1
-2023,all,zone,Sud Ubangi,Libenge,151,1,5,20,23.4,4.2,67.9,0.0,0.0,0.0
+2023,all,zone,Sud Ubangi,Libenge,151,1,5,20,23.4,4.2,67.9,0.0,,
 2023,all,zone,Sud Ubangi,Mawuya,150,1,5,18,63.0,31.0,86.6,4.7,0.7,26.5
 2023,all,zone,Sud Ubangi,Mbaya,150,1,5,11,60.5,49.6,70.4,9.6,3.3,25.1
 2023,all,zone,Sud Ubangi,Ndage,150,1,5,22,42.6,24.2,63.2,2.2,0.3,14.6
 2023,all,zone,Sud Ubangi,Tandala,155,1,5,18,47.1,29.3,65.6,7.2,3.6,13.6
 2023,all,zone,Sud Ubangi,Zongo,150,1,5,15,25.6,15.1,39.9,2.9,0.5,14.3
 2023,all,zone,Tanganyika,Ankoro,150,1,5,25,86.9,74.8,93.7,4.1,0.8,18.5
-2023,all,zone,Tanganyika,Kabalo,154,1,5,25,42.6,23.3,64.4,0.0,0.0,0.0
+2023,all,zone,Tanganyika,Kabalo,154,1,5,25,42.6,23.3,64.4,0.0,,
 2023,all,zone,Tanganyika,Kalemie,169,1,5,27,60.7,43.2,75.8,4.7,0.7,24.3
 2023,all,zone,Tanganyika,Kansimba,149,1,5,21,5.6,0.9,27.4,53.8,22.1,82.8
 2023,all,zone,Tanganyika,Kiambi,157,1,5,26,59.6,47.1,71.0,7.1,4.6,10.8
-2023,all,zone,Tanganyika,Kongolo,151,1,5,25,45.1,29.9,61.3,0.0,0.0,0.0
+2023,all,zone,Tanganyika,Kongolo,151,1,5,25,45.1,29.9,61.3,0.0,,
 2023,all,zone,Tanganyika,Manono,150,1,5,27,71.5,56.0,83.2,9.9,5.4,17.4
-2023,all,zone,Tanganyika,Mbulula,153,1,5,21,43.6,32.0,56.0,0.0,0.0,0.0
+2023,all,zone,Tanganyika,Mbulula,153,1,5,21,43.6,32.0,56.0,0.0,,
 2023,all,zone,Tanganyika,Moba,151,1,5,25,26.6,9.5,55.7,14.2,6.8,27.2
 2023,all,zone,Tanganyika,Nyemba,171,1,5,21,56.6,39.1,72.6,3.5,0.2,37.8
 2023,all,zone,Tanganyika,Nyunzu,172,1,5,25,14.6,7.1,27.5,24.7,12.0,44.1
@@ -541,7 +541,7 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,urbain,province,Kasai Oriental,,1547,19,54,223,45.7,41.5,50.0,16.9,14.4,19.8
 2023,urbain,province,Kinshasa,,4829,35,167,417,87.6,85.4,89.5,1.4,1.0,1.8
 2023,urbain,province,Kongo Central,,499,31,22,123,73.4,63.4,81.5,5.0,2.5,9.8
-2023,urbain,province,Kwango,,46,14,5,91,80.7,76.2,84.6,0.0,0.0,0.0
+2023,urbain,province,Kwango,,46,14,5,91,80.7,76.2,84.6,0.0,,
 2023,urbain,province,Kwilu,,503,24,23,264,62.9,51.1,73.4,5.5,3.2,9.2
 2023,urbain,province,Lomami,,191,16,16,117,60.7,46.1,73.7,13.5,6.5,25.7
 2023,urbain,province,Lualaba,,312,14,12,57,69.7,52.9,82.5,9.0,5.0,15.7
@@ -554,7 +554,7 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,urbain,province,Sud Ubangi,,128,16,7,100,45.8,29.4,63.1,7.9,1.2,37.5
 2023,urbain,province,Tanganyika,,117,11,9,150,59.0,43.6,72.8,4.6,0.9,21.0
 2023,urbain,province,Tshopo,,548,23,25,124,32.6,25.1,41.2,38.3,31.3,45.8
-2023,urbain,province,Tshuapa,,6,12,3,58,0.0,0.0,0.0,17.5,2.0,69.2
+2023,urbain,province,Tshuapa,,6,12,3,58,0.0,,,17.5,2.0,69.2
 2023,urbain,zone,Bas Uele,Buta,5,1,1,16,40.0,,,20.0,,
 2023,urbain,zone,Equateur,Bikoro,10,1,1,21,60.0,,,0.0,,
 2023,urbain,zone,Equateur,Bolenge,27,1,2,11,41.4,0.0,100.0,0.0,,
@@ -583,7 +583,7 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,urbain,zone,Haut Katanga,Sakania,4,1,2,17,100.0,,,0.0,,
 2023,urbain,zone,Haut Katanga,Tshamilemba,149,1,5,15,73.1,60.9,82.6,3.6,1.8,6.9
 2023,urbain,zone,Haut Katanga,Vangu,114,1,5,11,64.6,25.8,90.5,19.5,5.3,51.2
-2023,urbain,zone,Haut Lomami,Baka,123,1,4,4,97.2,81.2,99.6,0.0,0.0,0.0
+2023,urbain,zone,Haut Lomami,Baka,123,1,4,4,97.2,81.2,99.6,0.0,,
 2023,urbain,zone,Haut Lomami,Kamina,38,1,2,25,90.3,0.0,100.0,4.7,0.0,100.0
 2023,urbain,zone,Haut Uele,Dungu,18,1,2,20,38.4,2.7,89.2,17.2,0.0,89.1
 2023,urbain,zone,Haut Uele,Faradje,9,1,1,18,22.2,,,22.2,,
@@ -626,18 +626,18 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,urbain,zone,Kinshasa,Bandalungwa,150,1,5,8,90.4,86.0,93.5,0.9,0.1,8.4
 2023,urbain,zone,Kinshasa,Barumbu,149,1,5,10,93.7,85.2,97.5,1.8,0.2,12.6
 2023,urbain,zone,Kinshasa,Binza Meteo,151,1,5,11,91.9,69.5,98.3,1.0,0.1,8.7
-2023,urbain,zone,Kinshasa,Binza Ozone,154,1,5,15,81.4,67.1,90.4,0.0,0.0,0.0
+2023,urbain,zone,Kinshasa,Binza Ozone,154,1,5,15,81.4,67.1,90.4,0.0,,
 2023,urbain,zone,Kinshasa,Biyela,162,1,6,11,93.4,85.9,97.0,0.5,0.0,5.1
 2023,urbain,zone,Kinshasa,Bumbu,149,1,5,19,95.8,91.8,97.9,0.8,0.1,8.5
 2023,urbain,zone,Kinshasa,Gombe,140,1,5,10,90.6,77.9,96.3,1.5,0.1,15.3
 2023,urbain,zone,Kinshasa,Kalamu 1,148,1,5,10,96.5,89.8,98.9,1.2,0.2,8.7
-2023,urbain,zone,Kinshasa,Kalamu 2,149,1,5,8,98.1,90.4,99.6,0.0,0.0,0.0
-2023,urbain,zone,Kinshasa,Kasa Vubu,153,1,5,7,94.8,88.7,97.7,0.0,0.0,0.0
+2023,urbain,zone,Kinshasa,Kalamu 2,149,1,5,8,98.1,90.4,99.6,0.0,,
+2023,urbain,zone,Kinshasa,Kasa Vubu,153,1,5,7,94.8,88.7,97.7,0.0,,
 2023,urbain,zone,Kinshasa,Kikimi,150,1,5,9,91.7,85.2,95.5,2.2,0.4,10.6
 2023,urbain,zone,Kinshasa,Kimbanseke,153,1,5,11,90.9,77.5,96.6,1.3,0.3,6.0
 2023,urbain,zone,Kinshasa,Kingabwa,148,1,5,10,70.8,62.3,78.1,1.3,0.3,6.1
-2023,urbain,zone,Kinshasa,Kingasani,151,1,5,8,92.2,88.9,94.5,0.0,0.0,0.0
-2023,urbain,zone,Kinshasa,Kinshasa,151,1,5,7,87.4,84.8,89.6,0.0,0.0,0.0
+2023,urbain,zone,Kinshasa,Kingasani,151,1,5,8,92.2,88.9,94.5,0.0,,
+2023,urbain,zone,Kinshasa,Kinshasa,151,1,5,7,87.4,84.8,89.6,0.0,,
 2023,urbain,zone,Kinshasa,Kintambo,148,1,5,8,70.4,55.9,81.7,0.5,0.0,6.9
 2023,urbain,zone,Kinshasa,Kisenso,136,1,5,17,62.8,46.9,76.3,1.1,0.1,8.7
 2023,urbain,zone,Kinshasa,Kokolo,150,1,5,24,74.3,65.4,81.6,2.3,1.1,4.9
@@ -647,9 +647,9 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,urbain,zone,Kinshasa,Makala,151,1,5,14,94.7,89.2,97.4,1.1,0.2,6.5
 2023,urbain,zone,Kinshasa,Maluku 1,111,1,5,17,92.3,87.6,95.3,0.9,0.1,11.2
 2023,urbain,zone,Kinshasa,Maluku 2,1,1,1,12,100.0,,,0.0,,
-2023,urbain,zone,Kinshasa,Masina 1,34,1,3,12,88.1,79.0,93.6,0.0,0.0,0.0
-2023,urbain,zone,Kinshasa,Masina 2,150,1,5,11,98.8,93.9,99.8,0.0,0.0,0.0
-2023,urbain,zone,Kinshasa,Matete,150,1,5,13,87.0,79.1,92.2,0.0,0.0,0.0
+2023,urbain,zone,Kinshasa,Masina 1,34,1,3,12,88.1,79.0,93.6,0.0,,
+2023,urbain,zone,Kinshasa,Masina 2,150,1,5,11,98.8,93.9,99.8,0.0,,
+2023,urbain,zone,Kinshasa,Matete,150,1,5,13,87.0,79.1,92.2,0.0,,
 2023,urbain,zone,Kinshasa,Mont Ngafula 1,90,1,3,17,67.1,44.9,83.6,1.6,0.1,21.2
 2023,urbain,zone,Kinshasa,Mont Ngafula 2,121,1,4,14,85.7,75.2,92.3,0.8,0.0,12.1
 2023,urbain,zone,Kinshasa,Ndjili,145,1,5,14,88.8,66.1,97.0,0.4,0.0,6.4
@@ -703,13 +703,13 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,urbain,zone,Mongala,Lisala,30,1,1,34,40.0,,,13.3,,
 2023,urbain,zone,Nord Kivu,Beni,153,1,5,22,74.5,59.2,85.5,7.8,3.1,18.1
 2023,urbain,zone,Nord Kivu,Biena,1,1,1,16,100.0,,,0.0,,
-2023,urbain,zone,Nord Kivu,Butembo,151,1,5,16,81.4,56.4,93.7,0.0,0.0,0.0
+2023,urbain,zone,Nord Kivu,Butembo,151,1,5,16,81.4,56.4,93.7,0.0,,
 2023,urbain,zone,Nord Kivu,Goma,156,1,5,11,85.0,68.4,93.7,0.2,0.0,3.8
 2023,urbain,zone,Nord Kivu,Kamango,2,1,1,14,50.0,,,0.0,,
 2023,urbain,zone,Nord Kivu,Karisimbi,153,1,5,19,86.5,78.7,91.8,0.5,0.0,7.4
-2023,urbain,zone,Nord Kivu,Katwa,140,1,5,20,88.5,74.3,95.3,0.0,0.0,0.0
+2023,urbain,zone,Nord Kivu,Katwa,140,1,5,20,88.5,74.3,95.3,0.0,,
 2023,urbain,zone,Nord Kivu,Kyondo,1,1,1,23,100.0,,,0.0,,
-2023,urbain,zone,Nord Kivu,Manguredjipa,3,1,3,10,60.1,0.7,99.7,0.0,0.0,0.0
+2023,urbain,zone,Nord Kivu,Manguredjipa,3,1,3,10,60.1,0.7,99.7,0.0,,
 2023,urbain,zone,Nord Ubangi,Abuzi,16,1,1,14,81.2,,,0.0,,
 2023,urbain,zone,Nord Ubangi,Gbadolite,89,1,3,16,75.4,63.4,84.4,1.0,0.0,58.0
 2023,urbain,zone,Nord Ubangi,Karawa,7,1,1,24,85.7,,,0.0,,
@@ -717,7 +717,7 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,urbain,zone,Nord Ubangi,Yakoma,1,1,1,13,100.0,,,0.0,,
 2023,urbain,zone,Sud Kivu,Bagira,141,1,4,8,74.8,68.2,80.4,13.8,10.1,18.5
 2023,urbain,zone,Sud Kivu,Fizi,30,1,1,31,60.0,,,10.0,,
-2023,urbain,zone,Sud Kivu,Ibanda,187,1,5,17,77.7,59.1,89.4,0.0,0.0,0.0
+2023,urbain,zone,Sud Kivu,Ibanda,187,1,5,17,77.7,59.1,89.4,0.0,,
 2023,urbain,zone,Sud Kivu,Kadutu,176,1,5,14,69.7,54.2,81.7,8.2,3.0,20.2
 2023,urbain,zone,Sud Kivu,Kamituga,44,1,4,23,44.7,37.5,52.2,11.2,2.4,38.6
 2023,urbain,zone,Sud Kivu,Kimbi Lulenge,1,1,1,24,0.0,,,100.0,,
@@ -784,24 +784,24 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,rural,zone,Bas Uele,Poko,161,1,5,18,41.6,32.3,51.5,37.8,32.8,43.1
 2023,rural,zone,Bas Uele,Titule,155,1,5,11,21.9,10.9,39.2,18.3,12.5,26.0
 2023,rural,zone,Bas Uele,Viadana,150,1,5,13,38.1,25.0,53.1,30.1,27.1,33.2
-2023,rural,zone,Equateur,Basankusu,179,1,5,27,66.9,46.0,82.7,0.0,0.0,0.0
+2023,rural,zone,Equateur,Basankusu,179,1,5,27,66.9,46.0,82.7,0.0,,
 2023,rural,zone,Equateur,Bikoro,168,1,5,21,64.8,35.8,85.9,4.1,0.3,35.9
-2023,rural,zone,Equateur,Bolenge,154,1,5,11,43.2,19.1,71.0,0.0,0.0,0.0
+2023,rural,zone,Equateur,Bolenge,154,1,5,11,43.2,19.1,71.0,0.0,,
 2023,rural,zone,Equateur,Bolomba,172,1,5,29,34.6,19.6,53.3,15.5,0.9,78.8
 2023,rural,zone,Equateur,Bomongo,180,1,5,16,50.0,46.0,54.0,1.7,0.3,9.1
-2023,rural,zone,Equateur,Djombo,179,1,5,14,48.8,23.1,75.2,0.0,0.0,0.0
+2023,rural,zone,Equateur,Djombo,179,1,5,14,48.8,23.1,75.2,0.0,,
 2023,rural,zone,Equateur,Iboko,181,1,5,15,67.5,62.8,72.0,5.2,0.6,34.7
-2023,rural,zone,Equateur,Ingende,181,1,5,19,67.3,42.2,85.3,0.0,0.0,0.0
+2023,rural,zone,Equateur,Ingende,181,1,5,19,67.3,42.2,85.3,0.0,,
 2023,rural,zone,Equateur,Irebu,180,1,5,7,49.2,43.0,55.4,2.1,0.4,11.9
 2023,rural,zone,Equateur,Lilanga Bobangi,183,1,5,12,44.2,33.3,55.6,6.5,3.9,10.5
-2023,rural,zone,Equateur,Lotumbe,179,1,5,18,79.6,55.1,92.6,0.0,0.0,0.0
+2023,rural,zone,Equateur,Lotumbe,179,1,5,18,79.6,55.1,92.6,0.0,,
 2023,rural,zone,Equateur,Lukolela,180,1,5,14,49.6,42.0,57.1,2.5,0.3,19.8
-2023,rural,zone,Equateur,Makanza,180,1,5,17,36.2,19.4,57.1,0.0,0.0,0.0
-2023,rural,zone,Equateur,Mampoko,179,1,5,13,28.3,16.1,44.8,0.0,0.0,0.0
+2023,rural,zone,Equateur,Makanza,180,1,5,17,36.2,19.4,57.1,0.0,,
+2023,rural,zone,Equateur,Mampoko,179,1,5,13,28.3,16.1,44.8,0.0,,
 2023,rural,zone,Equateur,Mbandaka,135,1,4,16,29.5,3.7,81.8,43.3,4.9,91.9
-2023,rural,zone,Equateur,Monieka,180,1,5,12,65.9,38.2,85.8,0.0,0.0,0.0
+2023,rural,zone,Equateur,Monieka,180,1,5,12,65.9,38.2,85.8,0.0,,
 2023,rural,zone,Equateur,Ntondo,159,1,5,14,62.2,37.7,81.8,14.8,3.9,43.0
-2023,rural,zone,Equateur,Wangata,5,1,3,11,60.8,3.2,98.6,0.0,0.0,0.0
+2023,rural,zone,Equateur,Wangata,5,1,3,11,60.8,3.2,98.6,0.0,,
 2023,rural,zone,Haut Katanga,Kafubu,147,1,5,13,58.9,37.2,77.6,12.1,7.3,19.4
 2023,rural,zone,Haut Katanga,Kambove,150,1,5,11,38.4,21.3,59.0,44.9,27.6,63.5
 2023,rural,zone,Haut Katanga,Kapolowe,150,1,5,16,42.5,28.6,57.7,40.6,30.6,51.4
@@ -822,22 +822,22 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,rural,zone,Haut Katanga,Sakania,167,1,5,17,65.1,45.3,80.8,22.1,12.1,36.8
 2023,rural,zone,Haut Katanga,Tshamilemba,1,1,1,15,0.0,,,0.0,,
 2023,rural,zone,Haut Katanga,Vangu,41,1,5,11,74.9,36.6,93.9,14.3,2.1,56.4
-2023,rural,zone,Haut Lomami,Baka,7,1,3,4,100.0,100.0,100.0,0.0,0.0,0.0
+2023,rural,zone,Haut Lomami,Baka,7,1,3,4,100.0,,,0.0,,
 2023,rural,zone,Haut Lomami,Bukama,151,1,5,23,95.0,84.2,98.5,0.8,0.1,8.2
 2023,rural,zone,Haut Lomami,Butumba,150,1,5,16,81.3,50.0,95.0,9.6,4.5,19.3
 2023,rural,zone,Haut Lomami,Kabondo Dianda,151,1,5,20,97.6,89.8,99.5,0.8,0.1,8.2
 2023,rural,zone,Haut Lomami,Kabongo,147,1,5,32,92.4,83.2,96.8,2.2,0.4,12.1
-2023,rural,zone,Haut Lomami,Kamina,124,1,5,25,98.7,84.1,99.9,0.0,0.0,0.0
+2023,rural,zone,Haut Lomami,Kamina,124,1,5,25,98.7,84.1,99.9,0.0,,
 2023,rural,zone,Haut Lomami,Kaniama,153,1,5,30,96.1,86.1,99.0,1.7,0.2,15.1
 2023,rural,zone,Haut Lomami,Kayamba,150,1,5,15,96.8,81.4,99.5,0.5,0.0,6.9
 2023,rural,zone,Haut Lomami,Kinda,152,1,5,14,93.7,86.1,97.3,2.4,0.7,7.4
 2023,rural,zone,Haut Lomami,Kinkondja,151,1,5,29,95.4,90.6,97.8,4.0,1.5,10.5
 2023,rural,zone,Haut Lomami,Kitenge,150,1,5,29,79.5,69.2,87.1,7.6,4.2,13.2
 2023,rural,zone,Haut Lomami,Lwamba,159,1,5,20,92.7,73.5,98.3,0.6,0.0,6.7
-2023,rural,zone,Haut Lomami,Malemba Nkulu,150,1,5,23,97.2,95.4,98.3,0.0,0.0,0.0
-2023,rural,zone,Haut Lomami,Mukanga,150,1,5,19,95.5,89.2,98.2,0.0,0.0,0.0
-2023,rural,zone,Haut Lomami,Mulongo,150,1,5,23,98.6,84.7,99.9,0.0,0.0,0.0
-2023,rural,zone,Haut Lomami,Songa,160,1,5,29,96.5,85.9,99.2,0.0,0.0,0.0
+2023,rural,zone,Haut Lomami,Malemba Nkulu,150,1,5,23,97.2,95.4,98.3,0.0,,
+2023,rural,zone,Haut Lomami,Mukanga,150,1,5,19,95.5,89.2,98.2,0.0,,
+2023,rural,zone,Haut Lomami,Mulongo,150,1,5,23,98.6,84.7,99.9,0.0,,
+2023,rural,zone,Haut Lomami,Songa,160,1,5,29,96.5,85.9,99.2,0.0,,
 2023,rural,zone,Haut Uele,Aba,180,1,5,16,30.6,23.1,39.2,27.5,15.2,44.5
 2023,rural,zone,Haut Uele,Boma Mangbetu,186,1,5,14,50.0,32.0,68.0,25.2,12.9,43.5
 2023,rural,zone,Haut Uele,Doruma,179,1,5,11,31.7,4.3,82.7,39.7,19.8,63.7
@@ -864,7 +864,7 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,rural,zone,Ituri,Komanda,154,1,5,17,61.2,44.0,76.0,2.6,1.3,4.9
 2023,rural,zone,Ituri,Laybo,151,1,5,17,68.9,40.6,87.7,0.8,0.0,11.1
 2023,rural,zone,Ituri,Linga,60,1,2,16,82.8,1.2,100.0,0.0,,
-2023,rural,zone,Ituri,Lita,151,1,5,14,63.4,37.2,83.5,0.0,0.0,0.0
+2023,rural,zone,Ituri,Lita,151,1,5,14,63.4,37.2,83.5,0.0,,
 2023,rural,zone,Ituri,Logo,150,1,5,26,68.8,55.5,79.5,0.6,0.0,7.1
 2023,rural,zone,Ituri,Mahagi,151,1,5,17,71.4,53.3,84.5,5.9,1.7,18.4
 2023,rural,zone,Ituri,Mambasa,150,1,5,17,31.7,16.4,52.4,16.6,10.7,24.8
@@ -872,12 +872,12 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,rural,zone,Ituri,Mangala,152,1,5,11,33.4,15.0,58.7,13.2,5.2,29.8
 2023,rural,zone,Ituri,Mongbwalu,155,1,5,12,41.9,27.2,58.2,10.6,3.9,25.8
 2023,rural,zone,Ituri,Nia Nia,154,1,5,9,28.8,14.4,49.3,7.8,3.4,17.2
-2023,rural,zone,Ituri,Nizi,151,1,5,11,76.9,52.6,90.9,0.0,0.0,0.0
+2023,rural,zone,Ituri,Nizi,151,1,5,11,76.9,52.6,90.9,0.0,,
 2023,rural,zone,Ituri,Nyankunde,153,1,5,11,71.3,32.6,92.7,1.8,0.3,9.6
 2023,rural,zone,Ituri,Nyarambe,149,1,5,23,61.0,48.1,72.6,9.5,3.7,22.1
 2023,rural,zone,Ituri,Rethy,89,1,3,22,76.8,42.7,93.6,1.3,0.0,26.8
 2023,rural,zone,Ituri,Rimba,149,1,5,22,61.7,50.0,72.1,0.7,0.1,8.1
-2023,rural,zone,Ituri,Rwampara,121,1,5,14,85.5,52.3,97.0,0.0,0.0,0.0
+2023,rural,zone,Ituri,Rwampara,121,1,5,14,85.5,52.3,97.0,0.0,,
 2023,rural,zone,Ituri,Tchomia,153,1,5,13,71.9,68.9,74.7,3.0,0.7,11.1
 2023,rural,zone,Kasai,Banga Lubaka,180,1,5,18,60.9,55.3,66.3,8.9,4.6,16.5
 2023,rural,zone,Kasai,Bulape,181,1,5,19,26.8,11.5,50.8,16.3,6.0,37.0
@@ -910,7 +910,7 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,rural,zone,Kasai Central,Lubondaie,152,1,5,20,67.1,48.3,81.7,2.3,0.6,8.7
 2023,rural,zone,Kasai Central,Lubunga,156,1,5,12,62.7,42.0,79.6,4.7,2.0,10.7
 2023,rural,zone,Kasai Central,Luiza,151,1,5,20,65.7,55.8,74.4,3.3,3.3,3.4
-2023,rural,zone,Kasai Central,Lukonga,5,1,3,19,83.3,2.4,99.9,0.0,0.0,0.0
+2023,rural,zone,Kasai Central,Lukonga,5,1,3,19,83.3,2.4,99.9,0.0,,
 2023,rural,zone,Kasai Central,Masuika,152,1,5,23,71.7,58.5,81.9,1.9,0.2,16.0
 2023,rural,zone,Kasai Central,Mikalayi,151,1,5,26,65.7,46.8,80.7,1.8,0.3,10.3
 2023,rural,zone,Kasai Central,Muetshi,152,1,5,12,62.0,50.2,72.6,8.1,1.3,37.2
@@ -935,14 +935,14 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,rural,zone,Kinshasa,Binza Meteo,1,1,1,11,100.0,,,0.0,,
 2023,rural,zone,Kinshasa,Kalamu 1,2,1,1,10,100.0,,,0.0,,
 2023,rural,zone,Kinshasa,Kalamu 2,1,1,1,8,100.0,,,0.0,,
-2023,rural,zone,Kinshasa,Kingabwa,3,1,3,10,38.7,0.3,99.3,0.0,0.0,0.0
+2023,rural,zone,Kinshasa,Kingabwa,3,1,3,10,38.7,0.3,99.3,0.0,,
 2023,rural,zone,Kinshasa,Kingasani,3,1,2,8,76.1,0.0,100.0,0.0,,
 2023,rural,zone,Kinshasa,Kisenso,14,1,1,17,71.4,,,7.1,,
 2023,rural,zone,Kinshasa,Lingwala,1,1,1,8,100.0,,,0.0,,
 2023,rural,zone,Kinshasa,Makala,1,1,1,14,100.0,,,0.0,,
 2023,rural,zone,Kinshasa,Maluku 1,39,1,5,17,88.0,52.9,98.0,4.4,0.8,20.2
 2023,rural,zone,Kinshasa,Maluku 2,128,1,5,12,90.7,80.4,95.8,2.3,0.5,9.8
-2023,rural,zone,Kinshasa,Masina 1,116,1,4,12,90.2,64.7,97.9,0.0,0.0,0.0
+2023,rural,zone,Kinshasa,Masina 1,116,1,4,12,90.2,64.7,97.9,0.0,,
 2023,rural,zone,Kinshasa,Matete,1,1,1,13,100.0,,,0.0,,
 2023,rural,zone,Kinshasa,Mont Ngafula 1,60,1,2,17,76.0,0.0,100.0,0.0,,
 2023,rural,zone,Kinshasa,Mont Ngafula 2,30,1,1,14,73.3,,,0.0,,
@@ -983,32 +983,32 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,rural,zone,Kwango,Kahemba,184,1,5,28,61.8,29.8,86.0,11.7,3.3,34.4
 2023,rural,zone,Kwango,Kajiji,190,1,5,20,48.5,20.5,77.5,20.2,7.8,43.3
 2023,rural,zone,Kwango,Kasongo Lunda,185,1,5,21,67.2,34.3,88.9,9.7,2.2,33.4
-2023,rural,zone,Kwango,Kenge,153,1,4,29,80.5,74.3,85.5,0.0,0.0,0.0
-2023,rural,zone,Kwango,Kimbao,226,1,5,24,98.4,93.0,99.6,0.0,0.0,0.0
+2023,rural,zone,Kwango,Kenge,153,1,4,29,80.5,74.3,85.5,0.0,,
+2023,rural,zone,Kwango,Kimbao,226,1,5,24,98.4,93.0,99.6,0.0,,
 2023,rural,zone,Kwango,Kisanji,178,1,5,16,62.4,43.8,78.0,9.7,2.8,28.1
 2023,rural,zone,Kwango,Kitenda,184,1,5,23,48.1,15.3,82.6,21.0,9.7,39.8
-2023,rural,zone,Kwango,Mwela Lembwa,231,1,5,16,96.3,87.7,99.0,0.0,0.0,0.0
-2023,rural,zone,Kwango,Panzi,222,1,5,25,98.8,96.2,99.7,0.0,0.0,0.0
+2023,rural,zone,Kwango,Mwela Lembwa,231,1,5,16,96.3,87.7,99.0,0.0,,
+2023,rural,zone,Kwango,Panzi,222,1,5,25,98.8,96.2,99.7,0.0,,
 2023,rural,zone,Kwango,Popokabaka,188,1,5,30,33.7,11.2,67.3,30.2,8.6,66.5
 2023,rural,zone,Kwango,Tembo,195,1,5,15,97.2,85.9,99.5,0.3,0.0,4.5
 2023,rural,zone,Kwango,Wamba Lwadi,181,1,5,19,78.5,51.4,92.6,5.9,1.2,25.4
 2023,rural,zone,Kwilu,Bagata,161,1,5,23,20.4,6.5,48.6,23.8,11.9,42.0
 2023,rural,zone,Kwilu,Bandundu,35,1,2,22,32.1,0.0,100.0,27.9,14.5,45.0
 2023,rural,zone,Kwilu,Bulungu,140,1,5,30,85.4,68.6,94.0,1.8,0.3,11.2
-2023,rural,zone,Kwilu,Djuma,148,1,5,35,98.3,90.0,99.7,0.0,0.0,0.0
+2023,rural,zone,Kwilu,Djuma,148,1,5,35,98.3,90.0,99.7,0.0,,
 2023,rural,zone,Kwilu,Gungu,122,1,4,31,77.2,26.6,96.9,7.6,0.8,45.4
-2023,rural,zone,Kwilu,Idiofa,153,1,5,41,81.4,58.0,93.3,0.0,0.0,0.0
-2023,rural,zone,Kwilu,Ipamu,146,1,5,32,95.4,66.6,99.5,0.0,0.0,0.0
+2023,rural,zone,Kwilu,Idiofa,153,1,5,41,81.4,58.0,93.3,0.0,,
+2023,rural,zone,Kwilu,Ipamu,146,1,5,32,95.4,66.6,99.5,0.0,,
 2023,rural,zone,Kwilu,Kikongo,152,1,5,24,49.7,13.6,86.1,9.8,1.5,43.1
 2023,rural,zone,Kwilu,Kikwit Sud,2,1,2,24,62.5,3.6,99.6,0.0,,
 2023,rural,zone,Kwilu,Kimputu,150,1,5,28,85.8,52.3,97.1,4.0,0.3,38.3
 2023,rural,zone,Kwilu,Kingandu,137,1,5,20,97.9,89.8,99.6,0.7,0.1,8.0
-2023,rural,zone,Kwilu,Koshibanda,150,1,5,29,89.0,62.7,97.5,0.0,0.0,0.0
+2023,rural,zone,Kwilu,Koshibanda,150,1,5,29,89.0,62.7,97.5,0.0,,
 2023,rural,zone,Kwilu,Lusanga,140,1,5,34,57.3,46.1,67.7,11.0,3.9,27.5
 2023,rural,zone,Kwilu,Masi Manimba,126,1,5,24,73.0,63.7,80.7,7.7,2.5,21.7
 2023,rural,zone,Kwilu,Moanza,150,1,5,23,85.3,76.9,91.0,6.9,2.6,17.3
 2023,rural,zone,Kwilu,Mokala,146,1,5,33,91.2,79.2,96.6,0.5,0.0,7.3
-2023,rural,zone,Kwilu,Mosango,152,1,5,18,95.2,78.4,99.1,0.0,0.0,0.0
+2023,rural,zone,Kwilu,Mosango,152,1,5,18,95.2,78.4,99.1,0.0,,
 2023,rural,zone,Kwilu,Mukedi,149,1,5,27,87.7,55.6,97.6,5.5,0.3,49.3
 2023,rural,zone,Kwilu,Mungindu,152,1,5,24,69.4,33.1,91.2,8.8,2.4,27.0
 2023,rural,zone,Kwilu,Pay Kongila,152,1,5,23,98.0,89.5,99.6,0.6,0.0,7.4
@@ -1028,10 +1028,10 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,rural,zone,Lomami,Makota,73,1,5,17,79.3,61.2,90.2,1.4,0.1,16.0
 2023,rural,zone,Lomami,Mulumba,134,1,5,19,50.1,29.7,70.5,8.5,4.3,16.1
 2023,rural,zone,Lomami,Mweneditu,107,1,5,23,63.3,29.4,87.7,3.3,1.5,6.9
-2023,rural,zone,Lomami,NGandajika,149,1,5,19,94.9,72.1,99.2,0.0,0.0,0.0
+2023,rural,zone,Lomami,NGandajika,149,1,5,19,94.9,72.1,99.2,0.0,,
 2023,rural,zone,Lomami,Tshofa,153,1,5,17,55.7,32.0,77.1,6.2,1.5,22.0
-2023,rural,zone,Lomami,Wikong,148,1,5,16,81.2,47.9,95.3,0.0,0.0,0.0
-2023,rural,zone,Lualaba,Bunkeya,154,1,5,8,75.2,50.2,90.1,0.0,0.0,0.0
+2023,rural,zone,Lomami,Wikong,148,1,5,16,81.2,47.9,95.3,0.0,,
+2023,rural,zone,Lualaba,Bunkeya,154,1,5,8,75.2,50.2,90.1,0.0,,
 2023,rural,zone,Lualaba,Dilolo,157,1,5,23,58.2,33.6,79.3,6.5,1.6,22.6
 2023,rural,zone,Lualaba,Fungurume,152,1,5,18,37.5,20.6,58.2,34.6,27.9,41.9
 2023,rural,zone,Lualaba,Kafakumba,151,1,5,16,28.4,22.8,34.8,33.3,29.2,37.6
@@ -1040,7 +1040,7 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,rural,zone,Lualaba,Kapanga,153,1,5,24,53.9,40.3,66.8,24.1,16.1,34.3
 2023,rural,zone,Lualaba,Kasaji,150,1,5,26,61.6,37.1,81.4,5.1,1.0,22.2
 2023,rural,zone,Lualaba,Lualaba,151,1,5,14,54.9,43.1,66.1,15.2,9.0,24.3
-2023,rural,zone,Lualaba,Lubudi,147,1,5,16,92.2,83.5,96.5,0.0,0.0,0.0
+2023,rural,zone,Lualaba,Lubudi,147,1,5,16,92.2,83.5,96.5,0.0,,
 2023,rural,zone,Lualaba,Mutshatsha,154,1,5,13,56.5,21.2,86.2,6.7,1.0,34.8
 2023,rural,zone,Lualaba,Sandoa,149,1,5,25,43.8,35.0,53.0,30.2,23.6,37.7
 2023,rural,zone,Maindombe,Banzow Moke,187,1,5,18,56.4,50.7,62.0,24.1,16.8,33.1
@@ -1086,29 +1086,29 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,rural,zone,Mongala,Yamaluka,160,1,5,22,9.7,4.3,20.7,55.8,45.5,65.5
 2023,rural,zone,Mongala,Yambuku,151,1,5,40,6.8,0.6,46.7,79.3,57.5,91.6
 2023,rural,zone,Mongala,Yamongili,156,1,5,22,9.7,4.0,21.6,54.6,42.4,66.2
-2023,rural,zone,Nord Kivu,Alimbongo,153,1,5,21,95.1,77.1,99.1,0.0,0.0,0.0
+2023,rural,zone,Nord Kivu,Alimbongo,153,1,5,21,95.1,77.1,99.1,0.0,,
 2023,rural,zone,Nord Kivu,Beni,1,1,1,22,100.0,,,0.0,,
 2023,rural,zone,Nord Kivu,Biena,150,1,5,16,80.2,48.0,94.7,2.5,0.2,23.5
 2023,rural,zone,Nord Kivu,Goma,1,1,1,11,100.0,,,0.0,,
 2023,rural,zone,Nord Kivu,Itebero,149,1,5,30,50.6,29.4,71.5,0.4,0.0,6.5
 2023,rural,zone,Nord Kivu,Kalunguta,180,1,5,18,91.1,75.2,97.2,0.7,0.1,8.0
 2023,rural,zone,Nord Kivu,Kamango,151,1,5,14,70.8,61.6,78.5,6.9,3.7,12.3
-2023,rural,zone,Nord Kivu,Katwa,15,1,3,20,100.0,100.0,100.0,0.0,0.0,0.0
+2023,rural,zone,Nord Kivu,Katwa,15,1,3,20,100.0,,,0.0,,
 2023,rural,zone,Nord Kivu,Kayna,151,1,5,23,88.2,61.6,97.2,0.5,0.0,6.7
 2023,rural,zone,Nord Kivu,Kibua,147,1,5,19,55.8,31.2,77.9,0.4,0.0,5.9
-2023,rural,zone,Nord Kivu,Kirotshe,155,1,4,31,98.1,91.5,99.6,0.0,0.0,0.0
-2023,rural,zone,Nord Kivu,Kyondo,167,1,5,23,91.3,84.5,95.3,0.0,0.0,0.0
-2023,rural,zone,Nord Kivu,Lubero,154,1,5,21,96.6,75.8,99.6,0.0,0.0,0.0
+2023,rural,zone,Nord Kivu,Kirotshe,155,1,4,31,98.1,91.5,99.6,0.0,,
+2023,rural,zone,Nord Kivu,Kyondo,167,1,5,23,91.3,84.5,95.3,0.0,,
+2023,rural,zone,Nord Kivu,Lubero,154,1,5,21,96.6,75.8,99.6,0.0,,
 2023,rural,zone,Nord Kivu,Mabalako,296,1,6,16,85.3,74.9,91.8,0.5,0.0,5.8
 2023,rural,zone,Nord Kivu,Manguredjipa,149,1,5,10,59.0,19.9,89.3,2.5,0.3,18.1
-2023,rural,zone,Nord Kivu,Masereka,169,1,5,16,92.1,89.8,93.9,0.0,0.0,0.0
-2023,rural,zone,Nord Kivu,Masisi,148,1,5,26,51.4,33.5,69.0,0.0,0.0,0.0
-2023,rural,zone,Nord Kivu,Musienene,153,1,5,20,90.4,74.9,96.7,0.0,0.0,0.0
+2023,rural,zone,Nord Kivu,Masereka,169,1,5,16,92.1,89.8,93.9,0.0,,
+2023,rural,zone,Nord Kivu,Masisi,148,1,5,26,51.4,33.5,69.0,0.0,,
+2023,rural,zone,Nord Kivu,Musienene,153,1,5,20,90.4,74.9,96.7,0.0,,
 2023,rural,zone,Nord Kivu,Mutwanga,151,1,5,20,78.2,66.2,86.7,2.0,0.2,20.4
-2023,rural,zone,Nord Kivu,Nyiragongo,150,1,5,11,81.0,67.2,89.9,0.0,0.0,0.0
-2023,rural,zone,Nord Kivu,Oicha,305,1,6,27,88.7,83.7,92.4,0.0,0.0,0.0
-2023,rural,zone,Nord Kivu,Pinga,150,1,5,19,54.1,45.7,62.2,0.0,0.0,0.0
-2023,rural,zone,Nord Kivu,Vuhovi,161,1,5,13,93.9,85.5,97.6,0.0,0.0,0.0
+2023,rural,zone,Nord Kivu,Nyiragongo,150,1,5,11,81.0,67.2,89.9,0.0,,
+2023,rural,zone,Nord Kivu,Oicha,305,1,6,27,88.7,83.7,92.4,0.0,,
+2023,rural,zone,Nord Kivu,Pinga,150,1,5,19,54.1,45.7,62.2,0.0,,
+2023,rural,zone,Nord Kivu,Vuhovi,161,1,5,13,93.9,85.5,97.6,0.0,,
 2023,rural,zone,Nord Kivu,Walikale,150,1,5,18,55.5,27.7,80.2,1.4,0.1,14.7
 2023,rural,zone,Nord Ubangi,Abuzi,135,1,5,14,56.4,35.1,75.7,1.8,0.1,20.7
 2023,rural,zone,Nord Ubangi,Bili,151,1,5,19,28.8,8.3,64.4,29.3,12.0,55.9
@@ -1116,7 +1116,7 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,rural,zone,Nord Ubangi,Businga,151,1,5,13,95.7,78.5,99.3,2.4,0.4,12.2
 2023,rural,zone,Nord Ubangi,Gbadolite,61,1,3,16,81.0,22.2,98.5,5.0,0.0,86.7
 2023,rural,zone,Nord Ubangi,Karawa,144,1,5,24,93.5,73.9,98.7,0.4,0.0,6.0
-2023,rural,zone,Nord Ubangi,Loko,150,1,5,15,93.9,76.5,98.6,0.0,0.0,0.0
+2023,rural,zone,Nord Ubangi,Loko,150,1,5,15,93.9,76.5,98.6,0.0,,
 2023,rural,zone,Nord Ubangi,Mobayi Mbongo,151,1,5,18,52.1,41.6,62.4,21.4,15.9,28.2
 2023,rural,zone,Nord Ubangi,Wapinda,153,1,5,12,87.3,75.7,93.8,2.8,1.0,7.9
 2023,rural,zone,Nord Ubangi,Wasolo,150,1,5,14,69.9,28.0,93.3,1.3,0.2,6.4
@@ -1147,7 +1147,7 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,rural,zone,Sud Kivu,Kabare,191,1,5,16,79.6,72.5,85.2,2.3,0.6,7.8
 2023,rural,zone,Sud Kivu,Kadutu,2,1,1,14,0.0,,,0.0,,
 2023,rural,zone,Sud Kivu,Kalehe,180,1,5,16,53.1,23.1,81.0,10.5,7.4,14.6
-2023,rural,zone,Sud Kivu,Kalole,181,1,5,24,72.4,59.8,82.2,0.0,0.0,0.0
+2023,rural,zone,Sud Kivu,Kalole,181,1,5,24,72.4,59.8,82.2,0.0,,
 2023,rural,zone,Sud Kivu,Kalonge,185,1,5,18,56.6,43.3,69.0,2.3,0.4,11.3
 2023,rural,zone,Sud Kivu,Kamituga,137,1,5,23,39.3,22.1,59.6,13.1,6.3,25.2
 2023,rural,zone,Sud Kivu,Kaniola,180,1,5,16,77.5,67.2,85.2,14.2,10.6,18.9
@@ -1168,9 +1168,9 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,rural,zone,Sud Kivu,Nyangezi,183,1,5,12,82.5,56.1,94.6,5.5,0.7,31.7
 2023,rural,zone,Sud Kivu,Nyantende,173,1,5,11,83.9,71.3,91.6,6.1,1.2,26.4
 2023,rural,zone,Sud Kivu,Ruzizi,109,1,5,23,61.9,52.6,70.3,9.1,2.8,25.4
-2023,rural,zone,Sud Kivu,Shabunda,180,1,5,23,84.4,74.9,90.8,0.0,0.0,0.0
+2023,rural,zone,Sud Kivu,Shabunda,180,1,5,23,84.4,74.9,90.8,0.0,,
 2023,rural,zone,Sud Kivu,Uvira,65,1,3,22,51.8,32.7,70.3,23.5,13.0,38.8
-2023,rural,zone,Sud Kivu,Walungu,178,1,5,23,92.0,83.8,96.3,0.0,0.0,0.0
+2023,rural,zone,Sud Kivu,Walungu,178,1,5,23,92.0,83.8,96.3,0.0,,
 2023,rural,zone,Sud Ubangi,Bangabola,158,1,5,17,41.8,22.6,63.8,21.3,12.0,34.9
 2023,rural,zone,Sud Ubangi,Bogosenubea,149,1,5,21,27.3,10.1,55.5,1.8,0.6,5.7
 2023,rural,zone,Sud Ubangi,Bokonzi,150,1,5,24,21.2,8.6,43.4,20.9,7.7,45.5
@@ -1178,23 +1178,23 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2023,rural,zone,Sud Ubangi,Boto,155,1,5,22,29.1,11.8,55.8,21.2,9.7,40.1
 2023,rural,zone,Sud Ubangi,Budjala,150,1,5,16,59.6,32.8,81.6,2.1,0.3,11.8
 2023,rural,zone,Sud Ubangi,Bulu,156,1,5,18,27.4,15.7,43.5,13.0,4.2,33.9
-2023,rural,zone,Sud Ubangi,Bwamanda,154,1,5,21,49.9,28.7,71.0,0.0,0.0,0.0
+2023,rural,zone,Sud Ubangi,Bwamanda,154,1,5,21,49.9,28.7,71.0,0.0,,
 2023,rural,zone,Sud Ubangi,Gemena,96,1,4,31,43.7,14.0,78.8,3.7,0.5,22.4
 2023,rural,zone,Sud Ubangi,Kungu,150,1,5,21,10.3,4.5,22.0,20.8,5.8,53.1
-2023,rural,zone,Sud Ubangi,Libenge,151,1,5,20,23.4,4.2,67.9,0.0,0.0,0.0
+2023,rural,zone,Sud Ubangi,Libenge,151,1,5,20,23.4,4.2,67.9,0.0,,
 2023,rural,zone,Sud Ubangi,Mawuya,150,1,5,18,63.0,31.0,86.6,4.7,0.7,26.5
 2023,rural,zone,Sud Ubangi,Mbaya,150,1,5,11,60.5,49.6,70.4,9.6,3.3,25.1
 2023,rural,zone,Sud Ubangi,Ndage,150,1,5,22,42.6,24.2,63.2,2.2,0.3,14.6
 2023,rural,zone,Sud Ubangi,Tandala,155,1,5,18,47.1,29.3,65.6,7.2,3.6,13.6
 2023,rural,zone,Sud Ubangi,Zongo,90,1,3,15,27.8,7.8,63.6,4.1,0.1,61.4
 2023,rural,zone,Tanganyika,Ankoro,150,1,5,25,86.9,74.8,93.7,4.1,0.8,18.5
-2023,rural,zone,Tanganyika,Kabalo,153,1,5,25,43.1,23.0,65.7,0.0,0.0,0.0
+2023,rural,zone,Tanganyika,Kabalo,153,1,5,25,43.1,23.0,65.7,0.0,,
 2023,rural,zone,Tanganyika,Kalemie,76,1,3,27,41.2,4.1,92.1,18.7,3.2,61.1
 2023,rural,zone,Tanganyika,Kansimba,149,1,5,21,5.6,0.9,27.4,53.8,22.1,82.8
 2023,rural,zone,Tanganyika,Kiambi,157,1,5,26,59.6,47.1,71.0,7.1,4.6,10.8
-2023,rural,zone,Tanganyika,Kongolo,150,1,5,25,45.5,30.5,61.4,0.0,0.0,0.0
+2023,rural,zone,Tanganyika,Kongolo,150,1,5,25,45.5,30.5,61.4,0.0,,
 2023,rural,zone,Tanganyika,Manono,130,1,5,27,81.0,79.1,82.8,7.3,2.6,19.0
-2023,rural,zone,Tanganyika,Mbulula,152,1,5,21,43.9,32.3,56.1,0.0,0.0,0.0
+2023,rural,zone,Tanganyika,Mbulula,152,1,5,21,43.9,32.3,56.1,0.0,,
 2023,rural,zone,Tanganyika,Moba,150,1,5,25,26.7,9.5,55.7,14.2,6.8,27.3
 2023,rural,zone,Tanganyika,Nyemba,171,1,5,21,56.6,39.1,72.6,3.5,0.2,37.8
 2023,rural,zone,Tanganyika,Nyunzu,172,1,5,25,14.6,7.1,27.5,24.7,12.0,44.1
@@ -1274,19 +1274,19 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,all,zone,Equateur,Basankusu,214,1,6,27,43.7,33.6,54.2,0.9,0.2,4.2
 2024,all,zone,Equateur,Bikoro,182,1,5,21,27.2,14.4,45.2,16.6,9.9,26.3
 2024,all,zone,Equateur,Bolenge,173,1,5,11,4.0,1.1,13.5,13.5,6.7,25.1
-2024,all,zone,Equateur,Bolomba,242,1,7,29,41.8,32.7,51.5,0.0,0.0,0.0
+2024,all,zone,Equateur,Bolomba,242,1,7,29,41.8,32.7,51.5,0.0,,
 2024,all,zone,Equateur,Bomongo,176,1,5,16,57.2,33.9,77.6,1.3,0.1,15.0
 2024,all,zone,Equateur,Djombo,184,1,5,14,45.0,14.7,79.5,15.7,5.8,36.1
 2024,all,zone,Equateur,Iboko,187,1,5,15,9.3,2.5,28.5,31.9,14.0,57.3
 2024,all,zone,Equateur,Ingende,176,1,5,19,21.7,4.0,65.2,2.0,0.5,8.1
 2024,all,zone,Equateur,Irebu,179,1,5,7,56.6,39.4,72.4,3.3,1.2,8.8
 2024,all,zone,Equateur,Lilanga Bobangi,179,1,5,12,60.3,47.8,71.6,2.5,1.0,6.1
-2024,all,zone,Equateur,Lotumbe,169,1,5,18,36.1,21.9,53.2,0.0,0.0,0.0
+2024,all,zone,Equateur,Lotumbe,169,1,5,18,36.1,21.9,53.2,0.0,,
 2024,all,zone,Equateur,Lukolela,177,1,5,14,61.7,41.3,78.7,1.3,0.3,5.6
 2024,all,zone,Equateur,Makanza,176,1,5,17,46.1,37.9,54.5,6.1,1.7,19.9
 2024,all,zone,Equateur,Mampoko,193,1,5,13,30.6,23.3,39.0,8.5,1.0,45.2
 2024,all,zone,Equateur,Mbandaka,158,1,5,16,46.6,15.6,80.5,3.0,0.4,20.2
-2024,all,zone,Equateur,Monieka,178,1,5,12,41.5,20.7,65.8,0.0,0.0,0.0
+2024,all,zone,Equateur,Monieka,178,1,5,12,41.5,20.7,65.8,0.0,,
 2024,all,zone,Equateur,Ntondo,178,1,5,14,24.9,12.8,42.9,33.0,23.7,43.8
 2024,all,zone,Equateur,Wangata,177,1,5,11,55.4,30.3,78.0,2.1,0.4,10.4
 2024,all,zone,Haut Katanga,Kafubu,153,1,5,13,62.5,45.6,76.9,15.1,7.4,28.3
@@ -1318,19 +1318,19 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,all,zone,Haut Katanga,Vangu,152,1,5,11,67.6,55.2,77.9,4.5,1.4,13.3
 2024,all,zone,Haut Lomami,Baka,149,1,4,4,86.1,72.6,93.6,7.9,3.4,17.0
 2024,all,zone,Haut Lomami,Bukama,180,1,6,23,59.5,42.6,74.5,0.5,0.0,5.5
-2024,all,zone,Haut Lomami,Butumba,151,1,5,17,68.7,59.4,76.8,0.0,0.0,0.0
-2024,all,zone,Haut Lomami,Kabondo Dianda,149,1,5,20,77.2,71.9,81.8,0.0,0.0,0.0
+2024,all,zone,Haut Lomami,Butumba,151,1,5,17,68.7,59.4,76.8,0.0,,
+2024,all,zone,Haut Lomami,Kabondo Dianda,149,1,5,20,77.2,71.9,81.8,0.0,,
 2024,all,zone,Haut Lomami,Kabongo,249,1,8,40,62.8,51.3,73.0,11.1,7.7,15.7
 2024,all,zone,Haut Lomami,Kamina,183,1,6,24,80.3,67.2,89.0,3.5,1.3,9.2
 2024,all,zone,Haut Lomami,Kaniama,217,1,7,30,57.4,50.2,64.4,13.0,9.7,17.4
 2024,all,zone,Haut Lomami,Kayamba,160,1,5,18,54.0,41.5,66.0,16.9,6.0,39.4
 2024,all,zone,Haut Lomami,Kinda,152,1,5,14,74.5,61.5,84.3,9.5,6.6,13.4
-2024,all,zone,Haut Lomami,Kinkondja,208,1,7,28,59.5,48.1,69.9,0.0,0.0,0.0
+2024,all,zone,Haut Lomami,Kinkondja,208,1,7,28,59.5,48.1,69.9,0.0,,
 2024,all,zone,Haut Lomami,Kitenge,251,1,8,33,60.5,45.2,73.9,8.2,3.6,17.6
-2024,all,zone,Haut Lomami,Lwamba,182,1,6,26,91.1,73.0,97.5,0.0,0.0,0.0
-2024,all,zone,Haut Lomami,Malemba Nkulu,180,1,6,23,66.1,51.4,78.1,0.0,0.0,0.0
-2024,all,zone,Haut Lomami,Mukanga,150,1,5,21,78.5,68.3,86.2,0.0,0.0,0.0
-2024,all,zone,Haut Lomami,Mulongo,180,1,6,23,79.8,69.5,87.3,0.0,0.0,0.0
+2024,all,zone,Haut Lomami,Lwamba,182,1,6,26,91.1,73.0,97.5,0.0,,
+2024,all,zone,Haut Lomami,Malemba Nkulu,180,1,6,23,66.1,51.4,78.1,0.0,,
+2024,all,zone,Haut Lomami,Mukanga,150,1,5,21,78.5,68.3,86.2,0.0,,
+2024,all,zone,Haut Lomami,Mulongo,180,1,6,23,79.8,69.5,87.3,0.0,,
 2024,all,zone,Haut Lomami,Songa,215,1,7,29,58.2,46.2,69.4,13.3,8.1,21.1
 2024,all,zone,Haut Uele,Aba,151,1,5,16,37.4,18.7,60.8,30.9,14.7,53.6
 2024,all,zone,Haut Uele,Boma Mangbetu,152,1,5,14,51.8,39.7,63.8,16.4,10.6,24.4
@@ -1346,7 +1346,7 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,all,zone,Haut Uele,Wamba,153,1,5,17,34.9,12.4,67.0,40.7,19.7,65.7
 2024,all,zone,Haut Uele,Watsa,158,1,5,18,51.3,39.1,63.4,25.3,12.9,43.5
 2024,all,zone,Ituri,Adi,154,1,5,19,45.7,34.1,57.9,5.1,3.5,7.3
-2024,all,zone,Ituri,Adja,152,1,5,18,78.2,50.6,92.6,0.0,0.0,0.0
+2024,all,zone,Ituri,Adja,152,1,5,18,78.2,50.6,92.6,0.0,,
 2024,all,zone,Ituri,Angumu,153,1,5,22,66.8,50.3,80.0,1.0,0.2,5.6
 2024,all,zone,Ituri,Ariwara,152,1,5,22,60.5,35.6,81.0,2.6,0.8,7.9
 2024,all,zone,Ituri,Aru,182,1,6,25,48.1,31.7,64.8,6.1,2.7,13.6
@@ -1375,7 +1375,7 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,all,zone,Ituri,Nyankunde,151,1,5,11,33.9,17.8,54.7,2.1,0.8,5.4
 2024,all,zone,Ituri,Nyarambe,188,1,6,23,65.3,48.0,79.3,6.7,3.0,14.4
 2024,all,zone,Ituri,Rethy,150,1,5,22,66.6,56.5,75.4,4.2,1.1,15.0
-2024,all,zone,Ituri,Rimba,152,1,5,22,85.0,79.0,89.4,0.0,0.0,0.0
+2024,all,zone,Ituri,Rimba,152,1,5,22,85.0,79.0,89.4,0.0,,
 2024,all,zone,Ituri,Rwampara,149,1,5,14,47.7,30.2,65.9,1.9,0.6,6.3
 2024,all,zone,Ituri,Tchomia,155,1,5,13,73.9,42.9,91.4,3.4,2.0,5.8
 2024,all,zone,Kasai,Banga Lubaka,150,1,5,18,51.9,34.8,68.5,6.6,2.1,18.9
@@ -1410,7 +1410,7 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,all,zone,Kasai Central,Luambo,153,1,5,21,62.0,48.5,73.9,0.9,0.1,8.3
 2024,all,zone,Kasai Central,Lubondaie,153,1,5,20,46.1,39.6,52.8,2.8,1.1,6.9
 2024,all,zone,Kasai Central,Lubunga,150,1,5,12,25.7,16.1,38.3,19.6,6.4,46.3
-2024,all,zone,Kasai Central,Luiza,154,1,5,20,77.3,65.5,85.9,0.0,0.0,0.0
+2024,all,zone,Kasai Central,Luiza,154,1,5,20,77.3,65.5,85.9,0.0,,
 2024,all,zone,Kasai Central,Lukonga,157,1,5,19,52.9,40.4,65.1,8.5,3.2,20.7
 2024,all,zone,Kasai Central,Masuika,186,1,6,23,58.5,50.8,65.7,2.4,0.9,6.3
 2024,all,zone,Kasai Central,Mikalayi,184,1,6,26,69.6,59.0,78.4,3.0,0.5,15.8
@@ -1441,32 +1441,32 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,all,zone,Kasai Oriental,Nzaba,154,1,5,18,39.1,32.8,45.8,14.7,10.6,20.0
 2024,all,zone,Kasai Oriental,Tshilenge,152,1,5,21,38.3,26.3,51.9,21.4,13.8,31.8
 2024,all,zone,Kasai Oriental,Tshishimbi,157,1,5,16,36.5,26.4,48.0,19.7,10.9,33.0
-2024,all,zone,Kinshasa,Bandalungwa,150,1,5,8,97.6,77.9,99.8,0.0,0.0,0.0
-2024,all,zone,Kinshasa,Barumbu,150,1,5,10,90.3,82.9,94.7,0.0,0.0,0.0
+2024,all,zone,Kinshasa,Bandalungwa,150,1,5,8,97.6,77.9,99.8,0.0,,
+2024,all,zone,Kinshasa,Barumbu,150,1,5,10,90.3,82.9,94.7,0.0,,
 2024,all,zone,Kinshasa,Binza Meteo,148,1,5,11,88.2,76.5,94.5,2.1,0.4,11.2
 2024,all,zone,Kinshasa,Binza Ozone,155,1,5,15,65.7,56.1,74.2,8.2,3.8,17.1
-2024,all,zone,Kinshasa,Biyela,156,1,5,11,65.1,54.9,74.0,0.0,0.0,0.0
-2024,all,zone,Kinshasa,Bumbu,151,1,5,19,88.7,82.9,92.6,0.0,0.0,0.0
+2024,all,zone,Kinshasa,Biyela,156,1,5,11,65.1,54.9,74.0,0.0,,
+2024,all,zone,Kinshasa,Bumbu,151,1,5,19,88.7,82.9,92.6,0.0,,
 2024,all,zone,Kinshasa,Gombe,149,1,5,10,73.4,32.6,94.0,1.7,0.3,10.7
 2024,all,zone,Kinshasa,Kalamu 1,152,1,5,10,99.2,94.3,99.9,0.2,0.0,4.1
 2024,all,zone,Kinshasa,Kalamu 2,154,1,5,8,89.7,85.1,92.9,1.6,0.5,5.6
-2024,all,zone,Kinshasa,Kasa Vubu,153,1,5,7,98.7,91.1,99.8,0.0,0.0,0.0
+2024,all,zone,Kinshasa,Kasa Vubu,153,1,5,7,98.7,91.1,99.8,0.0,,
 2024,all,zone,Kinshasa,Kikimi,151,1,5,9,78.5,66.1,87.2,2.0,0.7,5.5
-2024,all,zone,Kinshasa,Kimbanseke,149,1,5,11,71.1,61.7,79.0,0.0,0.0,0.0
+2024,all,zone,Kinshasa,Kimbanseke,149,1,5,11,71.1,61.7,79.0,0.0,,
 2024,all,zone,Kinshasa,Kingabwa,148,1,5,10,85.7,61.7,95.7,2.7,0.2,26.7
 2024,all,zone,Kinshasa,Kingasani,159,1,5,8,78.7,66.2,87.5,1.0,0.2,5.2
-2024,all,zone,Kinshasa,Kinshasa,150,1,5,7,97.3,91.9,99.1,0.0,0.0,0.0
+2024,all,zone,Kinshasa,Kinshasa,150,1,5,7,97.3,91.9,99.1,0.0,,
 2024,all,zone,Kinshasa,Kintambo,152,1,5,8,69.1,60.7,76.4,6.6,4.5,9.5
 2024,all,zone,Kinshasa,Kisenso,149,1,5,17,96.2,94.7,97.3,0.5,0.0,6.7
 2024,all,zone,Kinshasa,Kokolo,180,1,6,24,81.7,68.8,90.1,2.1,0.3,12.2
 2024,all,zone,Kinshasa,Lemba,157,1,5,14,89.0,80.2,94.2,4.1,1.3,11.9
 2024,all,zone,Kinshasa,Limete,151,1,5,11,88.6,83.1,92.4,6.7,3.4,12.9
 2024,all,zone,Kinshasa,Lingwala,151,1,5,8,86.1,75.2,92.7,0.6,0.0,7.5
-2024,all,zone,Kinshasa,Makala,147,1,5,14,86.9,73.9,93.9,0.0,0.0,0.0
+2024,all,zone,Kinshasa,Makala,147,1,5,14,86.9,73.9,93.9,0.0,,
 2024,all,zone,Kinshasa,Maluku 1,151,1,5,17,72.3,59.9,82.0,2.5,0.7,8.5
 2024,all,zone,Kinshasa,Maluku 2,149,1,5,12,60.2,23.5,88.2,12.4,3.4,36.6
 2024,all,zone,Kinshasa,Masina 1,154,1,5,12,79.8,66.7,88.7,1.3,0.1,14.5
-2024,all,zone,Kinshasa,Masina 2,149,1,5,11,85.9,76.8,91.8,0.0,0.0,0.0
+2024,all,zone,Kinshasa,Masina 2,149,1,5,11,85.9,76.8,91.8,0.0,,
 2024,all,zone,Kinshasa,Matete,154,1,5,13,90.8,84.5,94.7,3.0,0.8,11.0
 2024,all,zone,Kinshasa,Mont Ngafula 1,151,1,5,17,99.0,94.0,99.8,0.4,0.0,5.8
 2024,all,zone,Kinshasa,Mont Ngafula 2,150,1,5,14,67.5,51.8,80.1,3.6,1.4,8.7
@@ -1509,22 +1509,22 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,all,zone,Kongo Central,Vaku,154,1,5,10,57.6,31.3,80.2,8.1,3.9,16.1
 2024,all,zone,Kwango,Boko,152,1,5,21,39.9,22.7,60.0,10.4,4.4,22.7
 2024,all,zone,Kwango,Feshi,183,1,6,18,75.7,61.1,86.0,1.1,0.1,10.9
-2024,all,zone,Kwango,Kahemba,214,1,7,28,68.7,56.6,78.6,0.0,0.0,0.0
+2024,all,zone,Kwango,Kahemba,214,1,7,28,68.7,56.6,78.6,0.0,,
 2024,all,zone,Kwango,Kajiji,154,1,5,20,60.0,29.8,84.1,2.5,0.2,22.4
 2024,all,zone,Kwango,Kasongo Lunda,153,1,5,21,47.4,31.5,64.0,17.2,9.7,28.6
 2024,all,zone,Kwango,Kenge,213,1,7,29,48.2,31.8,65.0,8.7,4.1,17.5
 2024,all,zone,Kwango,Kimbao,182,1,6,24,89.5,84.2,93.2,1.2,0.1,13.1
 2024,all,zone,Kwango,Kisanji,152,1,5,16,72.3,47.2,88.4,1.9,0.3,11.2
 2024,all,zone,Kwango,Kitenda,191,1,6,23,65.2,52.7,75.9,5.4,1.1,22.8
-2024,all,zone,Kwango,Mwela Lembwa,149,1,5,16,90.0,80.8,95.1,0.0,0.0,0.0
+2024,all,zone,Kwango,Mwela Lembwa,149,1,5,16,90.0,80.8,95.1,0.0,,
 2024,all,zone,Kwango,Panzi,190,1,6,25,43.7,28.3,60.5,21.9,9.9,41.8
 2024,all,zone,Kwango,Popokabaka,213,1,7,30,26.8,15.9,41.5,25.2,12.2,44.9
 2024,all,zone,Kwango,Tembo,161,1,5,15,57.4,28.9,81.7,13.2,3.8,37.2
 2024,all,zone,Kwango,Wamba Lwadi,150,1,5,19,93.8,79.0,98.4,1.6,0.2,9.6
-2024,all,zone,Kwilu,Bagata,183,1,6,23,73.6,60.3,83.6,0.0,0.0,0.0
+2024,all,zone,Kwilu,Bagata,183,1,6,23,73.6,60.3,83.6,0.0,,
 2024,all,zone,Kwilu,Bandundu,188,1,6,24,82.9,65.6,92.5,1.8,0.3,10.3
 2024,all,zone,Kwilu,Bulungu,208,1,7,32,95.1,81.1,98.9,0.5,0.1,4.8
-2024,all,zone,Kwilu,Djuma,237,1,8,35,97.4,85.4,99.6,0.0,0.0,0.0
+2024,all,zone,Kwilu,Djuma,237,1,8,35,97.4,85.4,99.6,0.0,,
 2024,all,zone,Kwilu,Gungu,204,1,7,31,73.6,47.7,89.6,17.1,7.3,35.3
 2024,all,zone,Kwilu,Idiofa,240,1,8,41,86.3,72.2,93.8,0.8,0.1,5.6
 2024,all,zone,Kwilu,Ipamu,211,1,7,32,92.1,84.4,96.2,1.1,0.2,5.2
@@ -1533,17 +1533,17 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,all,zone,Kwilu,Kikwit Sud,178,1,6,24,63.1,45.4,77.8,11.3,2.6,38.0
 2024,all,zone,Kwilu,Kimputu,210,1,7,28,87.2,42.6,98.4,1.2,0.1,10.1
 2024,all,zone,Kwilu,Kingandu,147,1,5,20,89.4,76.7,95.6,2.8,0.7,10.0
-2024,all,zone,Kwilu,Koshibanda,211,1,7,29,68.6,51.7,81.7,0.0,0.0,0.0
+2024,all,zone,Kwilu,Koshibanda,211,1,7,29,68.6,51.7,81.7,0.0,,
 2024,all,zone,Kwilu,Lusanga,240,1,8,37,95.0,86.1,98.3,1.0,0.1,8.3
 2024,all,zone,Kwilu,Masi Manimba,180,1,6,27,80.2,58.8,92.0,8.6,5.3,13.6
 2024,all,zone,Kwilu,Moanza,181,1,6,23,77.1,39.4,94.6,6.7,1.6,24.3
-2024,all,zone,Kwilu,Mokala,241,1,8,35,93.6,76.0,98.6,0.0,0.0,0.0
+2024,all,zone,Kwilu,Mokala,241,1,8,35,93.6,76.0,98.6,0.0,,
 2024,all,zone,Kwilu,Mosango,152,1,5,18,92.4,62.3,98.9,1.4,0.1,14.4
 2024,all,zone,Kwilu,Mukedi,179,1,6,27,80.8,52.8,94.1,7.6,2.3,22.3
 2024,all,zone,Kwilu,Mungindu,186,1,6,24,65.5,51.7,77.2,23.8,15.1,35.4
-2024,all,zone,Kwilu,Pay Kongila,178,1,6,23,95.8,81.4,99.2,0.0,0.0,0.0
+2024,all,zone,Kwilu,Pay Kongila,178,1,6,23,95.8,81.4,99.2,0.0,,
 2024,all,zone,Kwilu,Sia,174,1,5,22,71.8,57.2,82.9,1.2,0.3,5.3
-2024,all,zone,Kwilu,Vanga,240,1,8,42,98.9,95.6,99.7,0.0,0.0,0.0
+2024,all,zone,Kwilu,Vanga,240,1,8,42,98.9,95.6,99.7,0.0,,
 2024,all,zone,Kwilu,Yasa Bonga,184,1,6,27,23.1,13.7,36.3,30.9,19.1,45.8
 2024,all,zone,Lomami,Kabinda,201,1,6,26,54.2,41.2,66.6,9.7,4.9,18.5
 2024,all,zone,Lomami,Kalambayi Kabanga,152,1,5,16,56.2,46.0,65.9,12.4,7.1,20.7
@@ -1619,42 +1619,42 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,all,zone,Mongala,Yamaluka,148,1,5,22,3.2,0.6,15.3,80.7,55.6,93.3
 2024,all,zone,Mongala,Yambuku,269,1,9,40,2.4,0.9,6.2,76.5,68.3,83.1
 2024,all,zone,Mongala,Yamongili,152,1,5,22,5.9,2.7,12.7,61.8,42.3,78.0
-2024,all,zone,Nord Kivu,Alimbongo,150,1,5,21,78.5,58.7,90.3,0.0,0.0,0.0
+2024,all,zone,Nord Kivu,Alimbongo,150,1,5,21,78.5,58.7,90.3,0.0,,
 2024,all,zone,Nord Kivu,Beni,152,1,5,22,61.7,45.0,76.0,0.9,0.1,5.8
 2024,all,zone,Nord Kivu,Biena,151,1,5,16,69.7,33.4,91.3,0.4,0.0,6.3
 2024,all,zone,Nord Kivu,Butembo,150,1,5,16,63.2,41.5,80.6,2.0,0.3,10.9
-2024,all,zone,Nord Kivu,Goma,151,1,5,11,91.9,81.7,96.7,0.0,0.0,0.0
+2024,all,zone,Nord Kivu,Goma,151,1,5,11,91.9,81.7,96.7,0.0,,
 2024,all,zone,Nord Kivu,Itebero,210,1,7,28,20.7,12.1,33.1,0.6,0.1,6.9
-2024,all,zone,Nord Kivu,Kalunguta,149,1,5,18,71.7,44.2,89.0,0.0,0.0,0.0
+2024,all,zone,Nord Kivu,Kalunguta,149,1,5,18,71.7,44.2,89.0,0.0,,
 2024,all,zone,Nord Kivu,Kamango,156,1,5,14,47.8,29.1,67.1,1.6,0.4,5.8
-2024,all,zone,Nord Kivu,Karisimbi,151,1,5,19,76.3,51.0,90.9,0.0,0.0,0.0
+2024,all,zone,Nord Kivu,Karisimbi,151,1,5,19,76.3,51.0,90.9,0.0,,
 2024,all,zone,Nord Kivu,Katwa,151,1,5,20,58.8,31.5,81.5,1.3,0.3,6.0
-2024,all,zone,Nord Kivu,Kayna,182,1,6,23,66.9,56.3,76.1,0.0,0.0,0.0
-2024,all,zone,Nord Kivu,Kibua,150,1,5,19,54.2,39.5,68.1,0.0,0.0,0.0
-2024,all,zone,Nord Kivu,Kirotshe,150,1,5,31,94.1,88.6,97.0,0.0,0.0,0.0
+2024,all,zone,Nord Kivu,Kayna,182,1,6,23,66.9,56.3,76.1,0.0,,
+2024,all,zone,Nord Kivu,Kibua,150,1,5,19,54.2,39.5,68.1,0.0,,
+2024,all,zone,Nord Kivu,Kirotshe,150,1,5,31,94.1,88.6,97.0,0.0,,
 2024,all,zone,Nord Kivu,Kyondo,180,1,6,23,63.1,32.0,86.1,0.3,0.0,4.0
-2024,all,zone,Nord Kivu,Lubero,147,1,5,21,73.7,46.0,90.2,0.0,0.0,0.0
-2024,all,zone,Nord Kivu,Mabalako,156,1,5,16,76.3,42.4,93.4,0.0,0.0,0.0
+2024,all,zone,Nord Kivu,Lubero,147,1,5,21,73.7,46.0,90.2,0.0,,
+2024,all,zone,Nord Kivu,Mabalako,156,1,5,16,76.3,42.4,93.4,0.0,,
 2024,all,zone,Nord Kivu,Manguredjipa,151,1,5,10,63.4,16.9,93.7,0.8,0.0,12.4
-2024,all,zone,Nord Kivu,Masereka,150,1,5,16,84.5,81.0,87.5,0.0,0.0,0.0
-2024,all,zone,Nord Kivu,Masisi,181,1,6,26,59.9,46.4,72.0,0.0,0.0,0.0
+2024,all,zone,Nord Kivu,Masereka,150,1,5,16,84.5,81.0,87.5,0.0,,
+2024,all,zone,Nord Kivu,Masisi,181,1,6,26,59.9,46.4,72.0,0.0,,
 2024,all,zone,Nord Kivu,Musienene,149,1,5,20,77.4,50.1,92.1,2.5,1.3,4.8
 2024,all,zone,Nord Kivu,Mutwanga,150,1,5,20,41.2,33.2,49.6,3.1,0.5,15.6
-2024,all,zone,Nord Kivu,Nyiragongo,149,1,5,11,78.2,71.5,83.7,0.0,0.0,0.0
+2024,all,zone,Nord Kivu,Nyiragongo,149,1,5,11,78.2,71.5,83.7,0.0,,
 2024,all,zone,Nord Kivu,Oicha,189,1,6,27,52.0,31.9,71.4,1.0,0.2,4.5
 2024,all,zone,Nord Kivu,Pinga,149,1,5,19,45.0,20.4,72.3,0.9,0.1,8.3
-2024,all,zone,Nord Kivu,Rutshuru,150,1,5,16,92.9,80.0,97.7,0.0,0.0,0.0
-2024,all,zone,Nord Kivu,Rwanguba,151,1,5,21,81.4,43.8,96.1,0.0,0.0,0.0
+2024,all,zone,Nord Kivu,Rutshuru,150,1,5,16,92.9,80.0,97.7,0.0,,
+2024,all,zone,Nord Kivu,Rwanguba,151,1,5,21,81.4,43.8,96.1,0.0,,
 2024,all,zone,Nord Kivu,Vuhovi,150,1,5,13,63.5,55.9,70.5,1.3,0.1,15.1
-2024,all,zone,Nord Kivu,Walikale,150,1,5,18,8.5,1.7,33.0,0.0,0.0,0.0
+2024,all,zone,Nord Kivu,Walikale,150,1,5,18,8.5,1.7,33.0,0.0,,
 2024,all,zone,Nord Ubangi,Abuzi,149,1,5,14,67.7,43.1,85.3,2.6,0.2,31.1
-2024,all,zone,Nord Ubangi,Bili,149,1,5,19,93.5,62.1,99.2,0.0,0.0,0.0
-2024,all,zone,Nord Ubangi,Bosobolo,148,1,5,20,46.0,24.1,69.4,0.0,0.0,0.0
+2024,all,zone,Nord Ubangi,Bili,149,1,5,19,93.5,62.1,99.2,0.0,,
+2024,all,zone,Nord Ubangi,Bosobolo,148,1,5,20,46.0,24.1,69.4,0.0,,
 2024,all,zone,Nord Ubangi,Businga,148,1,5,13,64.5,34.8,86.1,1.1,0.2,6.3
 2024,all,zone,Nord Ubangi,Gbadolite,151,1,5,16,83.6,77.2,88.5,1.7,0.3,10.0
 2024,all,zone,Nord Ubangi,Karawa,180,1,6,24,73.4,63.8,81.2,2.5,1.1,5.4
 2024,all,zone,Nord Ubangi,Loko,148,1,5,15,68.4,43.3,86.0,4.2,0.5,25.9
-2024,all,zone,Nord Ubangi,Mobayi Mbongo,149,1,5,18,68.3,54.6,79.5,0.0,0.0,0.0
+2024,all,zone,Nord Ubangi,Mobayi Mbongo,149,1,5,18,68.3,54.6,79.5,0.0,,
 2024,all,zone,Nord Ubangi,Wapinda,151,1,5,12,73.2,53.9,86.5,2.8,0.6,11.8
 2024,all,zone,Nord Ubangi,Wasolo,148,1,5,14,71.0,38.2,90.7,2.7,0.6,10.8
 2024,all,zone,Nord Ubangi,Yakoma,152,1,5,13,71.8,59.5,81.5,0.8,0.1,8.2
@@ -1678,14 +1678,14 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,all,zone,Sud Kivu,Bunyakiri,183,1,6,26,56.2,39.6,71.4,1.5,0.3,7.0
 2024,all,zone,Sud Kivu,Fizi,210,1,7,31,65.3,58.0,72.0,6.8,2.4,17.7
 2024,all,zone,Sud Kivu,Haut Plateau,196,1,6,23,37.6,26.0,50.8,0.9,0.2,4.3
-2024,all,zone,Sud Kivu,Ibanda,154,1,5,17,86.4,77.0,92.3,0.0,0.0,0.0
+2024,all,zone,Sud Kivu,Ibanda,154,1,5,17,86.4,77.0,92.3,0.0,,
 2024,all,zone,Sud Kivu,Idjwi,167,1,5,21,59.7,32.8,81.8,0.8,0.1,7.6
 2024,all,zone,Sud Kivu,Itombwe,165,1,5,18,30.0,24.1,36.6,10.2,2.9,30.2
 2024,all,zone,Sud Kivu,Kabare,160,1,5,16,77.2,65.7,85.7,4.8,1.9,11.1
 2024,all,zone,Sud Kivu,Kadutu,152,1,5,14,80.5,69.7,88.0,4.1,1.6,10.3
 2024,all,zone,Sud Kivu,Kalehe,153,1,5,16,54.1,40.2,67.3,0.8,0.1,5.3
 2024,all,zone,Sud Kivu,Kalole,211,1,6,24,37.7,31.4,44.4,28.9,21.9,37.0
-2024,all,zone,Sud Kivu,Kalonge,150,1,5,18,81.7,43.6,96.3,0.0,0.0,0.0
+2024,all,zone,Sud Kivu,Kalonge,150,1,5,18,81.7,43.6,96.3,0.0,,
 2024,all,zone,Sud Kivu,Kamituga,183,1,6,23,64.6,46.3,79.5,7.3,3.9,13.4
 2024,all,zone,Sud Kivu,Kaniola,176,1,5,16,80.5,39.9,96.2,6.2,1.2,27.4
 2024,all,zone,Sud Kivu,Katana,154,1,5,20,76.2,58.7,87.8,0.6,0.0,7.3
@@ -1695,7 +1695,7 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,all,zone,Sud Kivu,Lemera,207,1,6,26,83.1,68.3,91.8,0.2,0.0,3.5
 2024,all,zone,Sud Kivu,Lulingu,156,1,5,21,43.0,17.3,73.1,9.6,2.4,31.1
 2024,all,zone,Sud Kivu,Minembwe,173,1,5,18,10.8,1.6,47.1,14.5,9.5,21.6
-2024,all,zone,Sud Kivu,Minova,168,1,5,21,87.7,70.3,95.6,0.0,0.0,0.0
+2024,all,zone,Sud Kivu,Minova,168,1,5,21,87.7,70.3,95.6,0.0,,
 2024,all,zone,Sud Kivu,Miti Murhesa,151,1,5,20,68.8,49.6,83.2,2.1,0.3,13.3
 2024,all,zone,Sud Kivu,Mubumbano,166,1,5,16,62.2,30.8,85.8,4.6,1.3,15.3
 2024,all,zone,Sud Kivu,Mulungu,166,1,5,20,33.9,22.5,47.4,41.7,35.9,47.7
@@ -1706,7 +1706,7 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,all,zone,Sud Kivu,Nyantende,154,1,5,11,55.3,45.1,65.1,17.1,12.4,23.3
 2024,all,zone,Sud Kivu,Ruzizi,187,1,6,23,49.7,36.5,63.0,6.6,3.5,12.1
 2024,all,zone,Sud Kivu,Shabunda,208,1,6,23,67.1,54.9,77.5,11.5,6.9,18.5
-2024,all,zone,Sud Kivu,Uvira,177,1,5,22,93.1,72.1,98.6,0.0,0.0,0.0
+2024,all,zone,Sud Kivu,Uvira,177,1,5,22,93.1,72.1,98.6,0.0,,
 2024,all,zone,Sud Kivu,Walungu,210,1,6,23,89.0,76.0,95.4,0.6,0.1,5.4
 2024,all,zone,Sud Ubangi,Bangabola,153,1,5,17,15.4,8.6,26.3,37.5,24.8,52.2
 2024,all,zone,Sud Ubangi,Bogosenubea,153,1,5,21,22.9,13.3,36.4,3.1,0.6,14.1
@@ -1724,14 +1724,14 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,all,zone,Sud Ubangi,Ndage,152,1,5,22,42.7,21.3,67.1,22.0,11.8,37.4
 2024,all,zone,Sud Ubangi,Tandala,178,1,6,23,41.7,25.5,59.9,11.8,4.0,30.4
 2024,all,zone,Sud Ubangi,Zongo,151,1,5,14,28.0,13.2,49.9,3.5,0.9,13.3
-2024,all,zone,Tanganyika,Ankoro,174,1,6,25,89.4,84.0,93.1,0.0,0.0,0.0
+2024,all,zone,Tanganyika,Ankoro,174,1,6,25,89.4,84.0,93.1,0.0,,
 2024,all,zone,Tanganyika,Kabalo,179,1,6,24,74.9,61.0,85.1,0.4,0.0,5.1
 2024,all,zone,Tanganyika,Kalemie,188,1,6,27,51.2,22.4,79.3,7.3,2.3,20.9
 2024,all,zone,Tanganyika,Kansimba,155,1,5,21,37.1,26.4,49.3,20.7,15.0,27.8
 2024,all,zone,Tanganyika,Kiambi,172,1,6,26,87.2,77.7,93.0,1.6,0.5,5.4
 2024,all,zone,Tanganyika,Kongolo,180,1,6,25,80.4,50.9,94.2,0.6,0.1,6.0
-2024,all,zone,Tanganyika,Manono,168,1,6,27,93.0,86.0,96.6,0.0,0.0,0.0
-2024,all,zone,Tanganyika,Mbulula,148,1,5,21,83.5,65.9,92.9,0.0,0.0,0.0
+2024,all,zone,Tanganyika,Manono,168,1,6,27,93.0,86.0,96.6,0.0,,
+2024,all,zone,Tanganyika,Mbulula,148,1,5,21,83.5,65.9,92.9,0.0,,
 2024,all,zone,Tanganyika,Moba,187,1,6,25,36.9,25.8,49.6,14.0,9.1,20.8
 2024,all,zone,Tanganyika,Nyemba,159,1,5,21,79.6,52.5,93.3,1.2,0.1,20.3
 2024,all,zone,Tanganyika,Nyunzu,191,1,6,25,25.7,23.1,28.5,30.4,18.5,45.6
@@ -1766,7 +1766,7 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,all,zone,Tshuapa,Lingomo,146,1,5,19,7.1,3.0,15.8,20.6,13.7,29.7
 2024,all,zone,Tshuapa,Mompono,151,1,5,16,37.8,32.0,44.0,23.1,17.5,29.9
 2024,all,zone,Tshuapa,Mondombe,145,1,5,22,14.3,5.9,31.0,15.8,5.4,38.0
-2024,all,zone,Tshuapa,Monkoto,147,1,5,25,0.0,0.0,0.0,44.8,27.4,63.6
+2024,all,zone,Tshuapa,Monkoto,147,1,5,25,0.0,,,44.8,27.4,63.6
 2024,all,zone,Tshuapa,Wema,152,1,5,20,19.1,9.6,34.2,8.9,3.5,20.8
 2024,all,zone,Tshuapa,Yalifafu,148,1,5,21,6.9,3.5,13.1,44.1,27.2,62.5
 2024,urbain,national,,,15009,509,619,3226,66.0,64.1,67.8,8.8,7.8,9.9
@@ -1781,7 +1781,7 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,urbain,province,Kasai Oriental,,1547,19,54,201,44.0,39.1,49.0,14.5,12.0,17.4
 2024,urbain,province,Kinshasa,,4787,35,168,405,84.1,81.7,86.3,1.6,1.2,2.2
 2024,urbain,province,Kongo Central,,302,31,14,82,72.1,60.6,81.3,7.7,2.6,20.9
-2024,urbain,province,Kwango,,4,14,4,79,100.0,100.0,100.0,0.0,0.0,0.0
+2024,urbain,province,Kwango,,4,14,4,79,100.0,,,0.0,,
 2024,urbain,province,Kwilu,,501,24,28,287,74.0,63.9,82.1,7.4,2.9,17.8
 2024,urbain,province,Lomami,,405,16,21,135,52.2,42.5,61.7,3.1,1.5,6.1
 2024,urbain,province,Lualaba,,313,14,13,85,57.3,43.4,70.2,11.6,5.6,22.3
@@ -1799,7 +1799,7 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,urbain,zone,Bas Uele,Buta,63,1,4,16,34.1,16.6,57.4,34.0,15.7,58.8
 2024,urbain,zone,Equateur,Bolomba,1,1,1,29,100.0,,,0.0,,
 2024,urbain,zone,Equateur,Ingende,6,1,2,19,31.1,0.1,95.8,0.0,,
-2024,urbain,zone,Equateur,Lotumbe,5,1,3,18,91.0,2.6,100.0,0.0,0.0,0.0
+2024,urbain,zone,Equateur,Lotumbe,5,1,3,18,91.0,2.6,100.0,0.0,,
 2024,urbain,zone,Equateur,Lukolela,2,1,2,14,0.0,,,0.0,,
 2024,urbain,zone,Equateur,Mbandaka,90,1,3,16,54.1,9.9,92.7,0.7,0.0,38.8
 2024,urbain,zone,Equateur,Monieka,3,1,2,12,31.7,0.0,100.0,0.0,,
@@ -1863,33 +1863,33 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,urbain,zone,Kasai Oriental,Mukumbi,11,1,3,16,54.9,13.2,90.7,26.6,6.4,66.0
 2024,urbain,zone,Kasai Oriental,Muya,157,1,5,19,41.4,36.2,46.8,15.3,12.0,19.4
 2024,urbain,zone,Kasai Oriental,Nzaba,153,1,5,18,39.4,32.7,46.5,14.8,10.7,20.0
-2024,urbain,zone,Kinshasa,Bandalungwa,150,1,5,8,97.6,77.9,99.8,0.0,0.0,0.0
-2024,urbain,zone,Kinshasa,Barumbu,150,1,5,10,90.3,82.9,94.7,0.0,0.0,0.0
+2024,urbain,zone,Kinshasa,Bandalungwa,150,1,5,8,97.6,77.9,99.8,0.0,,
+2024,urbain,zone,Kinshasa,Barumbu,150,1,5,10,90.3,82.9,94.7,0.0,,
 2024,urbain,zone,Kinshasa,Binza Meteo,148,1,5,11,88.2,76.5,94.5,2.1,0.4,11.2
 2024,urbain,zone,Kinshasa,Binza Ozone,151,1,5,15,65.7,54.8,75.1,8.4,3.8,17.6
-2024,urbain,zone,Kinshasa,Biyela,141,1,5,11,65.4,54.6,74.8,0.0,0.0,0.0
-2024,urbain,zone,Kinshasa,Bumbu,151,1,5,19,88.7,82.9,92.6,0.0,0.0,0.0
+2024,urbain,zone,Kinshasa,Biyela,141,1,5,11,65.4,54.6,74.8,0.0,,
+2024,urbain,zone,Kinshasa,Bumbu,151,1,5,19,88.7,82.9,92.6,0.0,,
 2024,urbain,zone,Kinshasa,Gombe,149,1,5,10,73.4,32.6,94.0,1.7,0.3,10.7
 2024,urbain,zone,Kinshasa,Kalamu 1,152,1,5,10,99.2,94.3,99.9,0.2,0.0,4.1
 2024,urbain,zone,Kinshasa,Kalamu 2,154,1,5,8,89.7,85.1,92.9,1.6,0.5,5.6
-2024,urbain,zone,Kinshasa,Kasa Vubu,153,1,5,7,98.7,91.1,99.8,0.0,0.0,0.0
+2024,urbain,zone,Kinshasa,Kasa Vubu,153,1,5,7,98.7,91.1,99.8,0.0,,
 2024,urbain,zone,Kinshasa,Kikimi,151,1,5,9,78.5,66.1,87.2,2.0,0.7,5.5
-2024,urbain,zone,Kinshasa,Kimbanseke,148,1,5,11,70.9,61.4,78.8,0.0,0.0,0.0
+2024,urbain,zone,Kinshasa,Kimbanseke,148,1,5,11,70.9,61.4,78.8,0.0,,
 2024,urbain,zone,Kinshasa,Kingabwa,147,1,5,10,85.6,61.3,95.7,2.8,0.2,26.7
 2024,urbain,zone,Kinshasa,Kingasani,159,1,5,8,78.7,66.2,87.5,1.0,0.2,5.2
-2024,urbain,zone,Kinshasa,Kinshasa,150,1,5,7,97.3,91.9,99.1,0.0,0.0,0.0
+2024,urbain,zone,Kinshasa,Kinshasa,150,1,5,7,97.3,91.9,99.1,0.0,,
 2024,urbain,zone,Kinshasa,Kintambo,152,1,5,8,69.1,60.7,76.4,6.6,4.5,9.5
 2024,urbain,zone,Kinshasa,Kisenso,149,1,5,17,96.2,94.7,97.3,0.5,0.0,6.7
 2024,urbain,zone,Kinshasa,Kokolo,180,1,6,24,81.7,68.8,90.1,2.1,0.3,12.2
 2024,urbain,zone,Kinshasa,Lemba,155,1,5,14,88.9,79.6,94.2,4.1,1.3,12.2
 2024,urbain,zone,Kinshasa,Limete,150,1,5,11,88.5,83.2,92.4,6.8,3.4,12.9
 2024,urbain,zone,Kinshasa,Lingwala,151,1,5,8,86.1,75.2,92.7,0.6,0.0,7.5
-2024,urbain,zone,Kinshasa,Makala,147,1,5,14,86.9,73.9,93.9,0.0,0.0,0.0
+2024,urbain,zone,Kinshasa,Makala,147,1,5,14,86.9,73.9,93.9,0.0,,
 2024,urbain,zone,Kinshasa,Maluku 1,15,1,2,17,59.8,35.2,81.2,0.0,,
 2024,urbain,zone,Kinshasa,Masina 1,154,1,5,12,79.8,66.6,88.7,1.3,0.1,14.5
-2024,urbain,zone,Kinshasa,Masina 2,149,1,5,11,85.9,76.8,91.8,0.0,0.0,0.0
+2024,urbain,zone,Kinshasa,Masina 2,149,1,5,11,85.9,76.8,91.8,0.0,,
 2024,urbain,zone,Kinshasa,Matete,154,1,5,13,90.8,84.5,94.7,3.0,0.8,11.0
-2024,urbain,zone,Kinshasa,Mont Ngafula 1,123,1,5,17,99.3,91.7,100.0,0.0,0.0,0.0
+2024,urbain,zone,Kinshasa,Mont Ngafula 1,123,1,5,17,99.3,91.7,100.0,0.0,,
 2024,urbain,zone,Kinshasa,Mont Ngafula 2,32,1,5,14,53.7,28.8,76.9,4.4,0.8,20.8
 2024,urbain,zone,Kinshasa,Ndjili,152,1,5,14,95.5,93.0,97.1,0.8,0.1,8.0
 2024,urbain,zone,Kinshasa,Ngaba,149,1,5,6,89.9,73.7,96.6,0.7,0.1,7.8
@@ -1942,8 +1942,8 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,urbain,zone,Mongala,Lisala,98,1,5,34,40.1,18.4,66.6,28.8,18.3,42.2
 2024,urbain,zone,Nord Kivu,Beni,152,1,5,22,61.7,44.8,76.1,0.9,0.1,5.9
 2024,urbain,zone,Nord Kivu,Butembo,146,1,5,16,63.5,40.7,81.5,2.1,0.3,12.0
-2024,urbain,zone,Nord Kivu,Goma,151,1,5,11,91.9,81.5,96.7,0.0,0.0,0.0
-2024,urbain,zone,Nord Kivu,Karisimbi,134,1,5,19,76.9,50.9,91.5,0.0,0.0,0.0
+2024,urbain,zone,Nord Kivu,Goma,151,1,5,11,91.9,81.5,96.7,0.0,,
+2024,urbain,zone,Nord Kivu,Karisimbi,134,1,5,19,76.9,50.9,91.5,0.0,,
 2024,urbain,zone,Nord Kivu,Katwa,151,1,5,20,58.8,31.2,81.8,1.3,0.3,6.1
 2024,urbain,zone,Nord Kivu,Kayna,1,1,1,23,100.0,,,0.0,,
 2024,urbain,zone,Nord Kivu,Masisi,1,1,1,26,100.0,,,0.0,,
@@ -1952,22 +1952,22 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,urbain,zone,Nord Kivu,Vuhovi,1,1,1,13,100.0,,,0.0,,
 2024,urbain,zone,Nord Ubangi,Businga,5,1,1,13,80.0,,,0.0,,
 2024,urbain,zone,Nord Ubangi,Gbadolite,150,1,5,16,83.5,76.3,88.8,1.7,0.2,10.9
-2024,urbain,zone,Nord Ubangi,Karawa,8,1,2,24,100.0,100.0,100.0,0.0,,
+2024,urbain,zone,Nord Ubangi,Karawa,8,1,2,24,100.0,,,0.0,,
 2024,urbain,zone,Nord Ubangi,Loko,1,1,1,15,100.0,,,0.0,,
 2024,urbain,zone,Sud Kivu,Bagira,145,1,5,8,68.6,51.0,82.1,3.4,0.3,26.0
 2024,urbain,zone,Sud Kivu,Fizi,58,1,2,31,67.2,35.9,90.1,3.4,1.6,6.3
-2024,urbain,zone,Sud Kivu,Ibanda,154,1,5,17,86.4,76.8,92.4,0.0,0.0,0.0
+2024,urbain,zone,Sud Kivu,Ibanda,154,1,5,17,86.4,76.8,92.4,0.0,,
 2024,urbain,zone,Sud Kivu,Kadutu,152,1,5,14,80.5,69.5,88.2,4.1,1.5,10.4
 2024,urbain,zone,Sud Kivu,Kimbi Lulenge,1,1,1,24,100.0,,,0.0,,
-2024,urbain,zone,Sud Kivu,Uvira,142,1,5,22,92.6,68.5,98.6,0.0,0.0,0.0
+2024,urbain,zone,Sud Kivu,Uvira,142,1,5,22,92.6,68.5,98.6,0.0,,
 2024,urbain,zone,Sud Ubangi,Boto,2,1,1,21,0.0,,,0.0,,
 2024,urbain,zone,Sud Ubangi,Budjala,1,1,1,17,0.0,,,0.0,,
 2024,urbain,zone,Sud Ubangi,Gemena,55,1,3,31,49.3,37.5,61.3,4.6,0.6,29.2
 2024,urbain,zone,Sud Ubangi,Mawuya,3,1,1,18,0.0,,,0.0,,
 2024,urbain,zone,Sud Ubangi,Zongo,7,1,2,14,25.2,0.0,96.4,0.0,,
 2024,urbain,zone,Tanganyika,Kalemie,98,1,4,27,58.4,12.6,93.2,5.7,0.6,38.4
-2024,urbain,zone,Tanganyika,Kongolo,32,1,3,25,84.2,35.0,98.1,0.0,0.0,0.0
-2024,urbain,zone,Tanganyika,Manono,17,1,3,27,86.0,2.3,99.9,0.0,0.0,0.0
+2024,urbain,zone,Tanganyika,Kongolo,32,1,3,25,84.2,35.0,98.1,0.0,,
+2024,urbain,zone,Tanganyika,Manono,17,1,3,27,86.0,2.3,99.9,0.0,,
 2024,urbain,zone,Tanganyika,Moba,28,1,4,25,21.4,0.8,89.7,1.6,0.1,33.9
 2024,urbain,zone,Tanganyika,Nyemba,36,1,1,21,91.7,,,0.0,,
 2024,urbain,zone,Tshopo,Basoko,1,1,1,21,0.0,,,0.0,,
@@ -2022,19 +2022,19 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,rural,zone,Equateur,Basankusu,214,1,6,27,43.7,33.6,54.2,0.9,0.2,4.2
 2024,rural,zone,Equateur,Bikoro,182,1,5,21,27.2,14.4,45.2,16.6,9.9,26.3
 2024,rural,zone,Equateur,Bolenge,173,1,5,11,4.0,1.1,13.5,13.5,6.7,25.1
-2024,rural,zone,Equateur,Bolomba,241,1,7,29,41.6,32.3,51.5,0.0,0.0,0.0
+2024,rural,zone,Equateur,Bolomba,241,1,7,29,41.6,32.3,51.5,0.0,,
 2024,rural,zone,Equateur,Bomongo,176,1,5,16,57.2,33.9,77.7,1.3,0.1,15.0
 2024,rural,zone,Equateur,Djombo,184,1,5,14,45.0,14.7,79.5,15.7,5.8,36.1
 2024,rural,zone,Equateur,Iboko,187,1,5,15,9.3,2.5,28.5,31.9,14.0,57.3
 2024,rural,zone,Equateur,Ingende,170,1,5,19,21.5,3.7,66.3,2.1,0.5,8.1
 2024,rural,zone,Equateur,Irebu,179,1,5,7,56.6,39.3,72.4,3.3,1.2,8.8
 2024,rural,zone,Equateur,Lilanga Bobangi,179,1,5,12,60.3,47.8,71.6,2.5,1.0,6.1
-2024,rural,zone,Equateur,Lotumbe,164,1,5,18,33.9,21.9,48.4,0.0,0.0,0.0
+2024,rural,zone,Equateur,Lotumbe,164,1,5,18,33.9,21.9,48.4,0.0,,
 2024,rural,zone,Equateur,Lukolela,175,1,5,14,62.3,41.0,79.8,1.3,0.3,5.7
 2024,rural,zone,Equateur,Makanza,176,1,5,17,46.1,37.8,54.5,6.1,1.7,19.9
 2024,rural,zone,Equateur,Mampoko,193,1,5,13,30.6,23.3,39.0,8.5,1.0,45.2
 2024,rural,zone,Equateur,Mbandaka,68,1,3,16,15.9,2.1,62.0,12.5,2.5,44.5
-2024,rural,zone,Equateur,Monieka,175,1,5,12,41.6,20.9,65.8,0.0,0.0,0.0
+2024,rural,zone,Equateur,Monieka,175,1,5,12,41.6,20.9,65.8,0.0,,
 2024,rural,zone,Equateur,Ntondo,178,1,5,14,24.9,12.8,43.0,33.0,23.7,43.8
 2024,rural,zone,Equateur,Wangata,2,1,2,11,0.0,,,65.0,4.5,99.7
 2024,rural,zone,Haut Katanga,Kafubu,153,1,5,13,62.5,45.6,76.9,15.1,7.4,28.3
@@ -2057,22 +2057,22 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,rural,zone,Haut Katanga,Panda,153,1,5,9,68.0,41.4,86.4,19.5,4.5,55.7
 2024,rural,zone,Haut Katanga,Pweto,157,1,5,17,27.5,18.5,38.8,28.6,20.6,38.2
 2024,rural,zone,Haut Katanga,Sakania,150,1,5,17,32.2,18.5,49.7,47.9,33.6,62.5
-2024,rural,zone,Haut Katanga,Vangu,13,1,3,11,40.5,6.5,86.9,0.0,0.0,0.0
+2024,rural,zone,Haut Katanga,Vangu,13,1,3,11,40.5,6.5,86.9,0.0,,
 2024,rural,zone,Haut Lomami,Baka,147,1,4,4,86.5,74.6,93.3,7.5,3.4,15.4
 2024,rural,zone,Haut Lomami,Bukama,180,1,6,23,59.5,42.6,74.5,0.5,0.0,5.5
-2024,rural,zone,Haut Lomami,Butumba,151,1,5,17,68.7,59.4,76.8,0.0,0.0,0.0
-2024,rural,zone,Haut Lomami,Kabondo Dianda,149,1,5,20,77.2,71.9,81.8,0.0,0.0,0.0
+2024,rural,zone,Haut Lomami,Butumba,151,1,5,17,68.7,59.4,76.8,0.0,,
+2024,rural,zone,Haut Lomami,Kabondo Dianda,149,1,5,20,77.2,71.9,81.8,0.0,,
 2024,rural,zone,Haut Lomami,Kabongo,249,1,8,40,62.8,51.3,73.0,11.1,7.7,15.7
 2024,rural,zone,Haut Lomami,Kamina,85,1,5,24,74.2,49.4,89.5,5.4,1.9,14.6
 2024,rural,zone,Haut Lomami,Kaniama,217,1,7,30,57.4,50.2,64.4,13.0,9.7,17.4
 2024,rural,zone,Haut Lomami,Kayamba,160,1,5,18,54.0,41.5,66.0,16.9,6.0,39.4
 2024,rural,zone,Haut Lomami,Kinda,152,1,5,14,74.5,61.5,84.3,9.5,6.6,13.4
-2024,rural,zone,Haut Lomami,Kinkondja,208,1,7,28,59.5,48.1,69.9,0.0,0.0,0.0
+2024,rural,zone,Haut Lomami,Kinkondja,208,1,7,28,59.5,48.1,69.9,0.0,,
 2024,rural,zone,Haut Lomami,Kitenge,251,1,8,33,60.5,45.2,73.9,8.2,3.6,17.6
-2024,rural,zone,Haut Lomami,Lwamba,182,1,6,26,91.1,73.0,97.5,0.0,0.0,0.0
-2024,rural,zone,Haut Lomami,Malemba Nkulu,180,1,6,23,66.1,51.4,78.1,0.0,0.0,0.0
-2024,rural,zone,Haut Lomami,Mukanga,150,1,5,21,78.5,68.3,86.2,0.0,0.0,0.0
-2024,rural,zone,Haut Lomami,Mulongo,180,1,6,23,79.8,69.5,87.3,0.0,0.0,0.0
+2024,rural,zone,Haut Lomami,Lwamba,182,1,6,26,91.1,73.0,97.5,0.0,,
+2024,rural,zone,Haut Lomami,Malemba Nkulu,180,1,6,23,66.1,51.4,78.1,0.0,,
+2024,rural,zone,Haut Lomami,Mukanga,150,1,5,21,78.5,68.3,86.2,0.0,,
+2024,rural,zone,Haut Lomami,Mulongo,180,1,6,23,79.8,69.5,87.3,0.0,,
 2024,rural,zone,Haut Lomami,Songa,215,1,7,29,58.2,46.2,69.4,13.3,8.1,21.1
 2024,rural,zone,Haut Uele,Aba,151,1,5,16,37.4,18.7,60.8,30.9,14.7,53.6
 2024,rural,zone,Haut Uele,Boma Mangbetu,152,1,5,14,51.8,39.7,63.8,16.4,10.6,24.4
@@ -2088,7 +2088,7 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,rural,zone,Haut Uele,Wamba,153,1,5,17,34.9,12.4,67.0,40.7,19.7,65.7
 2024,rural,zone,Haut Uele,Watsa,43,1,4,18,51.5,38.2,64.5,20.1,5.2,53.6
 2024,rural,zone,Ituri,Adi,154,1,5,19,45.7,34.1,57.9,5.1,3.5,7.3
-2024,rural,zone,Ituri,Adja,151,1,5,18,78.6,52.1,92.6,0.0,0.0,0.0
+2024,rural,zone,Ituri,Adja,151,1,5,18,78.6,52.1,92.6,0.0,,
 2024,rural,zone,Ituri,Angumu,153,1,5,22,66.8,50.3,80.0,1.0,0.2,5.6
 2024,rural,zone,Ituri,Ariwara,152,1,5,22,60.5,35.6,81.0,2.6,0.8,7.9
 2024,rural,zone,Ituri,Aru,182,1,6,25,48.1,31.7,64.8,6.1,2.7,13.6
@@ -2117,7 +2117,7 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,rural,zone,Ituri,Nyankunde,151,1,5,11,33.9,17.8,54.7,2.1,0.8,5.4
 2024,rural,zone,Ituri,Nyarambe,188,1,6,23,65.3,48.0,79.3,6.7,3.0,14.4
 2024,rural,zone,Ituri,Rethy,150,1,5,22,66.6,56.5,75.4,4.2,1.1,15.0
-2024,rural,zone,Ituri,Rimba,151,1,5,22,84.9,79.0,89.3,0.0,0.0,0.0
+2024,rural,zone,Ituri,Rimba,151,1,5,22,84.9,79.0,89.3,0.0,,
 2024,rural,zone,Ituri,Rwampara,127,1,5,14,47.9,29.2,67.2,1.7,0.4,6.9
 2024,rural,zone,Ituri,Tchomia,155,1,5,13,73.9,42.9,91.4,3.4,2.0,5.8
 2024,rural,zone,Kasai,Banga Lubaka,150,1,5,18,51.9,34.8,68.5,6.6,2.1,18.9
@@ -2125,7 +2125,7 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,rural,zone,Kasai,Dekese,178,1,6,23,14.1,8.2,23.1,50.2,37.4,63.0
 2024,rural,zone,Kasai,Ilebo,151,1,5,19,28.7,23.0,35.3,30.0,20.8,41.1
 2024,rural,zone,Kasai,Kakenge,179,1,6,24,54.9,41.5,67.7,6.7,3.2,13.4
-2024,rural,zone,Kasai,Kalonda Ouest,15,1,3,28,0.0,0.0,0.0,43.4,13.3,79.3
+2024,rural,zone,Kasai,Kalonda Ouest,15,1,3,28,0.0,,,43.4,13.3,79.3
 2024,rural,zone,Kasai,Kamonia,176,1,6,25,19.4,9.2,36.5,29.0,21.5,37.9
 2024,rural,zone,Kasai,Kamwesha,210,1,7,28,23.0,13.3,36.7,35.5,21.8,51.9
 2024,rural,zone,Kasai,Kanzala,19,1,5,17,27.7,6.2,69.0,61.8,28.0,87.0
@@ -2141,7 +2141,7 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,rural,zone,Kasai Central,Bena Leka,181,1,6,25,45.6,23.5,69.6,12.9,6.5,23.9
 2024,rural,zone,Kasai Central,Bena Tshadi,154,1,5,11,50.3,32.2,68.3,3.8,0.7,18.7
 2024,rural,zone,Kasai Central,Bilomba,151,1,5,15,57.9,47.9,67.2,3.8,0.7,18.7
-2024,rural,zone,Kasai Central,Bobozo,31,1,4,9,58.9,30.0,82.7,0.0,0.0,0.0
+2024,rural,zone,Kasai Central,Bobozo,31,1,4,9,58.9,30.0,82.7,0.0,,
 2024,rural,zone,Kasai Central,Bunkonde,149,1,5,14,55.4,44.9,65.4,8.8,4.0,18.3
 2024,rural,zone,Kasai Central,Demba,180,1,6,26,28.0,20.0,37.8,17.9,10.3,29.3
 2024,rural,zone,Kasai Central,Dibaya,153,1,5,17,42.6,21.6,66.6,7.0,1.6,26.2
@@ -2152,7 +2152,7 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,rural,zone,Kasai Central,Luambo,153,1,5,21,62.0,48.5,73.9,0.9,0.1,8.4
 2024,rural,zone,Kasai Central,Lubondaie,152,1,5,20,45.5,38.0,53.3,2.8,1.1,7.0
 2024,rural,zone,Kasai Central,Lubunga,149,1,5,12,25.2,15.9,37.7,19.7,6.5,46.3
-2024,rural,zone,Kasai Central,Luiza,154,1,5,20,77.3,65.5,85.9,0.0,0.0,0.0
+2024,rural,zone,Kasai Central,Luiza,154,1,5,20,77.3,65.5,85.9,0.0,,
 2024,rural,zone,Kasai Central,Lukonga,10,1,4,19,68.5,9.1,97.9,6.3,0.7,38.9
 2024,rural,zone,Kasai Central,Masuika,186,1,6,23,58.5,50.8,65.7,2.4,0.9,6.3
 2024,rural,zone,Kasai Central,Mikalayi,184,1,6,26,69.6,59.0,78.4,3.0,0.5,15.8
@@ -2184,7 +2184,7 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,rural,zone,Kinshasa,Maluku 2,149,1,5,12,60.2,23.1,88.4,12.4,3.3,37.1
 2024,rural,zone,Kinshasa,Mont Ngafula 1,28,1,1,17,96.4,,,3.6,,
 2024,rural,zone,Kinshasa,Mont Ngafula 2,118,1,5,14,71.5,55.8,83.2,3.4,1.1,10.0
-2024,rural,zone,Kinshasa,Nsele,50,1,3,14,52.3,13.1,88.9,0.0,0.0,0.0
+2024,rural,zone,Kinshasa,Nsele,50,1,3,14,52.3,13.1,88.9,0.0,,
 2024,rural,zone,Kinshasa,Police,30,1,2,11,84.0,37.4,99.6,0.0,,
 2024,rural,zone,Kongo Central,Boko Kivulu,150,1,5,20,66.0,50.8,78.4,10.8,6.5,17.5
 2024,rural,zone,Kongo Central,Boma,153,1,5,12,67.3,57.0,76.2,9.8,6.3,14.7
@@ -2218,22 +2218,22 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,rural,zone,Kongo Central,Vaku,154,1,5,10,57.6,31.3,80.2,8.1,3.9,16.1
 2024,rural,zone,Kwango,Boko,152,1,5,21,39.9,22.7,60.0,10.4,4.4,22.7
 2024,rural,zone,Kwango,Feshi,183,1,6,18,75.7,61.1,86.0,1.1,0.1,10.9
-2024,rural,zone,Kwango,Kahemba,214,1,7,28,68.7,56.6,78.6,0.0,0.0,0.0
+2024,rural,zone,Kwango,Kahemba,214,1,7,28,68.7,56.6,78.6,0.0,,
 2024,rural,zone,Kwango,Kajiji,153,1,5,20,59.5,29.8,83.6,2.6,0.2,22.4
 2024,rural,zone,Kwango,Kasongo Lunda,153,1,5,21,47.4,31.5,64.0,17.2,9.7,28.6
 2024,rural,zone,Kwango,Kenge,213,1,7,29,48.2,31.8,65.0,8.7,4.1,17.5
 2024,rural,zone,Kwango,Kimbao,181,1,6,24,89.5,84.1,93.2,1.2,0.1,13.2
 2024,rural,zone,Kwango,Kisanji,151,1,5,16,72.1,47.3,88.1,1.9,0.3,11.2
 2024,rural,zone,Kwango,Kitenda,191,1,6,23,65.2,52.7,75.9,5.4,1.1,22.8
-2024,rural,zone,Kwango,Mwela Lembwa,149,1,5,16,90.0,80.8,95.1,0.0,0.0,0.0
+2024,rural,zone,Kwango,Mwela Lembwa,149,1,5,16,90.0,80.8,95.1,0.0,,
 2024,rural,zone,Kwango,Panzi,190,1,6,25,43.7,28.3,60.5,21.9,9.9,41.8
 2024,rural,zone,Kwango,Popokabaka,213,1,7,30,26.8,15.9,41.5,25.2,12.2,44.9
 2024,rural,zone,Kwango,Tembo,161,1,5,15,57.4,28.9,81.7,13.2,3.8,37.2
 2024,rural,zone,Kwango,Wamba Lwadi,149,1,5,19,93.7,79.0,98.3,1.6,0.3,9.6
-2024,rural,zone,Kwilu,Bagata,183,1,6,23,73.6,60.3,83.6,0.0,0.0,0.0
+2024,rural,zone,Kwilu,Bagata,183,1,6,23,73.6,60.3,83.6,0.0,,
 2024,rural,zone,Kwilu,Bandundu,61,1,5,24,92.7,71.3,98.5,1.8,0.4,8.0
 2024,rural,zone,Kwilu,Bulungu,208,1,7,32,95.1,81.1,98.9,0.5,0.1,4.8
-2024,rural,zone,Kwilu,Djuma,237,1,8,35,97.4,85.4,99.6,0.0,0.0,0.0
+2024,rural,zone,Kwilu,Djuma,237,1,8,35,97.4,85.4,99.6,0.0,,
 2024,rural,zone,Kwilu,Gungu,189,1,7,31,78.2,60.3,89.5,12.2,6.3,22.4
 2024,rural,zone,Kwilu,Idiofa,240,1,8,41,86.3,72.2,93.8,0.8,0.1,5.6
 2024,rural,zone,Kwilu,Ipamu,210,1,7,32,92.1,84.2,96.2,1.1,0.2,5.2
@@ -2242,17 +2242,17 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,rural,zone,Kwilu,Kikwit Sud,12,1,2,24,42.8,0.0,100.0,0.0,,
 2024,rural,zone,Kwilu,Kimputu,210,1,7,28,87.2,42.6,98.4,1.2,0.1,10.1
 2024,rural,zone,Kwilu,Kingandu,147,1,5,20,89.4,76.7,95.6,2.8,0.7,10.0
-2024,rural,zone,Kwilu,Koshibanda,211,1,7,29,68.6,51.7,81.7,0.0,0.0,0.0
+2024,rural,zone,Kwilu,Koshibanda,211,1,7,29,68.6,51.7,81.7,0.0,,
 2024,rural,zone,Kwilu,Lusanga,240,1,8,37,95.0,86.1,98.3,1.0,0.1,8.3
 2024,rural,zone,Kwilu,Masi Manimba,166,1,6,27,81.0,56.6,93.3,8.8,4.3,17.1
 2024,rural,zone,Kwilu,Moanza,180,1,6,23,77.0,39.4,94.6,6.7,1.6,24.4
-2024,rural,zone,Kwilu,Mokala,241,1,8,35,93.6,76.0,98.6,0.0,0.0,0.0
+2024,rural,zone,Kwilu,Mokala,241,1,8,35,93.6,76.0,98.6,0.0,,
 2024,rural,zone,Kwilu,Mosango,152,1,5,18,92.4,62.3,98.9,1.4,0.1,14.4
 2024,rural,zone,Kwilu,Mukedi,172,1,6,27,80.3,52.5,93.7,8.1,2.6,22.7
 2024,rural,zone,Kwilu,Mungindu,185,1,6,24,65.3,51.6,76.9,24.0,15.3,35.5
-2024,rural,zone,Kwilu,Pay Kongila,178,1,6,23,95.8,81.4,99.2,0.0,0.0,0.0
+2024,rural,zone,Kwilu,Pay Kongila,178,1,6,23,95.8,81.4,99.2,0.0,,
 2024,rural,zone,Kwilu,Sia,173,1,5,22,71.6,56.4,83.1,1.2,0.2,5.4
-2024,rural,zone,Kwilu,Vanga,240,1,8,42,98.9,95.6,99.7,0.0,0.0,0.0
+2024,rural,zone,Kwilu,Vanga,240,1,8,42,98.9,95.6,99.7,0.0,,
 2024,rural,zone,Kwilu,Yasa Bonga,180,1,6,27,23.1,13.4,36.7,30.3,18.5,45.6
 2024,rural,zone,Lomami,Kabinda,147,1,6,26,52.4,33.0,71.0,12.2,5.9,23.4
 2024,rural,zone,Lomami,Kalambayi Kabanga,152,1,5,16,56.2,46.0,65.9,12.4,7.1,20.7
@@ -2296,7 +2296,7 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,rural,zone,Maindombe,Oshwe,212,1,7,28,36.8,21.1,56.0,40.1,28.9,52.4
 2024,rural,zone,Maindombe,Pendjwa,149,1,5,16,51.5,37.8,64.9,14.2,10.3,19.1
 2024,rural,zone,Maindombe,Yumbi,149,1,5,18,52.3,45.4,59.2,19.8,15.6,24.9
-2024,rural,zone,Maniema,Alunguli,3,1,3,8,0.0,0.0,0.0,35.4,0.3,99.1
+2024,rural,zone,Maniema,Alunguli,3,1,3,8,0.0,,,35.4,0.3,99.1
 2024,rural,zone,Maniema,Ferekeni,159,1,5,10,3.0,0.9,9.7,57.1,41.0,71.9
 2024,rural,zone,Maniema,Kabambare,155,1,5,13,12.4,9.3,16.3,63.5,49.7,75.5
 2024,rural,zone,Maniema,Kailo,155,1,5,18,8.2,1.6,33.1,52.7,32.4,72.0
@@ -2325,39 +2325,39 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,rural,zone,Mongala,Yamaluka,148,1,5,22,3.2,0.6,15.3,80.7,55.6,93.3
 2024,rural,zone,Mongala,Yambuku,269,1,9,40,2.4,0.9,6.2,76.5,68.3,83.1
 2024,rural,zone,Mongala,Yamongili,152,1,5,22,5.9,2.7,12.7,61.8,42.3,78.0
-2024,rural,zone,Nord Kivu,Alimbongo,150,1,5,21,78.5,58.7,90.3,0.0,0.0,0.0
+2024,rural,zone,Nord Kivu,Alimbongo,150,1,5,21,78.5,58.7,90.3,0.0,,
 2024,rural,zone,Nord Kivu,Biena,151,1,5,16,69.7,33.4,91.3,0.4,0.0,6.4
 2024,rural,zone,Nord Kivu,Butembo,4,1,2,16,53.3,0.0,100.0,0.0,,
 2024,rural,zone,Nord Kivu,Itebero,210,1,7,28,20.7,12.1,33.1,0.6,0.1,6.9
-2024,rural,zone,Nord Kivu,Kalunguta,149,1,5,18,71.7,44.2,89.0,0.0,0.0,0.0
+2024,rural,zone,Nord Kivu,Kalunguta,149,1,5,18,71.7,44.2,89.0,0.0,,
 2024,rural,zone,Nord Kivu,Kamango,156,1,5,14,47.8,29.1,67.1,1.6,0.4,5.8
-2024,rural,zone,Nord Kivu,Karisimbi,17,1,3,19,71.9,26.4,94.8,0.0,0.0,0.0
-2024,rural,zone,Nord Kivu,Kayna,181,1,6,23,66.8,55.8,76.2,0.0,0.0,0.0
-2024,rural,zone,Nord Kivu,Kibua,150,1,5,19,54.2,39.5,68.1,0.0,0.0,0.0
-2024,rural,zone,Nord Kivu,Kirotshe,150,1,5,31,94.1,88.6,97.0,0.0,0.0,0.0
+2024,rural,zone,Nord Kivu,Karisimbi,17,1,3,19,71.9,26.4,94.8,0.0,,
+2024,rural,zone,Nord Kivu,Kayna,181,1,6,23,66.8,55.8,76.2,0.0,,
+2024,rural,zone,Nord Kivu,Kibua,150,1,5,19,54.2,39.5,68.1,0.0,,
+2024,rural,zone,Nord Kivu,Kirotshe,150,1,5,31,94.1,88.6,97.0,0.0,,
 2024,rural,zone,Nord Kivu,Kyondo,180,1,6,23,63.1,32.0,86.1,0.3,0.0,4.0
-2024,rural,zone,Nord Kivu,Lubero,147,1,5,21,73.7,45.9,90.3,0.0,0.0,0.0
-2024,rural,zone,Nord Kivu,Mabalako,156,1,5,16,76.3,42.3,93.4,0.0,0.0,0.0
+2024,rural,zone,Nord Kivu,Lubero,147,1,5,21,73.7,45.9,90.3,0.0,,
+2024,rural,zone,Nord Kivu,Mabalako,156,1,5,16,76.3,42.3,93.4,0.0,,
 2024,rural,zone,Nord Kivu,Manguredjipa,151,1,5,10,63.4,16.9,93.7,0.8,0.0,12.4
-2024,rural,zone,Nord Kivu,Masereka,150,1,5,16,84.5,81.0,87.5,0.0,0.0,0.0
-2024,rural,zone,Nord Kivu,Masisi,180,1,6,26,59.4,45.5,72.0,0.0,0.0,0.0
+2024,rural,zone,Nord Kivu,Masereka,150,1,5,16,84.5,81.0,87.5,0.0,,
+2024,rural,zone,Nord Kivu,Masisi,180,1,6,26,59.4,45.5,72.0,0.0,,
 2024,rural,zone,Nord Kivu,Musienene,145,1,5,20,76.9,49.8,91.8,2.6,1.4,4.9
 2024,rural,zone,Nord Kivu,Mutwanga,150,1,5,20,41.2,33.2,49.6,3.1,0.5,15.6
-2024,rural,zone,Nord Kivu,Nyiragongo,148,1,5,11,78.1,71.4,83.6,0.0,0.0,0.0
+2024,rural,zone,Nord Kivu,Nyiragongo,148,1,5,11,78.1,71.4,83.6,0.0,,
 2024,rural,zone,Nord Kivu,Oicha,189,1,6,27,52.0,31.9,71.4,1.0,0.2,4.5
 2024,rural,zone,Nord Kivu,Pinga,149,1,5,19,45.0,20.4,72.3,0.9,0.1,8.4
-2024,rural,zone,Nord Kivu,Rutshuru,150,1,5,16,92.9,79.9,97.7,0.0,0.0,0.0
-2024,rural,zone,Nord Kivu,Rwanguba,151,1,5,21,81.4,43.8,96.1,0.0,0.0,0.0
+2024,rural,zone,Nord Kivu,Rutshuru,150,1,5,16,92.9,79.9,97.7,0.0,,
+2024,rural,zone,Nord Kivu,Rwanguba,151,1,5,21,81.4,43.8,96.1,0.0,,
 2024,rural,zone,Nord Kivu,Vuhovi,149,1,5,13,63.1,54.9,70.5,1.4,0.1,15.1
-2024,rural,zone,Nord Kivu,Walikale,150,1,5,18,8.5,1.7,33.0,0.0,0.0,0.0
+2024,rural,zone,Nord Kivu,Walikale,150,1,5,18,8.5,1.7,33.0,0.0,,
 2024,rural,zone,Nord Ubangi,Abuzi,149,1,5,14,67.7,43.1,85.3,2.6,0.2,31.1
-2024,rural,zone,Nord Ubangi,Bili,149,1,5,19,93.5,62.1,99.2,0.0,0.0,0.0
-2024,rural,zone,Nord Ubangi,Bosobolo,148,1,5,20,46.0,24.1,69.5,0.0,0.0,0.0
+2024,rural,zone,Nord Ubangi,Bili,149,1,5,19,93.5,62.1,99.2,0.0,,
+2024,rural,zone,Nord Ubangi,Bosobolo,148,1,5,20,46.0,24.1,69.5,0.0,,
 2024,rural,zone,Nord Ubangi,Businga,143,1,5,13,64.0,33.4,86.3,1.1,0.2,6.4
 2024,rural,zone,Nord Ubangi,Gbadolite,1,1,1,16,100.0,,,0.0,,
 2024,rural,zone,Nord Ubangi,Karawa,172,1,6,24,71.2,61.6,79.2,2.7,1.1,6.4
 2024,rural,zone,Nord Ubangi,Loko,147,1,5,15,68.2,43.3,85.7,4.2,0.5,26.0
-2024,rural,zone,Nord Ubangi,Mobayi Mbongo,149,1,5,18,68.3,54.5,79.5,0.0,0.0,0.0
+2024,rural,zone,Nord Ubangi,Mobayi Mbongo,149,1,5,18,68.3,54.5,79.5,0.0,,
 2024,rural,zone,Nord Ubangi,Wapinda,151,1,5,12,73.2,53.8,86.5,2.8,0.6,11.8
 2024,rural,zone,Nord Ubangi,Wasolo,148,1,5,14,71.0,38.2,90.7,2.7,0.6,10.8
 2024,rural,zone,Nord Ubangi,Yakoma,152,1,5,13,71.8,59.5,81.5,0.8,0.1,8.2
@@ -2386,7 +2386,7 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,rural,zone,Sud Kivu,Kabare,160,1,5,16,77.2,65.7,85.7,4.8,1.9,11.2
 2024,rural,zone,Sud Kivu,Kalehe,153,1,5,16,54.1,40.2,67.3,0.8,0.1,5.3
 2024,rural,zone,Sud Kivu,Kalole,211,1,6,24,37.7,31.4,44.4,28.9,21.9,37.0
-2024,rural,zone,Sud Kivu,Kalonge,150,1,5,18,81.7,43.6,96.3,0.0,0.0,0.0
+2024,rural,zone,Sud Kivu,Kalonge,150,1,5,18,81.7,43.6,96.3,0.0,,
 2024,rural,zone,Sud Kivu,Kamituga,183,1,6,23,64.6,46.3,79.5,7.3,3.9,13.4
 2024,rural,zone,Sud Kivu,Kaniola,176,1,5,16,80.5,39.9,96.2,6.2,1.2,27.4
 2024,rural,zone,Sud Kivu,Katana,154,1,5,20,76.2,58.7,87.8,0.6,0.0,7.3
@@ -2396,7 +2396,7 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,rural,zone,Sud Kivu,Lemera,207,1,6,26,83.1,68.3,91.8,0.2,0.0,3.5
 2024,rural,zone,Sud Kivu,Lulingu,156,1,5,21,43.0,17.3,73.1,9.6,2.4,31.2
 2024,rural,zone,Sud Kivu,Minembwe,173,1,5,18,10.8,1.6,47.1,14.5,9.5,21.6
-2024,rural,zone,Sud Kivu,Minova,168,1,5,21,87.7,70.3,95.6,0.0,0.0,0.0
+2024,rural,zone,Sud Kivu,Minova,168,1,5,21,87.7,70.3,95.6,0.0,,
 2024,rural,zone,Sud Kivu,Miti Murhesa,151,1,5,20,68.8,49.6,83.2,2.1,0.3,13.3
 2024,rural,zone,Sud Kivu,Mubumbano,166,1,5,16,62.2,30.8,85.8,4.6,1.3,15.3
 2024,rural,zone,Sud Kivu,Mulungu,166,1,5,20,33.9,22.5,47.4,41.7,35.9,47.7
@@ -2407,7 +2407,7 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,rural,zone,Sud Kivu,Nyantende,154,1,5,11,55.3,45.1,65.1,17.1,12.4,23.3
 2024,rural,zone,Sud Kivu,Ruzizi,187,1,6,23,49.7,36.5,63.0,6.6,3.5,12.2
 2024,rural,zone,Sud Kivu,Shabunda,208,1,6,23,67.1,54.9,77.5,11.5,6.9,18.5
-2024,rural,zone,Sud Kivu,Uvira,35,1,4,22,97.6,94.5,99.0,0.0,0.0,0.0
+2024,rural,zone,Sud Kivu,Uvira,35,1,4,22,97.6,94.5,99.0,0.0,,
 2024,rural,zone,Sud Kivu,Walungu,210,1,6,23,89.0,76.0,95.4,0.6,0.1,5.4
 2024,rural,zone,Sud Ubangi,Bangabola,153,1,5,17,15.4,8.6,26.3,37.5,24.8,52.2
 2024,rural,zone,Sud Ubangi,Bogosenubea,153,1,5,21,22.9,13.3,36.4,3.1,0.6,14.1
@@ -2425,14 +2425,14 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,rural,zone,Sud Ubangi,Ndage,152,1,5,22,42.7,21.3,67.1,22.0,11.8,37.4
 2024,rural,zone,Sud Ubangi,Tandala,178,1,6,23,41.7,25.5,59.9,11.8,4.0,30.4
 2024,rural,zone,Sud Ubangi,Zongo,144,1,5,14,28.2,13.0,50.8,3.8,0.8,15.3
-2024,rural,zone,Tanganyika,Ankoro,174,1,6,25,89.4,84.0,93.1,0.0,0.0,0.0
+2024,rural,zone,Tanganyika,Ankoro,174,1,6,25,89.4,84.0,93.1,0.0,,
 2024,rural,zone,Tanganyika,Kabalo,179,1,6,24,74.9,61.0,85.1,0.4,0.0,5.1
 2024,rural,zone,Tanganyika,Kalemie,90,1,3,27,33.6,3.2,88.4,11.3,0.9,63.8
 2024,rural,zone,Tanganyika,Kansimba,155,1,5,21,37.1,26.4,49.3,20.7,15.0,27.8
 2024,rural,zone,Tanganyika,Kiambi,172,1,6,26,87.2,77.7,93.0,1.6,0.5,5.4
 2024,rural,zone,Tanganyika,Kongolo,148,1,6,25,79.7,45.4,94.9,0.7,0.1,8.3
-2024,rural,zone,Tanganyika,Manono,151,1,6,27,93.9,87.3,97.2,0.0,0.0,0.0
-2024,rural,zone,Tanganyika,Mbulula,148,1,5,21,83.5,65.9,92.9,0.0,0.0,0.0
+2024,rural,zone,Tanganyika,Manono,151,1,6,27,93.9,87.3,97.2,0.0,,
+2024,rural,zone,Tanganyika,Mbulula,148,1,5,21,83.5,65.9,92.9,0.0,,
 2024,rural,zone,Tanganyika,Moba,159,1,6,25,39.5,29.8,50.1,16.0,10.8,23.2
 2024,rural,zone,Tanganyika,Nyemba,123,1,4,21,70.1,31.6,92.2,2.1,0.1,40.7
 2024,rural,zone,Tanganyika,Nyunzu,191,1,6,25,25.7,23.1,28.5,30.4,18.5,45.6
@@ -2447,7 +2447,7 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,rural,zone,Tshopo,Makiso Kisangani,1,1,1,22,100.0,,,0.0,,
 2024,rural,zone,Tshopo,Opala,178,1,6,23,12.0,5.5,24.2,42.7,29.6,56.9
 2024,rural,zone,Tshopo,Opienge,153,1,5,15,11.3,2.9,35.7,45.5,30.3,61.4
-2024,rural,zone,Tshopo,Tshopo,4,1,3,16,0.0,0.0,0.0,0.0,0.0,0.0
+2024,rural,zone,Tshopo,Tshopo,4,1,3,16,0.0,,,0.0,,
 2024,rural,zone,Tshopo,Ubundu,149,1,5,17,27.2,18.3,38.5,26.7,21.2,33.0
 2024,rural,zone,Tshopo,Wanierukula,146,1,5,14,12.2,7.9,18.3,59.6,51.7,67.1
 2024,rural,zone,Tshopo,Yabaondo,186,1,6,23,7.7,4.7,12.5,52.8,36.4,68.6
@@ -2465,6 +2465,6 @@ year,milieu,level,province,zone,nb_people,nb_zones,nb_areas,nb_areas_tot,penta_c
 2024,rural,zone,Tshuapa,Lingomo,143,1,5,19,7.3,3.0,16.6,20.3,13.2,30.0
 2024,rural,zone,Tshuapa,Mompono,151,1,5,16,37.8,32.0,44.0,23.1,17.5,29.9
 2024,rural,zone,Tshuapa,Mondombe,145,1,5,22,14.3,5.9,31.0,15.8,5.4,38.0
-2024,rural,zone,Tshuapa,Monkoto,147,1,5,25,0.0,0.0,0.0,44.8,27.4,63.6
+2024,rural,zone,Tshuapa,Monkoto,147,1,5,25,0.0,,,44.8,27.4,63.6
 2024,rural,zone,Tshuapa,Wema,152,1,5,20,19.1,9.6,34.2,8.9,3.5,20.8
 2024,rural,zone,Tshuapa,Yalifafu,148,1,5,21,6.9,3.5,13.1,44.1,27.1,62.5

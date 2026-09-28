@@ -23,6 +23,7 @@ options(nwarnings = 10000L)
 tally <- new.env(parent = emptyenv())
 tally$logit <- 0L
 tally$beta <- 0L
+tally$boundary <- 0L
 tally$failed <- 0L
 
 warn_log <- new.env(parent = emptyenv())
@@ -95,6 +96,18 @@ prop_ci <- function(indicator, dsn) {
     return(c(NA_real_, NA_real_, NA_real_))
   }
   dsn <- domain(dsn, keep)
+
+  # Every child in the domain has the same outcome (observed 0% or 100%). No
+  # interval method gives a meaningful answer here: logit collapses to [0, 0]
+  # or [1, 1] (or fails to converge) and beta reports a bound driven entirely
+  # by the effective sample size. Report the point estimate with no interval,
+  # which the dashboard shows as NA.
+  observed <- values[keep]
+  if (all(observed == 0) || all(observed == 1)) {
+    tally$boundary <- tally$boundary + 1L
+    return(c(observed[1], NA_real_, NA_real_))
+  }
+
   f <- as.formula(paste0("~", indicator))
 
   # A degenerate fit does not necessarily raise: svyciprop can return NaN, or a
@@ -202,8 +215,8 @@ out <- data.frame(
 write.csv(out, out_csv, row.names = FALSE, na = "")
 
 message(sprintf(
-  "estimates: %d logit CI, %d beta CI (boundary domains), %d without a CI",
-  tally$logit, tally$beta, tally$failed
+  "estimates: %d logit CI, %d beta CI (logit fallback), %d at 0%%/100%% (no CI), %d without a CI",
+  tally$logit, tally$beta, tally$boundary, tally$failed
 ))
 
 report_warnings()

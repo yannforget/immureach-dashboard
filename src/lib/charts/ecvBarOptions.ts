@@ -46,6 +46,8 @@ export function buildEcvVaccineBarOptions(config: EcvBarConfig): EChartsOption {
         tooltip += item.value != null ? `Couverture: ${item.value.toFixed(1)}%` : 'Couverture: —'
         if (item.ciLow != null && item.ciHigh != null) {
           tooltip += `<br/>IC 95%: ${item.ciLow.toFixed(1)}% – ${item.ciHigh.toFixed(1)}%`
+        } else if (item.value != null) {
+          tooltip += '<br/>IC 95%: NA'
         }
         return tooltip
       },
