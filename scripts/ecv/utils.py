@@ -65,3 +65,63 @@ def load_geojson_names(path: Path) -> tuple[dict[str, str], dict[str, tuple[str,
             "existing province|zone key (duplicate geometry?)"
         )
     return provinces, zones
+
+
+def canonicalize_names(
+    df: pd.DataFrame,
+    provinces: dict[str, str],
+    zones: dict[str, tuple[str, str]],
+) -> pd.DataFrame:
+    """Replace the survey's free-text names with the geojson spelling.
+
+    Rows whose province|zone pair is unknown to the geojson are flagged
+    (`in_geo` = False) rather than dropped: they could not be drawn on the map,
+    so R never estimates on them, but they stay in the survey design.
+    """
+    key = df["province"].map(normalize) + "|" + df["zone"].map(normalize)
+    matched = key.map(zones)
+    unknown = matched.isna()
+
+    if unknown.any():
+        missing = (
+            df.loc[unknown, ["province", "zone"]]
+            .value_counts()
+            .rename("children")
+            .reset_index()
+        )
+        print(
+            f"  WARNING: {len(missing)} survey zone(s) "
+            f"({int(unknown.sum()):,} children, all ages) are not in the boundaries "
+            "file; they stay in the design but are never estimated on:"
+        )
+        for row in missing.head(20).itertuples():
+            print(f"    {row.province} / {row.zone} ({row.children:,} children)")
+        if len(missing) > 20:
+            print(f"    ... and {len(missing) - 20} more")
+    else:
+        print("  every survey zone matched a boundary zone")
+
+    unknown_provinces = sorted(
+        set(df["province"].map(normalize)) - set(provinces)
+    )
+    if unknown_provinces:
+        print(f"  WARNING: province(s) absent from the boundaries: {unknown_provinces}")
+
+    df = df.copy()
+    df["in_geo"] = ~unknown
+    df["geo_province"] = [p[0] if isinstance(p, tuple) else None for p in matched]
+    df["geo_zone"] = [p[1] if isinstance(p, tuple) else None for p in matched]
+    df["geo_zone_key"] = (df["geo_province"] + " | " + df["geo_zone"]).where(
+        df["in_geo"]
+    )
+
+    never_surveyed = sorted(
+        zones[k][0] + " / " + zones[k][1] for k in set(zones) - set(key[~unknown])
+    )
+    if never_surveyed:
+        print(
+            f"  note: {len(never_surveyed)} boundary zone(s) have no survey data "
+            "this year (they will simply be missing from the CSV), e.g. "
+            f"{never_surveyed[:5]}"
+        )
+    return df

@@ -12,7 +12,7 @@ OUT_CARACTERISTICS_PATH = PROJECT_ROOT / "public" / "data" / "ecv_caracteristics
 
 R_KEY_PATH = PROJECT_ROOT / "scripts" / "ecv" / "rscripts" / "rscript_key_ecv.R"
 R_VACC_COV_PATH = (
-    PROJECT_ROOT / "scripts" / "rscripts" / "ecv" / "rscript_vaccination_coverage.R"
+    PROJECT_ROOT / "scripts" / "ecv" / "rscripts" / "rscript_vaccination_coverage.R"
 )
 R_CARACTERISTICS_PATH = (
     PROJECT_ROOT / "scripts" / "ecv" / "rscripts" / "rscript_caracteristics.R"

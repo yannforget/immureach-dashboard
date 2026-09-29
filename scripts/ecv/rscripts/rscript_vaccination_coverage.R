@@ -1,8 +1,24 @@
-# Not meant to be ran by hand! 
 # Design-based estimation of vaccination coverage with 95% confidence
-# intervals. Called by scripts/process-ecv-vaccination-coverage.py.
-# Reads the child-level extract, writes one row per (domain, indicator)
-# with the point estimate and CI bounds as proportions.
+# intervals. Called by scripts/ecv/process-ecv-vaccination-coverage.py.
+#
+# Reads the child-level extract of the WHOLE file (every age, every milieu,
+# every zone), builds the survey design on it, and only then restricts to the
+# age window, the zones the dashboard can draw and the milieu with subset().
+# Taking the domains off the full-sample design, rather than filtering the data
+# before svydesign(), keeps every stratum's full PSU count in the variance
+# estimate.
+#
+# Also codes the indicators from the `<vaccine>_merg` columns, counts the
+# unweighted sample sizes, and writes one row per (milieu, domain) with the
+# dashboard's column names, estimates as 0-100 percentages.
+#
+# Usage: Rscript rscript_vaccination_coverage.R <in_csv> <out_csv> <spec_csv>
+#          <labels_csv> <age_min> <age_max> <milieux>
+#   spec_csv:   one row per metric: key, column (the `_merg` column it is read
+#               off; empty for zero_dose, which is derived from all of them)
+#   labels_csv: level, id, name -- domain id -> name, for readable messages
+#   milieux:    comma-separated subset of all,urbain,rural
+
 if (!requireNamespace("survey", quietly = TRUE)) {
   stop("the R package 'survey' is not installed: install.packages(\"survey\")")
 }
@@ -11,7 +27,22 @@ suppressPackageStartupMessages(library(survey))
 # Subsetting to a single zone can leave a stratum contributing one PSU; centre
 # those on the grand mean rather than dropping the variance contribution.
 options(survey.lonely.psu = "adjust")
+
+# R defers warnings and keeps only the last 50 by default; estimating
+# thousands of small domains legitimately produces far more, so each one is
+# trapped, tallied by message, and summarised at the end instead.
 options(nwarnings = 10000L)
+
+# `<vaccine>_merg` coding: card and mother's recall merged.
+VACCINATED <- 1
+NOT_VACCINATED <- 2
+
+# Largest gap (in percentage points) tolerated between svyciprop's point
+# estimate and a plain weighted mean computed straight off the data frame.
+CROSS_CHECK_TOLERANCE <- 1.0
+
+# Zones below this many children get a warning: their CIs will be very wide.
+SMALL_ZONE <- 30L
 
 # Which estimator actually produced each figure. Reported at the end so a
 # silent mass fallback (the symptom of a broken domain subset) is visible.
@@ -41,7 +72,7 @@ record_warning <- function(w, context) {
 report_warnings <- function() {
   keys <- ls(warn_log, all.names = TRUE)
   if (length(keys) == 0L) {
-    message("no warnings from the survey estimation")
+    message("  [R] no warnings from the survey estimation")
     return(invisible(NULL))
   }
   counts <- vapply(keys, function(k) warn_log[[k]]$count, integer(1))
@@ -56,36 +87,164 @@ report_warnings <- function() {
   }
 }
 
+fmt <- function(x) format(x, big.mark = ",")
+
 args <- commandArgs(trailingOnly = TRUE)
 in_csv <- args[1]
 out_csv <- args[2]
-indicators <- strsplit(args[3], ",", fixed = TRUE)[[1]]
+spec_csv <- args[3]
 labels_csv <- args[4]
+age_min <- as.numeric(args[5])
+age_max <- as.numeric(args[6])
+milieux <- strsplit(args[7], ",", fixed = TRUE)[[1]]
 
 # Domains travel as integer ids (accents do not survive the round trip
 # reliably), so read the id -> name table back in: a warning that names a
 # number the reader cannot act on is not worth printing.
 labels <- read.csv(labels_csv, stringsAsFactors = FALSE, encoding = "UTF-8")
 label_of <- function(level, id) {
+  if (level == "national") {
+    return("national")
+  }
   hit <- labels$name[labels$level == level & labels$id == id]
   if (length(hit) == 0L) paste0(level, " id=", id) else paste0(level, " ", hit[1])
 }
 
-d <- read.csv(in_csv, stringsAsFactors = FALSE)
-message(sprintf(
-  "  [R] %d rows, %d indicator(s): %s",
-  nrow(d), length(indicators), paste(indicators, collapse = ", ")
-))
+spec <- read.csv(spec_csv, colClasses = "character", na.strings = "",
+                 encoding = "UTF-8")
+indicators <- spec$key
 
-missing <- setdiff(indicators, names(d))
-if (length(missing) > 0L) {
-  stop(sprintf("indicator column(s) absent from the extract: %s",
-               paste(missing, collapse = ", ")))
+# Python writes a missing milieu / domain id as an empty field.
+d <- read.csv(in_csv, stringsAsFactors = FALSE, na.strings = c("", "NA"))
+
+missing_cols <- setdiff(na.omit(spec$column), names(d))
+if (length(missing_cols) > 0L) {
+  stop(sprintf("source column(s) absent from the extract: %s",
+               paste(missing_cols, collapse = ", ")))
 }
 
-# Stratified two-stage design: strata = province, PSU = aire de santé,
-# weights = the survey's `ponderation`. nest = TRUE because PSU ids are only
-# unique within a stratum.
+# svydesign() cannot take a missing weight, so those rows cannot be part of
+# the design at all. This is the only row filter applied before svydesign().
+no_weight <- is.na(d$weight)
+if (any(no_weight)) {
+  message(sprintf("  [R] WARNING: %s row(s) without a weight dropped", fmt(sum(no_weight))))
+  d <- d[!no_weight, ]
+}
+if (any(d$weight <= 0)) {
+  message(sprintf("  [R] WARNING: %s row(s) carry a weight <= 0", fmt(sum(d$weight <= 0))))
+}
+
+# --- Selection ---------------------------------------------------------------
+
+# The selection on the plain data frame, for the unweighted counts, the
+# indicator reports and the cross-check. Kept separate from the design on
+# purpose: the cross-check is only worth something if it does not reuse the
+# design's own subsetting.
+in_age <- !is.na(d$age) & d$age >= age_min & d$age <= age_max
+# `in_geo` = the zone is in the dashboard's boundaries. Rows outside stay in the
+# design (they are real PSUs of their stratum) but are never estimated on.
+in_geo <- d$in_geo == 1
+eligible_rows <- in_age & in_geo
+
+message(sprintf(
+  "  [R] %s children in file -> %s aged %g-%g months (%s outside the window, %s with no age)",
+  fmt(nrow(d)), fmt(sum(in_age)), age_min, age_max,
+  fmt(sum(!in_age)), fmt(sum(is.na(d$age)))
+))
+if (!any(in_age)) {
+  stop(sprintf("no child aged %g-%g months; age spans %s-%s", age_min, age_max,
+               min(d$age, na.rm = TRUE), max(d$age, na.rm = TRUE)))
+}
+if (any(in_age & !in_geo)) {
+  message(sprintf(
+    "  [R] %s child(ren) in the age window sit in zones outside the boundaries: kept in the design, never estimated on",
+    fmt(sum(in_age & !in_geo))
+  ))
+}
+
+# The milieu split is a domain, not an indicator: a child whose milieu is
+# missing still counts in the "all" domain, it just never lands in an
+# urbain/rural one. Reported so a file coding the question differently is
+# caught rather than silently halving the split.
+milieu_counts <- table(d$milieu[eligible_rows])
+message(sprintf(
+  "  [R] milieu: %s (%s with no milieu, counted in `all` only)",
+  paste(names(milieu_counts), fmt(as.integer(milieu_counts)), collapse = ", "),
+  fmt(sum(eligible_rows & is.na(d$milieu)))
+))
+
+# --- Indicators --------------------------------------------------------------
+
+# Every metric is an "is this child X?" flag, NA where the answer is unknown,
+# so a design-weighted mean of the column is the coverage proportion
+# svyciprop estimates. Coded on every row; reported on the eligible children.
+merg_cols <- grep("_merg$", names(d), value = TRUE)
+merg <- as.matrix(d[merg_cols])
+
+unexpected <- character(0)
+for (col in merg_cols) {
+  bad <- eligible_rows & !is.na(d[[col]]) & !(d[[col]] %in% c(VACCINATED, NOT_VACCINATED))
+  if (any(bad)) {
+    unexpected <- c(unexpected, sprintf(
+      "    %s: %s", col, paste(head(sort(unique(d[[col]][bad])), 5L), collapse = ", ")
+    ))
+  }
+}
+if (length(unexpected) > 0L) {
+  message("  [R] WARNING: `_merg` codes other than 1/2 (treated as 'not vaccinated'):")
+  for (line in unexpected) message(line)
+}
+
+for (i in seq_len(nrow(spec))) {
+  key <- spec$key[i]
+  col <- spec$column[i]
+  if (is.na(col)) next
+  d[[key]] <- ifelse(is.na(d[[col]]), NA_integer_, as.integer(d[[col]] == VACCINATED))
+}
+
+# Zero-dose: no antigen at all, i.e. every merged vaccine column says "not
+# vaccinated". Unknown as soon as one column is missing.
+if ("zero_dose" %in% indicators) {
+  d$zero_dose <- ifelse(
+    rowSums(is.na(merg)) > 0,
+    NA_integer_,
+    as.integer(rowSums(merg != NOT_VACCINATED) == 0)
+  )
+}
+
+e <- d[eligible_rows, ]
+for (ind in indicators) {
+  values <- e[[ind]]
+  ok <- !is.na(values)
+  if (!any(ok)) {
+    message(sprintf("    %-20s ALL MISSING", ind))
+    next
+  }
+  flag <- if (length(unique(values[ok])) < 2L) "  <-- no variation" else ""
+}
+
+# The file ships its own zero-dose flag (`dose0_1`); the derived one must track it.
+if ("zero_dose" %in% indicators && "zero_dose_ref" %in% names(e)) {
+  both <- !is.na(e$zero_dose) & !is.na(e$zero_dose_ref)
+  if (any(both)) {
+    agreement <- 100 * mean(e$zero_dose[both] == as.integer(e$zero_dose_ref[both] == 1))
+    message(sprintf(
+      "    cross-check: derived zero_dose agrees with `dose0_1` on %.1f%% of children (%.1f%% flagged there)",
+      agreement, 100 * mean(e$zero_dose_ref[both] == 1)
+    ))
+    if (agreement < 95) {
+      message("    WARNING: the two zero-dose definitions disagree on more than 5% of children -- check the `_merg` column list")
+    }
+  }
+}
+rm(e)
+
+# === Design ==================================================================
+
+# Stratified two-stage design: strata = province, PSU = aire de sante,
+# weights = `ponderation`. nest = TRUE because PSU ids are only unique within a
+# stratum. Built on the whole file; the age window and the drawable zones are
+# then a domain of it.
 design <- svydesign(
   ids = ~psu_id,
   strata = ~stratum_id,
@@ -94,14 +253,15 @@ design <- svydesign(
   nest = TRUE
 )
 
+eligible <- subset(design, age >= age_min & age <= age_max & in_geo == 1)
+
 # Take a domain (subpopulation) of the design, i.e. what subset() does: drop
-# the rows outside it. The theoretically tidier alternative, `drop = FALSE`,
-# keeps every row and sets the excluded weights to zero so each stratum retains
-# its full PSU count -- but with svyciprop it returns NaN or degenerate 0/100
-# for most zone domains (whole strata end up entirely zero-weighted), so this
-# uses the documented subset() behaviour instead. The cost is that a zone's
-# stratum is reduced to that zone's PSUs, which makes its interval slightly
-# conservative; survey.lonely.psu = "adjust" covers the resulting small strata.
+# the rows outside it while keeping the full sample's design information. The
+# alternative, `drop = FALSE`, keeps every row and sets the excluded weights to
+# zero -- but with svyciprop it returns NaN or degenerate 0/100 for most zone
+# domains (whole strata end up entirely zero-weighted), so this uses the
+# documented subset() behaviour instead. survey.lonely.psu = "adjust" covers
+# the small strata a single zone leaves behind.
 domain <- function(dsn, keep) suppressWarnings(dsn[keep, ])
 
 # svyciprop's logit interval keeps the bounds inside [0, 1] and stays sensible
@@ -176,81 +336,150 @@ prop_ci <- function(indicator, dsn) {
   c(point, NA_real_, NA_real_)
 }
 
-# Domains to estimate: the whole sample, then each province, then each zone.
-province_ids <- sort(unique(d$province_id))
-zone_ids <- sort(unique(d$zone_id))
-
-domains <- c(
-  list(list(level = "national", id = -1L, label = "national",
-            keep = rep(TRUE, nrow(d)))),
-  lapply(province_ids, function(pid) {
-    list(level = "province", id = pid, label = label_of("province", pid),
-         keep = d$province_id == pid)
-  }),
-  lapply(zone_ids, function(zid) {
-    list(level = "zone", id = zid, label = label_of("zone", zid),
-         keep = d$zone_id == zid)
-  })
-)
-message(sprintf(
-  "  [R] %d domains (1 national, %d provinces, %d zones) x %d indicators = %d estimates",
-  length(domains), length(province_ids), length(zone_ids), length(indicators),
-  length(domains) * length(indicators)
-))
-
-n <- length(domains) * length(indicators)
-res_level <- character(n)
-res_id <- integer(n)
-res_indicator <- character(n)
-res_est <- numeric(n)
-res_low <- numeric(n)
-res_high <- numeric(n)
-
-started <- Sys.time()
-row <- 1L
-for (i in seq_along(domains)) {
-  dom <- domains[[i]]
-  dsn <- if (dom$level == "national") design else domain(design, dom$keep)
-  for (ind in indicators) {
-    context <- paste0(dom$label, ", indicator=", ind)
-    v <- withCallingHandlers(
-      prop_ci(ind, dsn),
-      warning = function(w) record_warning(w, context)
-    )
-    res_level[row] <- dom$level
-    res_id[row] <- as.integer(dom$id)
-    res_indicator[row] <- ind
-    res_est[row] <- v[1]
-    res_low[row] <- v[2]
-    res_high[row] <- v[3]
-    row <- row + 1L
+# Design-weighted mean straight off the data frame. svyciprop's point estimate
+# is the same Horvitz-Thompson ratio, so the two must agree closely; a
+# disagreement means the design subsetting selected the wrong rows -- exactly
+# the failure mode that once silently produced NaN/0/100 zone estimates.
+weighted_rate <- function(rows, indicator) {
+  values <- rows[[indicator]]
+  ok <- !is.na(values)
+  if (sum(rows$weight[ok]) == 0) {
+    return(NA_real_)
   }
-  # Progress, so a run that is merely slow is distinguishable from one stuck.
-  if (i %% 50L == 0L || i == length(domains)) {
-    elapsed <- max(0, as.numeric(difftime(Sys.time(), started, units = "secs")))
+  sum(values[ok] * rows$weight[ok]) / sum(rows$weight[ok])
+}
+
+# --- Counts ------------------------------------------------------------------
+
+# Unweighted sample sizes of one domain: children, health areas surveyed
+# (distinct PSUs) and health areas in the zones' sampling frame (`nbre_as`).
+max_or_na <- function(x) if (all(is.na(x))) NA_real_ else max(x, na.rm = TRUE)
+count_domain <- function(rows, level) {
+  zone_totals <- tapply(rows$nb_as, rows$zone_id, max_or_na)
+  c(
+    nb_children = nrow(rows),
+    nb_as = if (level == "zone") zone_totals[[1]] else sum(zone_totals, na.rm = TRUE),
+    as_enq = length(unique(rows$psu_id))
+  )
+}
+
+# --- Estimation --------------------------------------------------------------
+
+results <- list()
+drift <- character(0)
+started <- Sys.time()
+
+for (m in milieux) {
+  in_milieu <- if (m == "all") rep(TRUE, nrow(d)) else !is.na(d$milieu) & d$milieu == m
+  sel <- eligible_rows & in_milieu
+  if (!any(sel)) {
+    message(sprintf("  [R] WARNING: no child with milieu=%s; no rows emitted", m))
+    next
+  }
+  milieu_design <- if (m == "all") eligible else subset(eligible, milieu == m)
+  mvars <- milieu_design$variables
+
+  # Domains present in this milieu: the whole sample, each province, each zone.
+  domains <- c(
+    list(list(level = "national", id = -1L, keep = rep(TRUE, nrow(mvars)), rows = sel)),
+    lapply(sort(unique(d$province_id[sel])), function(pid) {
+      list(level = "province", id = pid, keep = mvars$province_id %in% pid,
+           rows = sel & d$province_id %in% pid)
+    }),
+    lapply(sort(unique(d$zone_id[sel])), function(zid) {
+      list(level = "zone", id = zid, keep = mvars$zone_id %in% zid,
+           rows = sel & d$zone_id %in% zid)
+    })
+  )
+
+  small <- character(0)
+  as_enq_mismatch <- character(0)
+  for (i in seq_along(domains)) {
+    dom <- domains[[i]]
+    label <- label_of(dom$level, dom$id)
+    dsn <- if (dom$level == "national") milieu_design else domain(milieu_design, dom$keep)
+    rows <- d[dom$rows, ]
+    counts <- count_domain(rows, dom$level)
+
+    if (dom$level == "zone") {
+      if (nrow(rows) < SMALL_ZONE) {
+        small <- c(small, sprintf("    %s: %d children", label, nrow(rows)))
+      }
+      # `nbre_asenq` is the file's own count of surveyed areas; the distinct
+      # PSU count must reproduce it, and a mismatch means the PSU key is wrong.
+      # Only on the full sample: inside a milieu a zone keeps just the aires de
+      # sante that have a child of that milieu, so the two legitimately differ.
+      declared <- max_or_na(rows$as_enq_file)
+      if (m == "all" && !is.na(declared) && counts[["as_enq"]] != declared) {
+        as_enq_mismatch <- c(as_enq_mismatch, sprintf(
+          "    %s: counted %d, file says %g", label, counts[["as_enq"]], declared
+        ))
+      }
+    }
+
+    out_row <- c(
+      list(milieu = m, level = dom$level, domain_id = as.integer(dom$id)),
+      as.list(counts)
+    )
+    for (ind in indicators) {
+      context <- paste0("milieu=", m, ", ", label, ", indicator=", ind)
+      v <- withCallingHandlers(
+        prop_ci(ind, dsn),
+        warning = function(w) record_warning(w, context)
+      )
+      ref <- weighted_rate(rows, ind)
+      if ((is.na(v[1]) && !is.na(ref)) ||
+        (!is.na(v[1]) && !is.na(ref) && abs(v[1] - ref) * 100 > CROSS_CHECK_TOLERANCE)) {
+        drift <- c(drift, sprintf(
+          "    %s: R=%.1f vs weighted mean=%.1f", context, v[1] * 100, ref * 100
+        ))
+      }
+      # svyciprop returns proportions; the dashboard reads 0-100 percentages.
+      pct <- round(v * 100, 1)
+      out_row[[paste0(ind, "_pct")]] <- pct[1]
+      out_row[[paste0(ind, "_low")]] <- pct[2]
+      out_row[[paste0(ind, "_high")]] <- pct[3]
+    }
+    results[[length(results) + 1L]] <- as.data.frame(out_row, stringsAsFactors = FALSE)
+  }
+
+  if (m == "all") {
+    if (length(as_enq_mismatch) > 0L) {
+      message(sprintf(
+        "  [R] WARNING: %d zone(s) where the distinct PSU count differs from `nbre_asenq`:",
+        length(as_enq_mismatch)
+      ))
+      for (line in head(as_enq_mismatch, 10L)) message(line)
+    } else {
+      message("  [R] as_enq matches `nbre_asenq` in every zone")
+    }
+  }
+  if (length(small) > 0L) {
     message(sprintf(
-      "  [R] %d/%d domains, %d estimates, %.0fs elapsed (~%.0fs left)",
-      i, length(domains), row - 1L, elapsed,
-      elapsed / i * (length(domains) - i)
+      "  [R] WARNING: %d zone(s) with fewer than %d children -- their confidence intervals will be very wide:",
+      length(small), SMALL_ZONE
     ))
+    for (line in head(small, 10L)) message(line)
+    if (length(small) > 10L) message(sprintf("    ... and %d more", length(small) - 10L))
   }
 }
 
-out <- data.frame(
-  level = res_level,
-  domain_id = res_id,
-  indicator = res_indicator,
-  est = res_est,
-  low = res_low,
-  high = res_high,
-  stringsAsFactors = FALSE
-)
-
-write.csv(out, out_csv, row.names = FALSE, na = "")
+out <- do.call(rbind, results)
+write.csv(out, out_csv, row.names = FALSE, na = "", fileEncoding = "UTF-8")
 
 message(sprintf(
-  "  [R] estimates: %d logit CI, %d beta CI (logit fallback), %d at 0%%/100%% (no CI), %d without a CI",
+  "\n  [R] estimates: %d logit CI, %d beta CI (logit fallback), %d at 0%%/100%% (no CI), %d without a CI",
   tally$logit, tally$beta, tally$boundary, tally$failed
 ))
+if (length(drift) > 0L) {
+  message(sprintf(
+    "  [R] WARNING: %d estimate(s) disagree with the weighted mean by more than %g point(s) or are missing:",
+    length(drift), CROSS_CHECK_TOLERANCE
+  ))
+  for (line in head(drift, 20L)) message(line)
+  if (length(drift) > 20L) message(sprintf("    ... and %d more", length(drift) - 20L))
+} else {
+  message("  [R] cross-check OK: all estimates match the weighted means")
+}
 
 report_warnings()
