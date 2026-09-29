@@ -1,43 +1,55 @@
 """Compute ECV household/child characteristics from the raw survey microdata.
 
-Reads the Stata exports in data/input/ecv/ (ECV_2022_* and ECV_2023_*), keeps
-children inside the age window (`vs25`, age in completed months; 6-23 by
-default, which is the population both files were collected on), and writes
-public/data/ecv_caracteristics.csv -- one row per national / province / zone
-domain, year and milieu, with a `_pct` / `_low` / `_high` triplet per variable
-(point estimate and 95% confidence interval, 0-100).
+Reads the Stata exports in data/input/ecv/ (ECV_2022_* and ECV_2023_*) and
+writes public/data/ecv_caracteristics.csv -- one row per national / province /
+zone domain, year and milieu, with a `_pct` / `_low` / `_high` triplet per
+variable (point estimate and 95% confidence interval, 0-100), for children
+inside the age window (`vs25`, age in completed months; see AGE_MIN_MONTHS).
 
 `milieu` is the dashboard's rural/urbain ribbon filter, read off `q108`
 ("Milieu de localisation du menage"): every domain is estimated three times,
 once on the whole sample (`all`) and once on each q108 modality (`urbain`,
 `rural`). See MILIEUX.
 
+This script only reads the file, cleans the geography names and hands the
+WHOLE child-level sample -- with the raw source columns and an indicator spec
+table -- to R (rscripts/rscript_caracteristics.R) via `subprocess`. Everything
+else happens in R: the survey design is built on the full sample (strata =
+province `q101`, PSU = aire de sante `q105`, weights = `ponderation`), the age
+window, the drawable zones and the milieu are then taken as domains with
+`subset()`, and R codes the indicators, counts the unweighted sample sizes and
+computes the logit-transformed 95% CIs (`svyciprop(method = "logit")`).
+Filtering the data before `svydesign()` would understate the design's PSU
+counts per stratum and so misstate the variance.
+
 This is the file behind the characteristics bar chart at the bottom right of
 the dashboard's first tab. What each variable means, which column it is read
-off and how the two rounds differ all live in scripts/indicators.py; adding an
-entry to its INDICATORS table puts a `<root>_pct/_low/_high` family in the
-header; to chart it, list the root in
-ECV_CARACTERISTIC_KEYS and give it a French label in
-ECV_CARACTERISTIC_VARIABLE_LABELS, plus an ECV_CARACTERISTIC_GROUPS entry when
-several variables belong on one tab (src/lib/utils/constants.ts). Roots absent
-from ECV_CARACTERISTIC_KEYS are parsed but never drawn.
+off and how the two rounds differ all live in scripts/ecv/indicators.py;
+adding an entry to its INDICATORS table puts a `<root>_pct/_low/_high` family
+in the header; to chart it, list the root in ECV_CARACTERISTIC_KEYS and give it
+a French label in ECV_CARACTERISTIC_VARIABLE_LABELS, plus an
+ECV_CARACTERISTIC_GROUPS entry when several variables belong on one tab
+(src/lib/utils/constants.ts). Roots absent from ECV_CARACTERISTIC_KEYS are
+parsed but never drawn.
 
 Province and zone names are canonicalised against
 data/output/boundaries/zones.geojson so the output joins directly onto the
-dashboard geometry. Anything the geojson does not know about is reported and
-dropped, so a renamed zone can never silently disappear from the chart.
+dashboard geometry. Children in a zone the geojson does not know about are
+reported and kept in the design (they are real PSUs of their stratum), but no
+domain is estimated on them, so they do not count in any province or national
+figure either.
 
-Run from the project root. The R step estimates every (domain, variable) pair
-one at a time and runs once per milieu, so the runtime grows with the number of
+Run from the project root. The R step estimates every (milieu, domain,
+variable) triple one at a time, so the runtime grows with the number of
 variables and milieux -- budget around half an hour for both years, all
 variables and all three milieux; `--variables` / `--years` / `--milieux` cut
-that down when debugging, and `--workdir` keeps the R extract and script so the
+that down when debugging, and `--workdir` keeps the R inputs and outputs so the
 R step can be re-run by hand:
 
-    python scripts/process-ecv-caracteristics.py
-    python scripts/process-ecv-caracteristics.py --years 2022 --variables mere,gardienne
-    python scripts/process-ecv-caracteristics.py --milieux all
-    python scripts/process-ecv-caracteristics.py --workdir /tmp/ecv-carac-debug
+    python -m scripts.ecv.process-ecv-caracteristics
+    python -m scripts.ecv.process-ecv-caracteristics --years 2022 --variables mere,gardienne
+    python -m scripts.ecv.process-ecv-caracteristics --milieux all
+    python -m scripts.ecv.process-ecv-caracteristics --workdir /tmp/ecv-carac-debug
 """
 
 import argparse
@@ -45,7 +57,6 @@ import shutil
 import subprocess
 import sys
 import tempfile
-import time
 from pathlib import Path
 
 import pandas as pd
@@ -71,9 +82,9 @@ def canonicalize_names(
 ) -> pd.DataFrame:
     """Replace the survey's free-text names with the geojson spelling.
 
-    Rows whose province|zone pair is unknown to the geojson are dropped: they
-    could not be drawn on the map anyway, and keeping them would quietly
-    inflate the province and national totals.
+    Rows whose province|zone pair is unknown to the geojson are flagged
+    (`in_geo` = False) rather than dropped: they could not be drawn on the map,
+    so R never estimates on them, but they stay in the survey design.
     """
     key = df["province"].map(utils.normalize) + "|" + df["zone"].map(utils.normalize)
     matched = key.map(zones)
@@ -88,8 +99,8 @@ def canonicalize_names(
         )
         print(
             f"  WARNING: {len(missing)} survey zone(s) "
-            f"({int(unknown.sum()):,} children) are not in the boundaries file "
-            "and are dropped:"
+            f"({int(unknown.sum()):,} children, all ages) are not in the boundaries "
+            "file; they stay in the design but are never estimated on:"
         )
         for row in missing.head(20).itertuples():
             print(f"    {row.province} / {row.zone} ({row.children:,} children)")
@@ -104,23 +115,16 @@ def canonicalize_names(
     if unknown_provinces:
         print(f"  WARNING: province(s) absent from the boundaries: {unknown_provinces}")
 
-    df = df[~unknown].copy()
-    df["province"] = [pair[0] for pair in matched[~unknown]]
-    df["zone"] = [pair[1] for pair in matched[~unknown]]
-    df["zone_key"] = df["province"] + " | " + df["zone"]
-    df["psu_key"] = df["zone_key"] + " | " + df["area"]
-
-    covered = set(
-        df["zone_key"].map(
-            lambda k: (
-                utils.normalize(k.split(" | ")[0])
-                + "|"
-                + utils.normalize(k.split(" | ")[1])
-            )
-        )
+    df = df.copy()
+    df["in_geo"] = ~unknown
+    df["geo_province"] = [p[0] if isinstance(p, tuple) else None for p in matched]
+    df["geo_zone"] = [p[1] if isinstance(p, tuple) else None for p in matched]
+    df["geo_zone_key"] = (df["geo_province"] + " | " + df["geo_zone"]).where(
+        df["in_geo"]
     )
+
     never_surveyed = sorted(
-        zones[k][0] + " / " + zones[k][1] for k in set(zones) - covered
+        zones[k][0] + " / " + zones[k][1] for k in set(zones) - set(key[~unknown])
     )
     if never_surveyed:
         print(
@@ -131,130 +135,8 @@ def canonicalize_names(
     return df
 
 
-def build_indicators(df: pd.DataFrame, variables: list[str], year: str) -> pd.DataFrame:
-    """Add one 0/1 column per variable, NA where the answer does not apply.
-
-    Every variable is an "is this child / caregiver X?" flag, so a
-    design-weighted mean of the column is the percentage svyciprop estimates.
-    Each variable's source column is resolved for `year`, because the BeSD
-    batteries do not sit in the same columns in both rounds.
-    """
-    unexpected: dict[str, list] = {}
-    gated: dict[str, tuple[str, int]] = {}
-    missing_source: list[str] = []
-
-    for key in variables:
-        indicator = indicators.BY_KEY[key]
-        src = indicator.source(year)
-
-        # A variable the round simply does not carry: leave it entirely
-        # missing rather than guess, and say so.
-        if src is None or src.column not in df.columns:
-            df[key] = pd.Series(pd.NA, index=df.index, dtype="Int64")
-            missing_source.append(
-                f"{key} ({src.column if src else 'no source for this year'})"
-            )
-            continue
-
-        codes = pd.to_numeric(df[src.column], errors="coerce")
-
-        values = pd.Series(pd.NA, index=df.index, dtype="Int64")
-        values[codes.isin(src.yes)] = 1
-        values[codes.isin(src.no)] = 0
-
-        # Skipped by the questionnaire's own routing: the child was never
-        # offered this option, which is a "did not report it", not a "don't
-        # know". Only blank cells are filled -- an actual answer always wins.
-        if src.gate is not None and src.gate[0] in df.columns:
-            gate_col, asked = src.gate
-            gate_codes = pd.to_numeric(df[gate_col], errors="coerce")
-            skipped = codes.isna() & gate_codes.notna() & ~gate_codes.isin(asked)
-            values[skipped] = 0
-            if skipped.any():
-                gated[key] = (gate_col, int(skipped.sum()))
-
-        # A code that is neither a yes nor a no is usually "ne sait pas" and is
-        # meant to be dropped, but it is also how a recoded column announces
-        # itself: so report the ones that are not already accounted for.
-        known = set(src.yes) | set(src.no)
-        stray = codes.notna() & ~codes.isin(known)
-        if stray.any():
-            unexpected[key] = [
-                (float(code), int(count))
-                for code, count in codes[stray].value_counts().head(5).items()
-            ]
-        df[key] = values
-
-    if missing_source:
-        print(
-            f"  WARNING: {len(missing_source)} variable(s) have no usable source "
-            f"column in the {year} file and stay empty:"
-        )
-        for item in missing_source:
-            print(f"    {item}")
-
-    if gated:
-        print("  children counted as a 'no' because the question was filtered out:")
-        for key, (gate_col, count) in gated.items():
-            print(f"    {key:<26} {count:>7,} skipped by `{gate_col}`")
-
-    if unexpected:
-        print("  codes outside the yes/no lists (dropped as missing):")
-        for key, pairs in unexpected.items():
-            src = indicators.BY_KEY[key].source(year)
-            shown = ", ".join(f"{code:g} x{count:,}" for code, count in pairs)
-            print(f"    {key:<26} ({src.column if src else '?'}) {shown}")
-
-    return df
-
-
-def report_indicators(df: pd.DataFrame, variables: list[str]) -> None:
-    """Unweighted vs design-weighted national rate per variable, plus denominators.
-
-    Printed for every run: it is the quickest way to spot a variable derived
-    from the wrong column or the wrong code (a percentage that is the
-    complement of what it should be shows up immediately).
-    """
-    print("  national rates per variable (unweighted / weighted, before R):")
-    weight = df["weight"]
-    total = len(df)
-    for key in variables:
-        values = df[key]
-        mask = values.notna()
-        if not mask.any():
-            print(f"    {key:<26} ALL MISSING")
-            continue
-        unweighted = 100 * float(values[mask].mean())
-        weighted = 100 * float((values[mask] * weight[mask]).sum() / weight[mask].sum())
-        denom = int(mask.sum())
-        flag = "  <-- no variation" if values[mask].nunique() < 2 else ""
-        print(
-            f"    {key:<26} {unweighted:5.1f} / {weighted:5.1f}   "
-            f"n={denom:,} ({100 * denom / total:.0f}% of children){flag}"
-        )
-
-    # The modalities of one question have to add up: exactly one of them is a
-    # 1 for every child who answered. A drift here means the source column
-    # picked up a code the modality lists do not cover.
-    for column, keys in indicators.PARTITIONS:
-        if not set(keys) <= set(variables):
-            continue
-        answered = df[list(keys)].notna().all(axis=1)
-        exclusive = bool((df.loc[answered, list(keys)].sum(axis=1) == 1).all())
-        print(
-            f"    cross-check: {' + '.join(keys)} = 100% of answered children"
-            if exclusive
-            else f"    WARNING: {list(keys)} do not partition `{column}`"
-        )
-
-
 def stata_columns(dta_path: Path) -> set[str]:
-    """Column names in a Stata file, read from its header without any rows.
-
-    `pd.read_stata(columns=...)` raises on a column the file does not have, and
-    the two ECV rounds do not carry the same BeSD columns, so the load list is
-    always intersected with this.
-    """
+    """Column names in a Stata file, read from its header without any rows."""
     with pd.io.stata.StataReader(str(dta_path)) as reader:
         return set(reader.variable_labels())
 
@@ -265,13 +147,14 @@ def load_year(
     variables: list[str],
     provinces: dict[str, str],
     zones: dict[str, tuple[str, str]],
-    age_min: int,
-    age_max: int,
-) -> pd.DataFrame:
-    """Read one ECV Stata export into the tidy child-level frame used downstream."""
-    print(f"  reading {dta_path.name} ...")
-    started = time.perf_counter()
+) -> tuple[pd.DataFrame, list[str]]:
+    """Read one ECV Stata export into the child-level frame handed to R.
 
+    No row is filtered out here: the age window and the milieu are domains R
+    takes off the full-sample design. Returns the frame and the raw source
+    columns it carries.
+    """
+    print(f"  reading {dta_path.name} ...")
     available = stata_columns(dta_path)
     absent_geo = [c for c in GEO_COLUMNS if c not in available]
     if absent_geo:
@@ -286,145 +169,105 @@ def load_year(
             f"  note: {len(absent)} source column(s) are not in this round's "
             f"file: {absent}"
         )
-    load_columns = GEO_COLUMNS + [c for c in wanted if c in available]
+    source_cols = [c for c in wanted if c in available]
 
-    raw = pd.read_stata(dta_path, columns=load_columns, convert_categoricals=False)
-    print(
-        f"  loaded {len(raw):,} rows x {len(raw.columns)} columns in "
-        f"{time.perf_counter() - started:.1f}s"
+    raw = pd.read_stata(
+        dta_path, columns=GEO_COLUMNS + source_cols, convert_categoricals=False
     )
 
-    age = pd.to_numeric(raw[cst.AGE_COL], errors="coerce")
-    in_range = age.between(age_min, age_max)
-    print(
-        f"  age filter `{cst.AGE_COL}`: {len(raw):,} children -> "
-        f"{int(in_range.sum()):,} aged {age_min}-{age_max} months "
-        f"({int((~in_range).sum()):,} dropped, {int(age.isna().sum()):,} with no age)"
+    df = pd.DataFrame(
+        {
+            "province": utils.clean_name(raw[cst.STRATUM_COL]),
+            "zone": utils.clean_name(raw[cst.ZONE_COL]),
+            "area": utils.clean_name(raw[cst.AREA_COL]),
+            "weight": pd.to_numeric(raw[cst.WEIGHT_COL], errors="coerce"),
+            "age": pd.to_numeric(raw[cst.AGE_COL], errors="coerce"),
+            "milieu": pd.to_numeric(raw[cst.MILIEU_COL], errors="coerce").map(
+                cst.MILIEU_BY_CODE
+            ),
+        }
     )
-    if in_range.sum() == 0:
-        raise ValueError(
-            f"no child aged {age_min}-{age_max} months in {dta_path.name}; "
-            f"`{cst.AGE_COL}` spans {age.min()}-{age.max()}"
-        )
-    df = raw[in_range].copy()
+    for col in source_cols:
+        df[col] = pd.to_numeric(raw[col], errors="coerce")
 
-    df["province"] = utils.clean_name(df[cst.STRATUM_COL])
-    df["zone"] = utils.clean_name(df[cst.ZONE_COL])
-    df["area"] = utils.clean_name(df[cst.AREA_COL])
-    df["weight"] = pd.to_numeric(df[cst.WEIGHT_COL], errors="coerce")
-    df["milieu"] = pd.to_numeric(df[cst.MILIEU_COL], errors="coerce").map(
-        cst.MILIEU_BY_CODE
-    )
-
-    # The milieu split is a filter, not an indicator: a child whose `q108` is
-    # missing or carries an unexpected code still counts in the "all" domain,
-    # it just never lands in a urbain/rural one. Report it so a file that codes
-    # the question differently is caught rather than silently halving the split.
-    unknown_milieu = df["milieu"].isna()
-    seen = df["milieu"].value_counts().to_dict()
-    print(
-        f"  milieu `{cst.MILIEU_COL}`: "
-        + ", ".join(f"{name} {n:,}" for name, n in sorted(seen.items()))
-        + f" ({int(unknown_milieu.sum()):,} with no milieu)"
-    )
-    if unknown_milieu.any():
-        print(
-            f"  WARNING: {int(unknown_milieu.sum()):,} children carry a "
-            f"`{cst.MILIEU_COL}` outside {sorted(cst.MILIEU_BY_CODE)}; they are counted "
-            "in the `all` milieu only"
-        )
-
+    # The design keys come from the survey's own names, so a zone the geojson
+    # spells differently is still the same stratum / PSU. An aire de sante name
+    # is not unique nationally, so key the PSU on the zone.
+    df["psu_key"] = df["province"] + " | " + df["zone"] + " | " + df["area"]
     df = canonicalize_names(df, provinces, zones)
-    df = build_indicators(df, variables, year)
-
-    no_weight = int(df["weight"].isna().sum())
-    if no_weight:
-        print(
-            f"  WARNING: dropping {no_weight:,} children without a `{cst.WEIGHT_COL}`"
-        )
-        df = df.dropna(subset=["weight"])
-    nonpositive = int((df["weight"] <= 0).sum())
-    if nonpositive:
-        print(f"  WARNING: {nonpositive:,} children carry a weight <= 0")
-
-    keep = [
-        "province",
-        "zone",
-        "area",
-        "zone_key",
-        "psu_key",
-        "weight",
-        "milieu",
-        *variables,
-    ]
-    return df[keep]
+    return df, source_cols
 
 
-def build_counts(df: pd.DataFrame) -> pd.DataFrame:
-    """Unweighted number of children per national / province / zone domain."""
-    zone = (
-        df.groupby(["province", "zone", "zone_key"])
-        .agg(nb_children=("weight", "size"))
-        .reset_index()
-    )
-    zone["level"] = "zone"
-    zone["domain_key"] = zone["zone_key"]
+def indicator_spec(variables: list[str], year: str) -> pd.DataFrame:
+    """The INDICATORS table resolved for `year`, as the flat rows R codes from.
 
-    province = df.groupby("province").agg(nb_children=("weight", "size")).reset_index()
-    province["zone"] = None
-    province["level"] = "province"
-    province["domain_key"] = province["province"]
-
-    national = pd.DataFrame(
-        [
+    Codes are ";"-joined; `partition` names the question a variable is one
+    modality of, only when every modality of it is being estimated.
+    """
+    partition_of = {
+        key: column
+        for column, keys in indicators.PARTITIONS
+        if set(keys) <= set(variables)
+        for key in keys
+    }
+    rows = []
+    for key in variables:
+        src = indicators.BY_KEY[key].source(year)
+        rows.append(
             {
-                "province": None,
-                "zone": None,
-                "nb_children": len(df),
-                "level": "national",
-                "domain_key": "national",
+                "key": key,
+                "column": src.column if src else None,
+                "yes": ";".join(map(str, src.yes)) if src else None,
+                "no": ";".join(map(str, src.no)) if src else None,
+                "gate_column": src.gate[0] if src and src.gate else None,
+                "gate_codes": (
+                    ";".join(map(str, src.gate[1])) if src and src.gate else None
+                ),
+                "partition": partition_of.get(key),
             }
-        ]
-    )
-
-    cols = ["level", "domain_key", "province", "zone", "nb_children"]
-    counts = pd.concat([national[cols], province[cols], zone[cols]], ignore_index=True)
-
-    small = counts[(counts["level"] == "zone") & (counts["nb_children"] < 30)]
-    if len(small):
-        print(
-            f"  WARNING: {len(small)} zone(s) with fewer than 30 children -- their "
-            "confidence intervals will be very wide:"
         )
-        for row in small.head(10).itertuples():
-            print(f"    {row.domain_key}: {row.nb_children} children")
-    return counts
+    return pd.DataFrame(rows)
 
 
 def run_survey_r(
-    df: pd.DataFrame, variables: list[str], rscript: str, workdir: Path
+    df: pd.DataFrame,
+    source_cols: list[str],
+    spec: pd.DataFrame,
+    rscript: str,
+    workdir: Path,
+    milieux: list[str],
+    age_min: int,
+    age_max: int,
 ) -> pd.DataFrame:
     """Hand the child-level frame to R's `survey` and read the estimates back.
 
+    R does the filtering (age window, drawable zones, milieu), the indicator
+    coding, the counts and the estimation; see rscript_caracteristics.R.
     Domains travel as integer ids rather than names so that accented zone
     names cannot be mangled crossing the Python/R boundary.
     """
-    provinces = sorted(df["province"].unique())
-    zones = sorted(df["zone_key"].unique())
+    strata = sorted(df["province"].unique())
     psus = sorted(df["psu_key"].unique())
+    geo = df[df["in_geo"]]
+    provinces = sorted(geo["geo_province"].unique())
+    zones = sorted(geo["geo_zone_key"].unique())
+    stratum_ids = {name: i for i, name in enumerate(strata)}
+    psu_ids = {name: i for i, name in enumerate(psus)}
     province_ids = {name: i for i, name in enumerate(provinces)}
     zone_ids = {name: i for i, name in enumerate(zones)}
-    psu_ids = {name: i for i, name in enumerate(psus)}
 
     extract = pd.DataFrame(
         {
             # Strata are the provinces; `q101` is literally "Nom de la strate".
-            "stratum_id": df["province"].map(province_ids),
-            "province_id": df["province"].map(province_ids),
-            "zone_id": df["zone_key"].map(zone_ids),
+            "stratum_id": df["province"].map(stratum_ids),
             "psu_id": df["psu_key"].map(psu_ids),
+            "province_id": df["geo_province"].map(province_ids).astype("Int64"),
+            "zone_id": df["geo_zone_key"].map(zone_ids).astype("Int64"),
+            "in_geo": df["in_geo"].astype(int),
             "weight": df["weight"],
-            **{variable: df[variable] for variable in variables},
+            "age": df["age"],
+            "milieu": df["milieu"],
+            **{col: df[col] for col in source_cols},
         }
     )
 
@@ -438,16 +281,14 @@ def run_survey_r(
 
     in_csv = workdir / "ecv_carac_extract.csv"
     out_csv = workdir / "ecv_carac_estimates.csv"
+    spec_csv = workdir / "ecv_carac_spec.csv"
     labels_csv = workdir / "ecv_carac_domains.csv"
     extract.to_csv(in_csv, index=False)
+    spec.to_csv(spec_csv, index=False, encoding="utf-8")
     labels.to_csv(labels_csv, index=False, encoding="utf-8")
-    print(
-        f"  wrote the R extract: {len(extract):,} rows, "
-        f"{len(provinces)} strata, {len(psus)} PSUs -> {in_csv}"
-    )
 
-    started = time.perf_counter()
     sys.stdout.flush()
+    # R's progress and reports go to stderr, straight to the terminal.
     proc = subprocess.run(
         [
             rscript,
@@ -455,14 +296,16 @@ def run_survey_r(
             str(cst.R_CARACTERISTICS_PATH),
             str(in_csv),
             str(out_csv),
-            ",".join(variables),
+            str(spec_csv),
             str(labels_csv),
+            str(age_min),
+            str(age_max),
+            ",".join(milieux),
         ],
         stdout=subprocess.PIPE,
         stderr=None,
         text=True,
     )
-    print(f"  R finished in {time.perf_counter() - started:.1f}s")
     if proc.returncode != 0:
         raise RuntimeError(
             f"Rscript failed (exit {proc.returncode}).\n--- stdout ---\n{proc.stdout}"
@@ -472,165 +315,18 @@ def run_survey_r(
 
     id_to_province = {i: name for name, i in province_ids.items()}
     id_to_zone = {i: name for name, i in zone_ids.items()}
+    zone_names = geo.drop_duplicates("geo_zone_key").set_index("geo_zone_key")
 
     est = pd.read_csv(out_csv)
-    print(f"  read {len(est):,} raw estimates back from R")
-    est["domain_key"] = [
-        "national"
-        if level == "national"
-        else (id_to_province[did] if level == "province" else id_to_zone[did])
-        for level, did in zip(est["level"], est["domain_id"])
-    ]
-    # An observed 0% / 100% has no CI by design; only flag the other domains.
-    boundary = est["est"].isin([0, 1])
-    missing_ci = int((est["low"].isna() & ~boundary).sum())
-    if missing_ci:
-        print(f"  WARNING: {missing_ci:,} estimate(s) came back without a CI")
-    return est
-
-
-def reshape_estimates(est: pd.DataFrame, variables: list[str]) -> pd.DataFrame:
-    """Long R output -> one row per domain with the dashboard's column names."""
-    wide = est.pivot(
-        index=["level", "domain_key"],
-        columns="indicator",
-        values=["est", "low", "high"],
+    print(f"  read {len(est):,} rows back from R")
+    is_zone = est["level"] == "zone"
+    zone_key = est["domain_id"].map(id_to_zone)
+    est["province"] = (
+        est["domain_id"].map(id_to_province).where(est["level"] == "province")
     )
-    suffix = {"est": "pct", "low": "low", "high": "high"}
-    wide.columns = [f"{variable}_{suffix[stat]}" for stat, variable in wide.columns]
-    wide = wide.reset_index()
-    # svyciprop returns proportions; the dashboard reads 0-100 percentages.
-    value_cols = [c for c in wide.columns if c not in ("level", "domain_key")]
-    wide[value_cols] = (wide[value_cols] * 100).round(1)
-    ordered = [
-        f"{variable}_{stat}"
-        for variable in variables
-        for stat in ("pct", "low", "high")
-    ]
-    return wide[["level", "domain_key", *ordered]]
-
-
-def weighted_rates(df: pd.DataFrame, variables: list[str]) -> pd.DataFrame:
-    """Design-weighted percentage per domain, computed independently in pandas.
-
-    Only used to sanity-check what R returns: svyciprop's point estimate is the
-    same Horvitz-Thompson ratio, so the two must agree closely. A disagreement
-    means the R domain subsetting is selecting the wrong rows -- which is
-    exactly the failure mode that silently produces NaN/0/100 zone estimates.
-    """
-
-    def rates(group: pd.DataFrame) -> dict[str, float | None]:
-        out: dict[str, float | None] = {}
-        for variable in variables:
-            values = group[variable]
-            mask = values.notna()
-            weights = group["weight"][mask]
-            out[f"{variable}_ref"] = (
-                None
-                if weights.sum() == 0
-                else 100 * float((values[mask] * weights).sum() / weights.sum())
-            )
-        return out
-
-    frames = [
-        pd.DataFrame([{"level": "national", "domain_key": "national", **rates(df)}])
-    ]
-    for level, key in (("province", "province"), ("zone", "zone_key")):
-        frames.append(
-            pd.DataFrame(
-                [
-                    {"level": level, "domain_key": name, **rates(group)}
-                    for name, group in df.groupby(key)
-                ]
-            )
-        )
-    return pd.concat(frames, ignore_index=True)
-
-
-def check_against_reference(
-    wide: pd.DataFrame,
-    reference: pd.DataFrame,
-    variables: list[str],
-    tolerance: float = 1.0,
-) -> None:
-    """Warn if R's point estimates drift from the pandas weighted means."""
-    merged = wide.merge(reference, on=["level", "domain_key"], how="left")
-    problems: list[str] = []
-    for variable in variables:
-        ref = merged[f"{variable}_ref"]
-        got = merged[f"{variable}_pct"]
-        low, high = merged[f"{variable}_low"], merged[f"{variable}_high"]
-        missing = got.isna() & ref.notna()
-        drifted = (got - ref).abs() > tolerance
-        for _, row in merged[missing | drifted.fillna(False)].iterrows():
-            problems.append(
-                f"    {row['level']:>8} {row['domain_key']}: {variable} "
-                f"R={row[f'{variable}_pct']} vs weighted mean={row[f'{variable}_ref']}"
-            )
-
-        impossible = (low < 0) | (high > 100) | (low > got) | (high < got)
-        for _, row in merged[impossible.fillna(False)].iterrows():
-            problems.append(
-                f"    {row['level']:>8} {row['domain_key']}: {variable} CI "
-                f"[{row[f'{variable}_low']}, {row[f'{variable}_high']}] is out of range"
-            )
-    if problems:
-        print(
-            f"  WARNING: {len(problems)} estimate(s) disagree with the weighted "
-            f"mean by more than {tolerance} point(s), are missing, or carry an "
-            "impossible CI:"
-        )
-        for line in problems[:20]:
-            print(line)
-        if len(problems) > 20:
-            print(f"    ... and {len(problems) - 20} more")
-    else:
-        print("  cross-check OK: every estimate matches its weighted mean")
-
-
-def process_milieu(
-    df: pd.DataFrame,
-    year: str,
-    milieu: str,
-    variables: list[str],
-    rscript: str,
-    workdir: Path | None,
-) -> pd.DataFrame:
-    """Estimate every domain on one milieu subset of a year's children.
-
-    The subset is taken before `svydesign()` is built rather than through
-    `subset()` on a full-sample design. That matches what the R script already
-    does for the province and zone domains (see the `domain()` comment there),
-    so a milieu domain is estimated exactly the way a zone domain is.
-    """
-    counts = build_counts(df)
-    print(
-        f"  domains: {int((counts['level'] == 'province').sum())} provinces, "
-        f"{int((counts['level'] == 'zone').sum())} zones, 1 national"
-    )
-
-    print("  running the R survey estimation ...")
-    if workdir is None:
-        with tempfile.TemporaryDirectory(prefix=f"ecv-carac-{year}-{milieu}-") as tmp:
-            est = run_survey_r(df, variables, rscript, Path(tmp))
-    else:
-        run_dir = workdir / year / milieu
-        run_dir.mkdir(parents=True, exist_ok=True)
-        est = run_survey_r(df, variables, rscript, run_dir)
-        print(f"  kept the R inputs/outputs in {run_dir}")
-
-    wide = reshape_estimates(est, variables)
-    check_against_reference(wide, weighted_rates(df, variables), variables)
-
-    out = counts.merge(wide, on=["level", "domain_key"], how="left")
-    unmatched = int(out[f"{variables[0]}_pct"].isna().sum())
-    if unmatched:
-        print(f"  WARNING: {unmatched} domain(s) got no estimate from R")
-    out["nb_children"] = out["nb_children"].astype("Int64")
-    out["year"] = cst.COLLECTION_YEAR.get(year, year)
-    out["milieu"] = milieu
-    print(f"  {len(out)} rows for {year} / {milieu}")
-    return out.drop(columns=["domain_key"])
+    est.loc[is_zone, "province"] = zone_key[is_zone].map(zone_names["geo_province"])
+    est["zone"] = zone_key.map(zone_names["geo_zone"]).where(is_zone)
+    return est.drop(columns=["domain_id"])
 
 
 def process_file(
@@ -646,28 +342,40 @@ def process_file(
     zones: dict[str, tuple[str, str]],
 ) -> pd.DataFrame:
     print(f"\n=== {year} ===")
-    df = load_year(dta_path, year, variables, provinces, zones, age_min, age_max)
+    df, source_cols = load_year(dta_path, year, variables, provinces, zones)
     print(
-        f"  analysing {len(df):,} children in {df['province'].nunique()} provinces / "
-        f"{df['zone_key'].nunique()} zones / {df['psu_key'].nunique()} areas"
+        f"  {len(df):,} children (all ages) in {df['province'].nunique()} provinces / "
+        f"{df['psu_key'].nunique()} areas"
     )
-    report_indicators(df, variables)
+    spec = indicator_spec(variables, year)
 
-    frames = []
-    for milieu in milieux:
-        subset = df if milieu == "all" else df[df["milieu"] == milieu]
-        print(
-            f"\n--- {year} / milieu={milieu}: {len(subset):,} children in "
-            f"{subset['province'].nunique()} provinces / "
-            f"{subset['zone_key'].nunique()} zones / "
-            f"{subset['psu_key'].nunique()} areas ---"
+    print("  running the R survey estimation ...")
+    if workdir is None:
+        with tempfile.TemporaryDirectory(prefix=f"ecv-carac-{year}-") as tmp:
+            est = run_survey_r(
+                df, source_cols, spec, rscript, Path(tmp), milieux, age_min, age_max
+            )
+    else:
+        run_dir = workdir / year
+        run_dir.mkdir(parents=True, exist_ok=True)
+        est = run_survey_r(
+            df, source_cols, spec, rscript, run_dir, milieux, age_min, age_max
         )
-        if subset.empty:
-            print(f"  WARNING: no child with milieu={milieu}; no rows emitted")
-            continue
-        frames.append(process_milieu(subset, year, milieu, variables, rscript, workdir))
+        print(f"  kept the R inputs/outputs in {run_dir}")
 
-    return pd.concat(frames, ignore_index=True)
+    unmatched = int(est[f"{variables[0]}_pct"].isna().sum())
+    if unmatched:
+        print(f"  WARNING: {unmatched} domain(s) got no estimate from R")
+    est["nb_children"] = est["nb_children"].astype("Int64")
+    est["year"] = cst.COLLECTION_YEAR.get(year, year)
+    # Milieu in the order asked for, then national / province / zone by name.
+    est["milieu_rank"] = est["milieu"].map({m: i for i, m in enumerate(milieux)})
+    est["level_rank"] = est["level"].map({"national": 0, "province": 1, "zone": 2})
+    est = est.sort_values(
+        ["milieu_rank", "level_rank", "province", "zone"], na_position="first"
+    )
+    print(f"  {len(est)} rows for {year}")
+    return est.drop(columns=["milieu_rank", "level_rank"])
 
 
 def resolve_rscript(explicit: str | None) -> str:
@@ -676,10 +384,7 @@ def resolve_rscript(explicit: str | None) -> str:
     if rscript is None or not Path(rscript).exists():
         raise RuntimeError(
             "Rscript not found on PATH. This script delegates the survey-design "
-            "estimation to R's `survey` package; install R and then run:\n"
-            '  Rscript -e \'install.packages("survey", '
-            'repos = "https://cloud.r-project.org")\'\n'
-            "Or point at an existing interpreter with --rscript."
+            "estimation to R's `survey` package"
         )
     version = subprocess.run([rscript, "--version"], capture_output=True, text=True)
     print(f"  Rscript: {rscript} ({(version.stdout or version.stderr).strip()})")
@@ -748,8 +453,6 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    started = time.perf_counter()
-    print("ECV caracteristics")
     print(f"  input dir : {cst.INPUT_DIR}")
     print(f"  output    : {args.output}")
     print(f"  age window: {args.age_min}-{args.age_max} completed months")
@@ -766,7 +469,6 @@ def main() -> None:
     if unknown:
         raise SystemExit(f"unknown milieu(x): {unknown}\nknown milieux: {cst.MILIEUX}")
     print(f"  years     : {years}")
-    print(f"  variables : {len(variables)} -> {variables}")
     print(f"  milieux   : {milieux}")
 
     rscript = resolve_rscript(args.rscript)
@@ -827,24 +529,8 @@ def main() -> None:
     )
     print(f"  missing CI bounds across the file: {missing_ci:,}")
 
-    print("\n  national percentages:")
-    for _, row in output[output["level"] == "national"].iterrows():
-        print(
-            f"    --- {row['year']} / {row['milieu']} ({row['nb_children']:,} children)"
-        )
-        for variable in variables:
-            print(
-                f"      {indicators.BY_KEY[variable].label:<28} "
-                f"{row[f'{variable}_pct']:>5} "
-                f"[{row[f'{variable}_low']}, {row[f'{variable}_high']}]"
-            )
-
     args.output.parent.mkdir(parents=True, exist_ok=True)
     output.to_csv(args.output, index=False)
-    print(
-        f"wrote {args.output} ({len(output)} rows x {len(output.columns)} columns) "
-        f"in {time.perf_counter() - started:.1f}s"
-    )
 
 
 if __name__ == "__main__":

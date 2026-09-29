@@ -15,7 +15,7 @@ R_VACC_COV_PATH = (
     PROJECT_ROOT / "scripts" / "rscripts" / "ecv" / "rscript_vaccination_coverage.R"
 )
 R_CARACTERISTICS_PATH = (
-    PROJECT_ROOT / "scripts" / "rscripts" / "ecv" / "rscript_caracteristics.R"
+    PROJECT_ROOT / "scripts" / "ecv" / "rscripts" / "rscript_caracteristics.R"
 )
 
 ## Filters
