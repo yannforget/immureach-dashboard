@@ -1,9 +1,8 @@
 """Compute ECV key figures for young children from the raw survey microdata.
 
-Reads the Stata exports in data/input/ecv/ (ECV_2022_* and ECV_2023_*), keeps
-children inside the age window (`vs25`, age in completed months; 6-23 by
-default, see AGE_MIN_MONTHS), and derives the two headline indicators the
-dashboard shows:
+Reads the Stata exports in data/input/ecv/ (ECV_2022_* and ECV_2023_*) and
+derives the two headline indicators the dashboard shows, for children inside
+the age window (`vs25`, age in completed months; see AGE_MIN_MONTHS):
 
   * penta_cov -- Penta3 coverage (3rd dose of the pentavalent vaccine)
   * zdc_cov   -- zero-dose children (no antigen at all)
@@ -11,17 +10,15 @@ dashboard shows:
 Both are built from the `<vaccine>_merg` columns, which merge the vaccination
 card with the mother's recall and are coded 1 = vaccinated, 2 = not vaccinated.
 
-Point estimates and 95% confidence intervals are NOT computed in Python: the
-survey is a stratified two-stage cluster design (strata = province `q101`,
-PSU = aire de sante `q105`, weights = `ponderation`), so this script shells out
-to R's `survey` package via `subprocess`. The CI is a logit-transformed
-interval (`svyciprop(method = "logit")`), which behaves properly for the small
-zone-level domains where coverage sits near 0% or 100%.
-
-Counts (children, health zones, health areas) are unweighted sample sizes and
-are computed here in pandas. `nb_zones` is the exception: it counts the health
-zones the *survey* reached, so it is taken from the whole sample and repeated
-unchanged on the urbain/rural rows (see build_counts).
+This script only reads the file, cleans the geography names and hands the
+WHOLE child-level sample to R (rscripts/rscript_key_ecv.R) via `subprocess`.
+Everything else happens in R: the survey design is built on the full sample
+(strata = province `q101`, PSU = aire de sante `q105`, weights =
+`ponderation`), the age window and the milieu are then taken as domains with
+`subset()`, and R codes the indicators, counts the unweighted sample sizes and
+computes the logit-transformed 95% CIs (`svyciprop(method = "logit")`).
+Filtering the data before `svydesign()` would understate the design's PSU
+counts per stratum and so misstate the variance.
 
 Output mirrors the KeyEcvRow schema consumed by the dashboard
 (src/types/index.ts): one row per national / province / zone domain, year and
@@ -30,8 +27,8 @@ milieu.
 `milieu` is the dashboard's rural/urbain ribbon filter, read off `q108`
 ("Milieu de localisation du menage"): every domain is estimated three times,
 once on the whole sample (`all`) and once on each q108 modality (`urbain`,
-`rural`). See MILIEUX. Each milieu costs a full R pass, so the run takes about
-three times as long as it used to; `--milieux all` reproduces the old output.
+`rural`). See MILIEUX. `nb_zones` counts the health zones the *survey*
+reached, so it reads the same under every milieu.
 
 Requires R with the `survey` package installed:
 
@@ -39,7 +36,7 @@ Requires R with the `survey` package installed:
 
 Run from the project root:
 
-    python scripts/process-ecv-keys.py
+    python -m scripts.ecv.process-ecv-keys
 """
 
 import argparse
@@ -74,145 +71,30 @@ LOAD_COLUMNS = [
 ] + VACCINES_COLUMNS
 
 
-def load_year(
-    dta_path: Path,
-    age_min: int = cst.AGE_MIN_MONTHS,
-    age_max: int = cst.AGE_MAX_MONTHS,
-) -> pd.DataFrame:
-    """Read one ECV Stata export into the tidy child-level frame used downstream."""
+def load_year(dta_path: Path) -> pd.DataFrame:
+    """Read one ECV Stata export into the child-level frame handed to R."""
     raw = pd.read_stata(dta_path, columns=LOAD_COLUMNS, convert_categoricals=False)
 
-    age = pd.to_numeric(raw[cst.AGE_COL], errors="coerce")
-    in_range = age.between(age_min, age_max)
-    # Report what the age filter actually removed, so a window that silently
-    # matches (or drops) the whole file is obvious from the run log.
-    print(
-        f"  {len(raw):,} children in file -> {int(in_range.sum()):,} aged "
-        f"{age_min}-{age_max} months ({int((~in_range).sum()):,} dropped)"
+    df = pd.DataFrame(
+        {
+            "province": utils.clean_name(raw[cst.STRATUM_COL]),
+            "zone": utils.clean_name(raw[cst.ZONE_COL]),
+            "area": utils.clean_name(raw[cst.AREA_COL]),
+            "weight": pd.to_numeric(raw[cst.WEIGHT_COL], errors="coerce"),
+            "age": pd.to_numeric(raw[cst.AGE_COL], errors="coerce"),
+            "nb_areas_tot": pd.to_numeric(raw[cst.AREAS_TOTAL_COL], errors="coerce"),
+            "milieu": pd.to_numeric(raw[cst.MILIEU_COL], errors="coerce").map(
+                cst.MILIEU_BY_CODE
+            ),
+        }
     )
-    df = raw[in_range].copy()
-
-    df["province"] = utils.clean_name(df[cst.STRATUM_COL])
-    df["zone"] = utils.clean_name(df[cst.ZONE_COL])
-    df["area"] = utils.clean_name(df[cst.AREA_COL])
-    df["weight"] = pd.to_numeric(df[cst.WEIGHT_COL], errors="coerce")
-    df["nb_areas_tot"] = pd.to_numeric(df[cst.AREAS_TOTAL_COL], errors="coerce")
-    df["milieu"] = pd.to_numeric(df[cst.MILIEU_COL], errors="coerce").map(
-        cst.MILIEU_BY_CODE
-    )
-    print(
-        f"  milieu `{cst.MILIEU_COL}`: "
-        + ", ".join(
-            f"{name} {n:,}" for name, n in sorted(df["milieu"].value_counts().items())
-        )
-        + f" ({int(df['milieu'].isna().sum()):,} with no milieu)"
-    )
-
-    merg = df[VACCINES_COLUMNS].apply(pd.to_numeric, errors="coerce")
-    df["penta3"] = (merg["penta3_merg"] == cst.VACCINATED).astype("Int64")
-    df.loc[merg["penta3_merg"].isna(), "penta3"] = pd.NA
-    # Zero-dose: no antigen at all, i.e. every merged vaccine column says "not
-    # vaccinated". Unknown as soon as one column is missing.
-    df["zero_dose"] = (merg == cst.NOT_VACCINATED).all(axis=1).astype("Int64")
-    df.loc[merg.isna().any(axis=1), "zero_dose"] = pd.NA
+    for col in VACCINES_COLUMNS:
+        df[col] = pd.to_numeric(raw[col], errors="coerce")
 
     # An aire de sante name is not unique nationally, so key the PSU on the zone.
     df["zone_key"] = df["province"] + " | " + df["zone"]
     df["psu_key"] = df["zone_key"] + " | " + df["area"]
-
-    df = df.dropna(subset=["weight"])
-    return df[
-        [
-            "province",
-            "zone",
-            "area",
-            "zone_key",
-            "psu_key",
-            "weight",
-            "nb_areas_tot",
-            "milieu",
-            "penta3",
-            "zero_dose",
-        ]
-    ]
-
-
-def build_counts(
-    df: pd.DataFrame, zone_frame: pd.DataFrame | None = None
-) -> pd.DataFrame:
-    """Unweighted sample sizes per domain: children, zones, areas surveyed/total.
-
-    `zone_frame` is the whole-sample frame for the same year and is used for
-    `nb_zones` only. "Zones de sante enquetees" describes the reach of the
-    survey itself, not of the rural/urbain slice the ribbon happens to show, so
-    it has to read the same under every milieu -- otherwise switching the
-    ribbon to `urbain` makes it look as if the survey suddenly covered a third
-    of the country. Every other count is a genuine count of `df` and does vary
-    by milieu. Defaults to `df`, which reproduces the whole-sample figures.
-    """
-    zones_ref = df if zone_frame is None else zone_frame
-    zone_totals = df.groupby("zone_key")["nb_areas_tot"].max()
-
-    zone = (
-        df.groupby(["province", "zone", "zone_key"])
-        .agg(nb_people=("weight", "size"), nb_areas=("psu_key", "nunique"))
-        .reset_index()
-    )
-    zone["nb_zones"] = 1
-    zone["nb_areas_tot"] = zone["zone_key"].map(zone_totals)
-    zone["level"] = "zone"
-    zone["domain_key"] = zone["zone_key"]
-
-    province = (
-        df.groupby("province")
-        .agg(
-            nb_people=("weight", "size"),
-            nb_areas=("psu_key", "nunique"),
-        )
-        .reset_index()
-    )
-    province["nb_zones"] = province["province"].map(
-        zones_ref.groupby("province")["zone_key"].nunique()
-    )
-    province["nb_areas_tot"] = province["province"].map(
-        df.drop_duplicates("zone_key").groupby("province")["nb_areas_tot"].sum()
-    )
-    province["zone"] = None
-    province["level"] = "province"
-    province["domain_key"] = province["province"]
-
-    national = pd.DataFrame(
-        [
-            {
-                "province": None,
-                "zone": None,
-                "nb_people": len(df),
-                "nb_zones": zones_ref["zone_key"].nunique(),
-                "nb_areas": df["psu_key"].nunique(),
-                "nb_areas_tot": df.drop_duplicates("zone_key")["nb_areas_tot"].sum(),
-                "level": "national",
-                "domain_key": "national",
-            }
-        ]
-    )
-
-    cols = [
-        "level",
-        "domain_key",
-        "province",
-        "zone",
-        "nb_people",
-        "nb_zones",
-        "nb_areas",
-        "nb_areas_tot",
-    ]
-    return pd.concat([national, province[cols], zone[cols]], ignore_index=True)[cols]
-
-
-# R only ever sees integer domain ids (see run_survey_r), so its warning
-# summary reads "zone id=12". Swap the ids back for names on the way out,
-# otherwise the warnings name a number the reader cannot act on.
-DOMAIN_REF_RE = re.compile(r"\b(province|zone) id=(-?\d+)")
+    return df
 
 
 def label_domains(
@@ -223,22 +105,28 @@ def label_domains(
         name = (id_to_province if level == "province" else id_to_zone).get(raw_id)
         return f"{level} {name}" if name else match.group(0)
 
-    return DOMAIN_REF_RE.sub(repl, text)
+    return re.compile(r"\b(province|zone) id=(-?\d+)").sub(repl, text)
 
 
-def run_survey_r(df: pd.DataFrame, workdir: Path) -> pd.DataFrame:
+def run_survey_r(
+    df: pd.DataFrame,
+    workdir: Path,
+    milieux: list[str],
+    age_min: int,
+    age_max: int,
+) -> pd.DataFrame:
     """Hand the child-level frame to R's `survey` and read the estimates back.
 
-    Domains travel as integer ids rather than names so that accented zone
-    names cannot be mangled crossing the Python/R boundary.
+    R does the filtering (age window, milieu), the indicator coding, the
+    counts and the estimation; see rscript_key_ecv.R. Domains travel as
+    integer ids rather than names so that accented zone names cannot be
+    mangled crossing the Python/R boundary.
     """
     rscript = shutil.which("Rscript")
     if rscript is None:
         raise RuntimeError(
             "Rscript not found on PATH. This script delegates the survey-design "
-            "estimation to R's `survey` package; install R and then run:\n"
-            '  Rscript -e \'install.packages("survey", '
-            'repos = "https://cloud.r-project.org")\''
+            "estimation to R's `survey` package."
         )
 
     provinces = sorted(df["province"].unique())
@@ -250,14 +138,15 @@ def run_survey_r(df: pd.DataFrame, workdir: Path) -> pd.DataFrame:
 
     extract = pd.DataFrame(
         {
-            # Strata are the provinces; `q101` is literally "Nom de la strate".
             "stratum_id": df["province"].map(province_ids),
             "province_id": df["province"].map(province_ids),
             "zone_id": df["zone_key"].map(zone_ids),
             "psu_id": df["psu_key"].map(psu_ids),
             "weight": df["weight"],
-            "penta3": df["penta3"],
-            "zero_dose": df["zero_dose"],
+            "age": df["age"],
+            "milieu": df["milieu"],
+            "nb_areas_tot": df["nb_areas_tot"],
+            **{col: df[col] for col in VACCINES_COLUMNS},
         }
     )
 
@@ -272,6 +161,9 @@ def run_survey_r(df: pd.DataFrame, workdir: Path) -> pd.DataFrame:
             str(cst.R_KEY_PATH),
             str(in_csv),
             str(out_csv),
+            str(age_min),
+            str(age_max),
+            ",".join(milieux),
         ],
         capture_output=True,
         text=True,
@@ -288,168 +180,25 @@ def run_survey_r(df: pd.DataFrame, workdir: Path) -> pd.DataFrame:
     id_to_zone = {i: name for name, i in zone_ids.items()}
 
     if proc.stderr.strip():
-        # R's warning summary arrives on stderr; flush stdout first so the two
-        # streams stay in order when the output is piped or redirected.
+        # R reports its progress, cross-check and warning summary on stderr;
+        # flush stdout first so the two streams stay in order when piped.
         sys.stdout.flush()
         print(
-            label_domains(proc.stderr.strip(), id_to_province, id_to_zone),
+            label_domains(proc.stderr.rstrip(), id_to_province, id_to_zone),
             file=sys.stderr,
         )
         sys.stderr.flush()
 
     est = pd.read_csv(out_csv)
-    est["domain_key"] = [
-        "national"
-        if level == "national"
-        else (id_to_province[did] if level == "province" else id_to_zone[did])
-        for level, did in zip(est["level"], est["domain_id"])
-    ]
-    return est
-
-
-def reshape_estimates(est: pd.DataFrame) -> pd.DataFrame:
-    """Long R output -> one row per domain with the dashboard's column names."""
-    name_by_indicator = {"penta3": "penta_cov", "zero_dose": "zdc_cov"}
-    wide = est.assign(prefix=est["indicator"].map(name_by_indicator)).pivot(
-        index=["level", "domain_key"], columns="prefix", values=["est", "low", "high"]
+    zone_names = df.drop_duplicates("zone_key").set_index("zone_key")
+    zone_key = est["domain_id"].map(id_to_zone)
+    est["province"] = (
+        est["domain_id"].map(id_to_province).where(est["level"] == "province")
     )
-    wide.columns = [
-        f"{prefix}" if stat == "est" else f"{prefix}_{stat}"
-        for stat, prefix in wide.columns
-    ]
-    wide = wide.reset_index()
-    # svyciprop returns proportions; the dashboard reads 0-100 percentages.
-    value_cols = [c for c in wide.columns if c not in ("level", "domain_key")]
-    wide[value_cols] = (wide[value_cols] * 100).round(1)
-    return wide
-
-
-def weighted_rates(df: pd.DataFrame) -> pd.DataFrame:
-    """Design-weighted percentage per domain, computed independently in pandas.
-
-    Only used to sanity-check what R returns: svyciprop's point estimate is the
-    same Horvitz-Thompson ratio, so the two must agree closely. A disagreement
-    means the R domain subsetting is selecting the wrong rows -- which is
-    exactly the failure mode that silently produced NaN/0/100 zone estimates.
-    """
-
-    def rate(group: pd.DataFrame, col: str) -> float | None:
-        values = group[col]
-        mask = values.notna()
-        weights = group["weight"][mask]
-        if weights.sum() == 0:
-            return None
-        return 100 * float((values[mask] * weights).sum() / weights.sum())
-
-    frames = []
-    for level, keys in (("province", ["province"]), ("zone", ["zone_key"])):
-        grouped = df.groupby(keys[0])
-        frames.append(
-            pd.DataFrame(
-                {
-                    "level": level,
-                    "domain_key": list(grouped.groups),
-                    "penta_cov_ref": [rate(g, "penta3") for _, g in grouped],
-                    "zdc_cov_ref": [rate(g, "zero_dose") for _, g in grouped],
-                }
-            )
-        )
-    frames.append(
-        pd.DataFrame(
-            {
-                "level": ["national"],
-                "domain_key": ["national"],
-                "penta_cov_ref": [rate(df, "penta3")],
-                "zdc_cov_ref": [rate(df, "zero_dose")],
-            }
-        )
-    )
-    return pd.concat(frames, ignore_index=True)
-
-
-def check_against_reference(
-    wide: pd.DataFrame, reference: pd.DataFrame, tolerance: float = 1.0
-) -> None:
-    """Warn if R's point estimates drift from the pandas weighted means."""
-    merged = wide.merge(reference, on=["level", "domain_key"], how="left")
-    problems = []
-    for metric in ("penta_cov", "zdc_cov"):
-        ref = merged[f"{metric}_ref"]
-        got = merged[metric]
-        low, high = merged[f"{metric}_low"], merged[f"{metric}_high"]
-        missing = got.isna() & ref.notna()
-        drifted = (got - ref).abs() > tolerance
-        for _, row in merged[missing | drifted].iterrows():
-            problems.append(
-                f"    {row['level']:>8} {row['domain_key']}: {metric} "
-                f"R={row[metric]} vs weighted mean={row[f'{metric}_ref']:.1f}"
-            )
-        # A CI outside [0, 100], or one collapsed onto a point, is not a
-        # confidence interval: flag it even when the estimate itself is right.
-        impossible = (low < 0) | (high > 100) | (low > got) | (high < got)
-        collapsed = (high <= low) & ref.notna()
-        for _, row in merged[impossible.fillna(False)].iterrows():
-            problems.append(
-                f"    {row['level']:>8} {row['domain_key']}: {metric} CI "
-                f"[{row[f'{metric}_low']}, {row[f'{metric}_high']}] is out of range"
-            )
-        for _, row in merged[collapsed.fillna(False)].iterrows():
-            problems.append(
-                f"    {row['level']:>8} {row['domain_key']}: {metric} CI "
-                f"[{row[f'{metric}_low']}, {row[f'{metric}_high']}] is collapsed"
-            )
-    if problems:
-        sys.stdout.flush()
-        print(
-            f"  WARNING: {len(problems)} estimate(s) disagree with the "
-            f"weighted mean by more than {tolerance} point(s) or are missing:",
-            file=sys.stderr,
-        )
-        for line in problems[:20]:
-            print(line, file=sys.stderr)
-        if len(problems) > 20:
-            print(f"    ... and {len(problems) - 20} more", file=sys.stderr)
-        sys.stderr.flush()
-    else:
-        print("  cross-check OK: all estimates match the weighted means")
-
-
-def process_milieu(
-    df: pd.DataFrame,
-    year: str,
-    milieu: str,
-    workdir: Path | None = None,
-    zone_frame: pd.DataFrame | None = None,
-) -> pd.DataFrame:
-    """Estimate every domain on one milieu subset of a year's children.
-
-    The subset is taken before `svydesign()` is built rather than through
-    `subset()` on a full-sample design. That matches what the R script already
-    does for the province and zone domains (see the `domain()` comment there),
-    so a milieu domain is estimated exactly the way a zone domain is.
-    """
-    counts = build_counts(df, zone_frame)
-
-    print("  running R survey estimation ...")
-    if workdir is None:
-        with tempfile.TemporaryDirectory(prefix=f"ecv-{year}-{milieu}-") as tmp:
-            est = run_survey_r(df, Path(tmp))
-    else:
-        # Keep the extract, the generated R script and the raw estimates so the
-        # R step can be re-run and debugged by hand.
-        run_dir = workdir / year / milieu
-        run_dir.mkdir(parents=True, exist_ok=True)
-        est = run_survey_r(df, run_dir)
-        print(f"  kept R inputs/outputs in {run_dir}")
-    wide = reshape_estimates(est)
-    check_against_reference(wide, weighted_rates(df))
-
-    out = counts.merge(wide, on=["level", "domain_key"], how="left")
-    count_cols = ["nb_people", "nb_zones", "nb_areas", "nb_areas_tot"]
-    out[count_cols] = out[count_cols].astype("Int64")
-    out["year"] = cst.COLLECTION_YEAR.get(year, year)
-    out["milieu"] = milieu
-    return out.drop(columns=["domain_key"])
+    is_zone = est["level"] == "zone"
+    est.loc[is_zone, "province"] = zone_key[is_zone].map(zone_names["province"])
+    est["zone"] = zone_key.map(zone_names["zone"]).where(is_zone)
+    return est.drop(columns=["domain_id"])
 
 
 def process_file(
@@ -461,27 +210,36 @@ def process_file(
     age_max: int = cst.AGE_MAX_MONTHS,
 ) -> pd.DataFrame:
     print(f"reading {dta_path.name} ...")
-    df = load_year(dta_path, age_min, age_max)
+    df = load_year(dta_path)
     print(
-        f"  analysing {len(df):,} children in "
-        f"{df['zone_key'].nunique()} zones / {df['psu_key'].nunique()} areas"
+        f"  {len(df):,} children in {df['zone_key'].nunique()} zones / "
+        f"{df['psu_key'].nunique()} areas"
     )
 
-    frames = []
-    for milieu in milieux:
-        subset = df if milieu == "all" else df[df["milieu"] == milieu]
-        print(
-            f"  --- milieu={milieu}: {len(subset):,} children in "
-            f"{subset['zone_key'].nunique()} zones / "
-            f"{subset['psu_key'].nunique()} areas ---"
-        )
-        if subset.empty:
-            print(f"  WARNING: no child with milieu={milieu}; no rows emitted")
-            continue
-        # `df`, not `subset`, so nb_zones stays the whole-sample count.
-        frames.append(process_milieu(subset, year, milieu, workdir, zone_frame=df))
+    print("  running R survey estimation ...")
+    if workdir is None:
+        with tempfile.TemporaryDirectory(prefix=f"ecv-{year}-") as tmp:
+            estimations = run_survey_r(df, Path(tmp), milieux, age_min, age_max)
+    else:
+        run_dir = workdir / year
+        run_dir.mkdir(parents=True, exist_ok=True)
+        estimations = run_survey_r(df, run_dir, milieux, age_min, age_max)
+        print(f"  kept R inputs/outputs in {run_dir}")
 
-    return pd.concat(frames, ignore_index=True)
+    count_cols = ["nb_people", "nb_zones", "nb_areas", "nb_areas_tot"]
+    estimations[count_cols] = estimations[count_cols].astype("Int64")
+    estimations["year"] = cst.COLLECTION_YEAR.get(year, year)
+    # Milieu in the order asked for, then national / province / zone by name.
+    estimations["milieu_rank"] = estimations["milieu"].map(
+        {m: i for i, m in enumerate(milieux)}
+    )
+    estimations["level_rank"] = estimations["level"].map(
+        {"national": 0, "province": 1, "zone": 2}
+    )
+    estimations = estimations.sort_values(
+        ["milieu_rank", "level_rank", "province", "zone"], na_position="first"
+    )
+    return estimations.drop(columns=["milieu_rank", "level_rank"])
 
 
 def main() -> None:
@@ -495,8 +253,7 @@ def main() -> None:
     parser.add_argument(
         "--milieux",
         default=",".join(cst.MILIEUX),
-        help="comma-separated subset of milieu domains to estimate; each one "
-        "costs a full R pass over every province and zone "
+        help="comma-separated subset of milieu domains to estimate "
         f"(default: {','.join(cst.MILIEUX)})",
     )
     parser.add_argument(
@@ -516,7 +273,7 @@ def main() -> None:
         type=Path,
         default=None,
         help=(
-            "keep each year's R extract, script and raw estimates in this "
+            "keep each year's R extract and raw estimates in this "
             "directory instead of a temporary one (useful for re-running the "
             "R step by hand, e.g. to chase down warnings)"
         ),
