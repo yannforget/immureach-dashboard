@@ -6,18 +6,20 @@
 # age window, the zones the dashboard can draw and the milieu with subset().
 # Taking the domains off the full-sample design, rather than filtering the data
 # before svydesign(), keeps every stratum's full PSU count in the variance
-# estimate.
+# estimate. Every domain is estimated once per age window and milieu.
 #
 # Also codes the indicators from the raw source columns (following the spec
 # table the Python side derives from scripts/ecv/indicators.py), counts the
-# unweighted sample sizes, and writes one row per (milieu, domain) with the
-# dashboard's column names, estimates as 0-100 percentages.
+# unweighted sample sizes, and writes one row per (age group, milieu, domain)
+# with the dashboard's column names, estimates as 0-100 percentages.
 #
 # Usage: Rscript rscript_caracteristics.R <in_csv> <out_csv> <spec_csv>
-#          <labels_csv> <age_min> <age_max> <milieux>
+#          <labels_csv> <age_groups> <milieux>
 #   spec_csv:   one row per indicator: key, column, yes, no, gate_column,
 #               gate_codes, partition (codes are ";"-separated)
 #   labels_csv: level, id, name -- domain id -> name, for readable messages
+#   age_groups: comma-separated age windows, "<min>-<max>" completed months,
+#               both bounds included (e.g. 6-11,12-23,6-23)
 #   milieux:    comma-separated subset of all,urbain,rural
 
 if (!requireNamespace("survey", quietly = TRUE)) {
@@ -91,9 +93,23 @@ in_csv <- args[1]
 out_csv <- args[2]
 spec_csv <- args[3]
 labels_csv <- args[4]
-age_min <- as.numeric(args[5])
-age_max <- as.numeric(args[6])
-milieux <- strsplit(args[7], ",", fixed = TRUE)[[1]]
+age_groups <- strsplit(args[5], ",", fixed = TRUE)[[1]]
+milieux <- strsplit(args[6], ",", fixed = TRUE)[[1]]
+
+# Age windows are labelled "<min>-<max>" in completed months (`vs25`), BOTH
+# bounds included: "6-11" keeps the 11-month-olds, "12-23" the 23-month-olds.
+parse_age_group <- function(label) {
+  bounds <- suppressWarnings(as.numeric(strsplit(label, "-", fixed = TRUE)[[1]]))
+  if (length(bounds) != 2L || anyNA(bounds) || bounds[1] > bounds[2]) {
+    stop(sprintf("malformed age group '%s': expected <min>-<max>", label))
+  }
+  bounds
+}
+age_bounds <- setNames(lapply(age_groups, parse_age_group), age_groups)
+in_age_group <- function(ag) {
+  b <- age_bounds[[ag]]
+  !is.na(d$age) & d$age >= b[1] & d$age <= b[2]
+}
 
 # Domains travel as integer ids (accents do not survive the round trip
 # reliably), so read the id -> name table back in: a warning that names a
@@ -135,24 +151,32 @@ if (any(d$weight <= 0)) {
 # indicator reports and the cross-check. Kept separate from the design on
 # purpose: the cross-check is only worth something if it does not reuse the
 # design's own subsetting.
-in_age <- !is.na(d$age) & d$age >= age_min & d$age <= age_max
+#
+# A child is eligible when it falls in at least one age window; each window is
+# then estimated as a domain of its own in the estimation loop.
+in_age <- Reduce(`|`, lapply(age_groups, in_age_group))
 # `in_geo` = the zone is in the dashboard's boundaries. Rows outside stay in the
 # design (they are real PSUs of their stratum) but are never estimated on.
 in_geo <- d$in_geo == 1
 eligible_rows <- in_age & in_geo
 
+for (ag in age_groups) {
+  message(sprintf(
+    "  [R] %s children in file -> %s aged %s months",
+    fmt(nrow(d)), fmt(sum(in_age_group(ag))), ag
+  ))
+  if (!any(in_age_group(ag))) {
+    stop(sprintf("no child aged %s months; age spans %s-%s", ag,
+                 min(d$age, na.rm = TRUE), max(d$age, na.rm = TRUE)))
+  }
+}
 message(sprintf(
-  "  [R] %s children in file -> %s aged %g-%g months (%s outside the window, %s with no age)",
-  fmt(nrow(d)), fmt(sum(in_age)), age_min, age_max,
+  "  [R] %s child(ren) outside every age window, %s with no age",
   fmt(sum(!in_age)), fmt(sum(is.na(d$age)))
 ))
-if (!any(in_age)) {
-  stop(sprintf("no child aged %g-%g months; age spans %s-%s", age_min, age_max,
-               min(d$age, na.rm = TRUE), max(d$age, na.rm = TRUE)))
-}
 if (any(in_age & !in_geo)) {
   message(sprintf(
-    "  [R] %s child(ren) in the age window sit in zones outside the boundaries: kept in the design, never estimated on",
+    "  [R] %s child(ren) in an age window sit in zones outside the boundaries: kept in the design, never estimated on",
     fmt(sum(in_age & !in_geo))
   ))
 }
@@ -260,8 +284,8 @@ for (p in unique(na.omit(spec$partition))) {
 
 # Stratified two-stage design: strata = province, PSU = aire de sante,
 # weights = `ponderation`. nest = TRUE because PSU ids are only unique within a
-# stratum. Built on the whole file; the age window and the drawable zones are
-# then a domain of it.
+# stratum. Built on the whole file; the drawable zones, then each age window
+# and milieu, are domains of it.
 design <- svydesign(
   ids = ~psu_id,
   strata = ~stratum_id,
@@ -270,7 +294,7 @@ design <- svydesign(
   nest = TRUE
 )
 
-eligible <- subset(design, age >= age_min & age <= age_max & in_geo == 1)
+eligible <- subset(design, in_geo == 1)
 
 # Take a domain (subpopulation) of the design, i.e. what subset() does: drop
 # the rows outside it while keeping the full sample's design information. The
@@ -371,85 +395,83 @@ results <- list()
 drift <- character(0)
 started <- Sys.time()
 
-for (m in milieux) {
-  in_milieu <- if (m == "all") rep(TRUE, nrow(d)) else !is.na(d$milieu) & d$milieu == m
-  sel <- eligible_rows & in_milieu
-  message(sprintf(
-    "\n  [R] --- milieu=%s: %s children in %d provinces / %d zones / %d areas ---",
-    m, fmt(sum(sel)), length(unique(d$province_id[sel])),
-    length(unique(d$zone_id[sel])), length(unique(d$psu_id[sel]))
-  ))
-  if (!any(sel)) {
-    message(sprintf("  [R] WARNING: no child with milieu=%s; no rows emitted", m))
-    next
-  }
-  milieu_design <- if (m == "all") eligible else subset(eligible, milieu == m)
-  mvars <- milieu_design$variables
+for (ag in age_groups) {
+  b <- age_bounds[[ag]]
+  in_ag <- in_age_group(ag)
+  age_design <- subset(eligible, age >= b[1] & age <= b[2])
 
-  # Domains present in this milieu: the whole sample, each province, each zone.
-  domains <- c(
-    list(list(level = "national", id = -1L, keep = rep(TRUE, nrow(mvars)), rows = sel)),
-    lapply(sort(unique(d$province_id[sel])), function(pid) {
-      list(level = "province", id = pid, keep = mvars$province_id %in% pid,
-           rows = sel & d$province_id %in% pid)
-    }),
-    lapply(sort(unique(d$zone_id[sel])), function(zid) {
-      list(level = "zone", id = zid, keep = mvars$zone_id %in% zid,
-           rows = sel & d$zone_id %in% zid)
-    })
-  )
-
-  small <- character(0)
-  for (i in seq_along(domains)) {
-    dom <- domains[[i]]
-    label <- label_of(dom$level, dom$id)
-    dsn <- if (dom$level == "national") milieu_design else domain(milieu_design, dom$keep)
-    rows <- d[dom$rows, ]
-    if (dom$level == "zone" && nrow(rows) < SMALL_ZONE) {
-      small <- c(small, sprintf("    %s: %d children", label, nrow(rows)))
-    }
-
-    out_row <- list(
-      milieu = m, level = dom$level, domain_id = as.integer(dom$id),
-      nb_children = nrow(rows)
-    )
-    for (ind in indicators) {
-      context <- paste0("milieu=", m, ", ", label, ", indicator=", ind)
-      v <- withCallingHandlers(
-        prop_ci(ind, dsn),
-        warning = function(w) record_warning(w, context)
-      )
-      ref <- weighted_rate(rows, ind)
-      if ((is.na(v[1]) && !is.na(ref)) ||
-        (!is.na(v[1]) && !is.na(ref) && abs(v[1] - ref) * 100 > CROSS_CHECK_TOLERANCE)) {
-        drift <- c(drift, sprintf(
-          "    %s: R=%.1f vs weighted mean=%.1f", context, v[1] * 100, ref * 100
-        ))
-      }
-      # svyciprop returns proportions; the dashboard reads 0-100 percentages.
-      pct <- round(v * 100, 1)
-      out_row[[paste0(ind, "_pct")]] <- pct[1]
-      out_row[[paste0(ind, "_low")]] <- pct[2]
-      out_row[[paste0(ind, "_high")]] <- pct[3]
-    }
-    results[[length(results) + 1L]] <- as.data.frame(out_row, stringsAsFactors = FALSE)
-
-    # Progress, so a run that is merely slow is distinguishable from one stuck.
-    if (i %% 50L == 0L || i == length(domains)) {
-      elapsed <- max(0, as.numeric(difftime(Sys.time(), started, units = "secs")))
-      message(sprintf(
-        "  [R] milieu=%s: %d/%d domains, %.0fs elapsed", m, i, length(domains), elapsed
-      ))
-    }
-  }
-
-  if (length(small) > 0L) {
+  for (m in milieux) {
+    in_milieu <- if (m == "all") rep(TRUE, nrow(d)) else !is.na(d$milieu) & d$milieu == m
+    sel <- eligible_rows & in_ag & in_milieu
     message(sprintf(
-      "  [R] WARNING: %d zone(s) with fewer than %d children -- their confidence intervals will be very wide:",
-      length(small), SMALL_ZONE
+      "\n  [R] --- age=%s, milieu=%s: %s children in %d provinces / %d zones / %d areas ---",
+      ag, m, fmt(sum(sel)), length(unique(d$province_id[sel])),
+      length(unique(d$zone_id[sel])), length(unique(d$psu_id[sel]))
     ))
-    for (line in head(small, 10L)) message(line)
-    if (length(small) > 10L) message(sprintf("    ... and %d more", length(small) - 10L))
+    if (!any(sel)) {
+      message(sprintf("  [R] WARNING: no child aged %s months with milieu=%s; no rows emitted", ag, m))
+      next
+    }
+    milieu_design <- if (m == "all") age_design else subset(age_design, milieu == m)
+    mvars <- milieu_design$variables
+
+    # Domains present in this milieu: the whole sample, each province, each zone.
+    domains <- c(
+      list(list(level = "national", id = -1L, keep = rep(TRUE, nrow(mvars)), rows = sel)),
+      lapply(sort(unique(d$province_id[sel])), function(pid) {
+        list(level = "province", id = pid, keep = mvars$province_id %in% pid,
+             rows = sel & d$province_id %in% pid)
+      }),
+      lapply(sort(unique(d$zone_id[sel])), function(zid) {
+        list(level = "zone", id = zid, keep = mvars$zone_id %in% zid,
+             rows = sel & d$zone_id %in% zid)
+      })
+    )
+
+    small <- character(0)
+    for (i in seq_along(domains)) {
+      dom <- domains[[i]]
+      label <- label_of(dom$level, dom$id)
+      dsn <- if (dom$level == "national") milieu_design else domain(milieu_design, dom$keep)
+      rows <- d[dom$rows, ]
+      if (dom$level == "zone" && nrow(rows) < SMALL_ZONE) {
+        small <- c(small, sprintf("    %s: %d children", label, nrow(rows)))
+      }
+
+      out_row <- list(
+        age_group = ag, milieu = m, level = dom$level, domain_id = as.integer(dom$id),
+        nb_children = nrow(rows)
+      )
+      for (ind in indicators) {
+        context <- paste0("age=", ag, ", milieu=", m, ", ", label, ", indicator=", ind)
+        v <- withCallingHandlers(
+          prop_ci(ind, dsn),
+          warning = function(w) record_warning(w, context)
+        )
+        ref <- weighted_rate(rows, ind)
+        if ((is.na(v[1]) && !is.na(ref)) ||
+          (!is.na(v[1]) && !is.na(ref) && abs(v[1] - ref) * 100 > CROSS_CHECK_TOLERANCE)) {
+          drift <- c(drift, sprintf(
+            "    %s: R=%.1f vs weighted mean=%.1f", context, v[1] * 100, ref * 100
+          ))
+        }
+        # svyciprop returns proportions; the dashboard reads 0-100 percentages.
+        pct <- round(v * 100, 1)
+        out_row[[paste0(ind, "_pct")]] <- pct[1]
+        out_row[[paste0(ind, "_low")]] <- pct[2]
+        out_row[[paste0(ind, "_high")]] <- pct[3]
+      }
+      results[[length(results) + 1L]] <- as.data.frame(out_row, stringsAsFactors = FALSE)
+    }
+
+    if (length(small) > 0L) {
+      message(sprintf(
+        "  [R] WARNING: %d zone(s) with fewer than %d children -- their confidence intervals will be very wide:",
+        length(small), SMALL_ZONE
+      ))
+      for (line in head(small, 10L)) message(line)
+      if (length(small) > 10L) message(sprintf("    ... and %d more", length(small) - 10L))
+    }
   }
 }
 

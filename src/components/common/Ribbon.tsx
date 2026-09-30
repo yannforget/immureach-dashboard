@@ -1,9 +1,9 @@
 import { useDashboardStore } from '@/store/dashboardStore'
-import { useAvailableMilieux, useProvinceData, useSectionYears, useZoneData } from '@/hooks'
+import { useAvailableAgeGroups, useAvailableMilieux, useProvinceData, useSectionYears, useZoneData } from '@/hooks'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { yearLabel } from '@/lib/utils/years'
-import { MILIEU_LABELS } from '@/types'
-import type { DashboardSection, Milieu, Year } from '@/types'
+import { AGE_GROUP_LABELS, MILIEU_LABELS } from '@/types'
+import type { AgeGroup, DashboardSection, Milieu, Year } from '@/types'
 
 const SECTIONS: { value: DashboardSection; label: string }[] = [
     { value: 'ecv', label: 'Données brutes ECV' },
@@ -17,7 +17,7 @@ const selectClass =
     'focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 ' +
     'disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400'
 
-// Pill group used by the ribbon's single-choice filters (année, milieu).
+// Pill group used by the ribbon's single-choice filters (année, âge, milieu).
 function Segmented<T extends string | number>({
     label,
     options,
@@ -61,6 +61,9 @@ export function Ribbon() {
     const selectedMilieu = useDashboardStore(s => s.selectedMilieu)
     const setSelectedMilieu = useDashboardStore(s => s.setSelectedMilieu)
 
+    const selectedAgeGroup = useDashboardStore(s => s.selectedAgeGroup)
+    const setSelectedAgeGroup = useDashboardStore(s => s.setSelectedAgeGroup)
+
     const selectedProvince = useDashboardStore(s => s.selectedProvince)
     const setProvince = useDashboardStore(s => s.setProvince)
 
@@ -72,6 +75,7 @@ export function Ribbon() {
     const provinces = useProvinceData()
     const zones = useZoneData(selectedProvince)
     const milieux = useAvailableMilieux()
+    const ageGroups = useAvailableAgeGroups()
 
     return (
         <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -98,6 +102,19 @@ export function Ribbon() {
                     value={selectedYear}
                     onChange={setSelectedYear}
                 />
+
+                {/* Age (vs25, bounds included). ECV section only; it drives the
+                    charts and the map, not the cards (key_ecv.csv is not split
+                    by age). Hidden on CSVs that predate the age split, where
+                    useAvailableAgeGroups reports '6-23' alone. */}
+                {activeSection === 'ecv' && ageGroups.length > 1 && (
+                    <Segmented<AgeGroup>
+                        label="Âge"
+                        options={ageGroups.map(a => ({ value: a, label: AGE_GROUP_LABELS[a] }))}
+                        value={selectedAgeGroup}
+                        onChange={setSelectedAgeGroup}
+                    />
+                )}
 
                 {/* Milieu (q108). Only the ECV datasets are published per
                     milieu, so the filter is hidden on the other sections — and

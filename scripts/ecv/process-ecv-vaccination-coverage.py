@@ -2,10 +2,13 @@
 
 Reads the Stata exports in data/input/ecv/ (ECV_2022_* and ECV_2023_*) and
 writes public/data/ecv_vaccination_coverage.csv -- one row per national /
-province / zone domain, year and milieu, with a `_pct` / `_low` / `_high`
-triplet per metric (point estimate and 95% confidence interval, 0-100), for
-children inside the age window (`vs25`, age in completed months; see
-AGE_MIN_MONTHS).
+province / zone domain, year, age group and milieu, with a `_pct` / `_low` /
+`_high` triplet per metric (point estimate and 95% confidence interval, 0-100).
+
+`age_group` is the dashboard's age ribbon filter, read off `vs25` (age in
+completed months): R estimates every domain once per window of AGE_GROUPS
+(6-11, 12-23 and 6-23 months, both bounds included), each as a domain of the
+same full-sample design.
 
 `milieu` is the dashboard's rural/urbain ribbon filter, read off `q108`
 ("Milieu de localisation du menage"): every domain is estimated three times,
@@ -37,13 +40,15 @@ figure either.
 
 Counts (nb_children, nb_as, as_enq) are unweighted sample sizes.
 
-Run from the project root. Each milieu is a full R pass over every province and
-zone; `--metrics` / `--years` / `--milieux` cut that down when debugging, and
+Run from the project root. Each (age group, milieu) pair is a full R pass over
+every province and zone; `--metrics` / `--years` / `--age-groups` /
+`--milieux` cut that down when debugging, and
 `--workdir` keeps the R inputs and outputs so the R step can be re-run by hand:
 
     python -m scripts.ecv.process-ecv-vaccination-coverage
     python -m scripts.ecv.process-ecv-vaccination-coverage --years 2022 --metrics penta3,zero_dose
     python -m scripts.ecv.process-ecv-vaccination-coverage --milieux all
+    python -m scripts.ecv.process-ecv-vaccination-coverage --age-groups 6-23
     python -m scripts.ecv.process-ecv-vaccination-coverage --workdir /tmp/ecv-debug
 """
 
@@ -88,12 +93,7 @@ def load_year(
     provinces: dict[str, str],
     zones: dict[str, tuple[str, str]],
 ) -> pd.DataFrame:
-    """Read one ECV Stata export into the child-level frame handed to R.
-
-    No row is filtered out here: the age window and the milieu are domains R
-    takes off the full-sample design.
-    """
-    print(f"  reading {dta_path.name} ...")
+    """Read one ECV Stata export into the child-level frame handed to R."""
     raw = pd.read_stata(dta_path, columns=LOAD_COLUMNS, convert_categoricals=False)
 
     df = pd.DataFrame(
@@ -137,12 +137,11 @@ def run_survey_r(
     rscript: str,
     workdir: Path,
     milieux: list[str],
-    age_min: int,
-    age_max: int,
+    age_groups: list[str],
 ) -> pd.DataFrame:
     """Hand the child-level frame to R's `survey` and read the estimates back.
 
-    R does the filtering (age window, drawable zones, milieu), the indicator
+    R does the filtering (age windows, drawable zones, milieu), the indicator
     coding, the counts and the estimation; see rscript_vaccination_coverage.R.
     Domains travel as integer ids rather than names so that accented zone
     names cannot be mangled crossing the Python/R boundary.
@@ -202,8 +201,7 @@ def run_survey_r(
             str(out_csv),
             str(spec_csv),
             str(labels_csv),
-            str(age_min),
-            str(age_max),
+            ",".join(age_groups),
             ",".join(milieux),
         ],
         stdout=subprocess.PIPE,
@@ -240,8 +238,7 @@ def process_file(
     milieux: list[str],
     rscript: str,
     workdir: Path | None,
-    age_min: int,
-    age_max: int,
+    age_groups: list[str],
     provinces: dict[str, str],
     zones: dict[str, tuple[str, str]],
 ) -> pd.DataFrame:
@@ -253,14 +250,13 @@ def process_file(
     )
     spec = metric_spec(metrics)
 
-    print("  running the R survey estimation ...")
     if workdir is None:
         with tempfile.TemporaryDirectory(prefix=f"ecv-{year}-") as tmp:
-            est = run_survey_r(df, spec, rscript, Path(tmp), milieux, age_min, age_max)
+            est = run_survey_r(df, spec, rscript, Path(tmp), milieux, age_groups)
     else:
         run_dir = workdir / year
         run_dir.mkdir(parents=True, exist_ok=True)
-        est = run_survey_r(df, spec, rscript, run_dir, milieux, age_min, age_max)
+        est = run_survey_r(df, spec, rscript, run_dir, milieux, age_groups)
         print(f"  kept the R inputs/outputs in {run_dir}")
 
     unmatched = int(est[f"{metrics[0]}_pct"].isna().sum())
@@ -268,14 +264,17 @@ def process_file(
         print(f"  WARNING: {unmatched} domain(s) got no estimate from R")
     est[COUNT_COLS] = est[COUNT_COLS].astype("Int64")
     est["year"] = cst.COLLECTION_YEAR.get(year, year)
-    # Milieu in the order asked for, then national / province / zone by name.
+    # Age group and milieu in the order asked for, then national / province /
+    # zone by name.
+    est["age_rank"] = est["age_group"].map({a: i for i, a in enumerate(age_groups)})
     est["milieu_rank"] = est["milieu"].map({m: i for i, m in enumerate(milieux)})
     est["level_rank"] = est["level"].map({"national": 0, "province": 1, "zone": 2})
     est = est.sort_values(
-        ["milieu_rank", "level_rank", "province", "zone"], na_position="first"
+        ["age_rank", "milieu_rank", "level_rank", "province", "zone"],
+        na_position="first",
     )
     print(f"  {len(est)} rows for {year}")
-    return est.drop(columns=["milieu_rank", "level_rank"])
+    return est.drop(columns=["age_rank", "milieu_rank", "level_rank"])
 
 
 def resolve_rscript(explicit: str | None) -> str:
@@ -288,8 +287,7 @@ def resolve_rscript(explicit: str | None) -> str:
             "Rscript not found on PATH. This script delegates the survey-design "
             "estimation to R's `survey` package"
         )
-    version = subprocess.run([rscript, "--version"], capture_output=True, text=True)
-    print(f"  Rscript: {rscript} ({(version.stdout or version.stderr).strip()})")
+    subprocess.run([rscript, "--version"], capture_output=True, text=True)
     return rscript
 
 
@@ -327,16 +325,11 @@ def main() -> None:
         f"(default: {','.join(cst.MILIEUX)})",
     )
     parser.add_argument(
-        "--age-min",
-        type=int,
-        default=cst.AGE_MIN_MONTHS,
-        help=f"youngest age in completed months (default: {cst.AGE_MIN_MONTHS})",
-    )
-    parser.add_argument(
-        "--age-max",
-        type=int,
-        default=cst.AGE_MAX_MONTHS,
-        help=f"oldest age in completed months (default: {cst.AGE_MAX_MONTHS})",
+        "--age-groups",
+        default=",".join(cst.AGE_GROUPS),
+        help="comma-separated subset of age groups to estimate (both bounds "
+        "included); each one costs a full R pass "
+        f"(default: {','.join(cst.AGE_GROUPS)})",
     )
     parser.add_argument(
         "--rscript",
@@ -357,7 +350,6 @@ def main() -> None:
 
     print(f"  input dir : {cst.INPUT_DIR}")
     print(f"  output    : {args.output}")
-    print(f"  age window: {args.age_min}-{args.age_max} completed months")
 
     years = [y.strip() for y in args.years.split(",") if y.strip()]
     metrics = [m.strip() for m in args.metrics.split(",") if m.strip()]
@@ -368,9 +360,16 @@ def main() -> None:
     unknown = [m for m in milieux if m not in cst.MILIEUX]
     if unknown:
         raise SystemExit(f"unknown milieu(x): {unknown}\nknown milieux: {cst.MILIEUX}")
+    age_groups = [a.strip() for a in args.age_groups.split(",") if a.strip()]
+    unknown = [a for a in age_groups if a not in cst.AGE_GROUPS]
+    if unknown:
+        raise SystemExit(
+            f"unknown age group(s): {unknown}\nknown age groups: {list(cst.AGE_GROUPS)}"
+        )
     print(f"  years     : {years}")
     print(f"  metrics   : {len(metrics)} -> {metrics}")
     print(f"  milieux   : {milieux}")
+    print(f"  age groups: {age_groups} (completed months, bounds included)")
 
     rscript = resolve_rscript(args.rscript)
     provinces, zones = utils.load_geojson_names(args.boundaries)
@@ -393,8 +392,7 @@ def main() -> None:
                 milieux,
                 rscript,
                 args.workdir,
-                args.age_min,
-                args.age_max,
+                age_groups,
                 provinces,
                 zones,
             )
@@ -405,15 +403,35 @@ def main() -> None:
         f"{metric}_{stat}" for metric in metrics for stat in ("pct", "low", "high")
     ]
     output = output[
-        ["year", "milieu", "level", "province", "zone", *COUNT_COLS, *ordered]
+        [
+            "year",
+            "age_group",
+            "milieu",
+            "level",
+            "province",
+            "zone",
+            *COUNT_COLS,
+            *ordered,
+        ]
     ]
 
     print("\n=== output ===")
     for level in ("national", "province", "zone"):
         at_level = output[output["level"] == level]
-        for milieu in milieux:
-            by_year = at_level[at_level["milieu"] == milieu].groupby("year").size()
-            print(f"  {level:<9} {milieu:<7} rows per year: {by_year.to_dict()}")
+        for age_group in age_groups:
+            for milieu in milieux:
+                by_year = (
+                    at_level[
+                        (at_level["age_group"] == age_group)
+                        & (at_level["milieu"] == milieu)
+                    ]
+                    .groupby("year")
+                    .size()
+                )
+                print(
+                    f"  {level:<9} {age_group:<5} {milieu:<7} rows per year: "
+                    f"{by_year.to_dict()}"
+                )
     empty = [c for c in ordered if output[c].isna().all()]
     if empty:
         print(f"  WARNING: {len(empty)} column(s) are entirely empty: {empty}")
@@ -430,7 +448,6 @@ def main() -> None:
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     output.to_csv(args.output, index=False)
-    print(f"wrote {args.output} ({len(output)} rows x {len(output.columns)} columns)")
 
 
 if __name__ == "__main__":

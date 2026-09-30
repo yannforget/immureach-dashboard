@@ -24,6 +24,13 @@ COLLECTION_YEAR = {"2022": "2023", "2023": "2024"}
 AGE_MIN_MONTHS = 6
 AGE_MAX_MONTHS = 24
 
+# The dashboard's age ribbon filter, as "<youngest>-<oldest>" age in completed
+# months, both bounds INCLUDED (6-11 keeps the 11-month-olds). The labels are
+# handed to R as is; R parses the bounds and estimates each window as a domain.
+# Only the coverage and characteristics files are split by age; key_ecv.csv
+# (the cards) keeps the single AGE_MIN_MONTHS-AGE_MAX_MONTHS window.
+AGE_GROUPS = ("6-11", "12-23", "6-23")
+
 # Survey design + geography columns, identical to the coverage script.
 STRATUM_COL = "q101"  # "Nom de la strate (de la province)"
 ZONE_COL = "q103"  # "Nom de la zone de santé"

@@ -4,12 +4,13 @@ import { useDashboardStore } from '@/store/dashboardStore'
 import { useData } from '@/context/DataContext'
 import { useEcvZeroDoseMapData, useMapSelectionSync } from '@/hooks'
 import { buildEcvZeroDoseMapOptions, ZOOM_MAX, ZOOM_MIN } from '@/lib/charts/ecvMapOptions'
-import { MILIEU_LABELS } from '@/types'
+import { ecvFilterLabel } from '@/lib/utils/ecvScope'
 
 export function EcvZeroDoseMap() {
   const chartRef = useRef<EChartsReact>(null)
   const selectedProvince = useDashboardStore(s => s.selectedProvince)
   const selectedMilieu = useDashboardStore(s => s.selectedMilieu)
+  const selectedAgeGroup = useDashboardStore(s => s.selectedAgeGroup)
   const selectedZoneId = useDashboardStore(s => s.selectedZoneId)
   const setProvince = useDashboardStore(s => s.setProvince)
   const setSelectedZone = useDashboardStore(s => s.setSelectedZone)
@@ -54,7 +55,10 @@ export function EcvZeroDoseMap() {
 
   const options = buildEcvZeroDoseMapOptions({ values, mapName, boundingCoords })
 
-  const chartKey = `ecv-map-${selectedProvince}-${selectedMilieu}-${resetNonce}`
+  // Habitat and age window, when either narrows the default sample.
+  const filterLabel = ecvFilterLabel(selectedMilieu, selectedAgeGroup)
+
+  const chartKey = `ecv-map-${selectedProvince}-${selectedMilieu}-${selectedAgeGroup}-${resetNonce}`
 
   // Highlight the ribbon's zone the same way a click on the shape does. The
   // yellow `select` fill lives in the ECharts series model rather than in the
@@ -113,8 +117,8 @@ export function EcvZeroDoseMap() {
       <div className="border-b border-slate-200 px-4 py-3">
         <h3 className="text-sm font-semibold text-slate-700">
           Zéro dose
-          {selectedMilieu !== 'all' && (
-            <span className="font-normal text-slate-400"> ({MILIEU_LABELS[selectedMilieu]})</span>
+          {filterLabel && (
+            <span className="font-normal text-slate-400"> ({filterLabel})</span>
           )}
         </h3>
       </div>
