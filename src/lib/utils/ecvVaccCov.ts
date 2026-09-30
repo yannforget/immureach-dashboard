@@ -1,6 +1,6 @@
 import { parseCsv } from '@/lib/utils/csv'
-import type { EcvMetricKey, EcvMetricValue, EcvVaccCovRow, Milieu, ProfileScopeLevel } from '@/types'
-import { MILIEUX } from '@/types'
+import type { AgeGroup, EcvMetricKey, EcvMetricValue, EcvVaccCovRow, Milieu, ProfileScopeLevel } from '@/types'
+import { AGE_GROUPS, DEFAULT_AGE_GROUP, MILIEUX } from '@/types'
 import { ECV_METRIC_KEYS } from './constants'
 
 export interface EcvMetricMeta {
@@ -48,6 +48,14 @@ export function parseMilieu(value: string | undefined): Milieu {
   return milieu && MILIEUX.includes(milieu) ? milieu : 'all'
 }
 
+// Reads the `age_group` column the ECV scripts write from the survey's `vs25`.
+// Same fallback logic as parseMilieu: a CSV generated before the age split has
+// no such column and holds the single 6-23 month window.
+export function parseAgeGroup(value: string | undefined): AgeGroup {
+  const ageGroup = value?.trim() as AgeGroup | undefined
+  return ageGroup && AGE_GROUPS.includes(ageGroup) ? ageGroup : DEFAULT_AGE_GROUP
+}
+
 function toNum(v: string): number | null {
   if (v === '' || v === undefined) return null
   const n = Number(v)
@@ -71,6 +79,7 @@ export function parseEcvVaccCovCsv(text: string): EcvVaccCovRow[] {
 
     return {
       year: Number(r.year),
+      ageGroup: parseAgeGroup(r.age_group),
       milieu: parseMilieu(r.milieu),
       level: r.level as ProfileScopeLevel,
       province: toStr(r.province),

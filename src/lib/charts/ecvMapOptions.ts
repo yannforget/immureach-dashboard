@@ -86,6 +86,8 @@ export function buildEcvZeroDoseMapOptions(config: EcvMapConfig): EChartsOption 
         tooltip += `Zéro dose: ${entry.pct.toFixed(1)}%`
         if (entry.ciLow != null && entry.ciHigh != null) {
           tooltip += `<br/>IC 95%: ${entry.ciLow.toFixed(1)}% – ${entry.ciHigh.toFixed(1)}%`
+        } else {
+          tooltip += '<br/>IC 95%: NA'
         }
         return tooltip
       },

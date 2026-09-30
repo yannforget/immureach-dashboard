@@ -18,7 +18,7 @@ export interface MetricMeta {
 
 export interface ProvinceProperties {
   q101: string;
-  pop_6_24mo: number;
+  pop_6_12mo: number; // 6-11 months, both bounds included
   pred_bcg: number | null;
   pred_rota: number | null;
   pred_var: number | null;
@@ -161,6 +161,23 @@ export const MILIEU_LABELS: Record<Milieu, string> = {
   rural: 'Rural',
 };
 
+// Age filter, in completed months (`vs25`), both bounds included: '6-11'
+// keeps the 11-month-olds, '12-23' and '6-23' the 23-month-olds. Only the
+// coverage and characteristics CSVs are split by age -- key_ecv.csv (the
+// cards) is not, so the cards ignore it. Rows written before the split carried
+// no column and parse as '6-23', the whole window those files held.
+export type AgeGroup = '6-11' | '12-23' | '6-23';
+
+export const AGE_GROUPS: AgeGroup[] = ['6-11', '12-23', '6-23'];
+
+export const DEFAULT_AGE_GROUP: AgeGroup = '6-23';
+
+export const AGE_GROUP_LABELS: Record<AgeGroup, string> = {
+  '6-11': '6-11 mois',
+  '12-23': '12-23 mois',
+  '6-23': '6-23 mois',
+};
+
 // One row of public/data/key_ecv.csv (columns: year, milieu, level, province,
 // zone, nb_people, nb_zones, penta_cov, zdc_cov, penta_cov_low/high,
 // zdc_cov_low/high). `province`/`zone` are only populated for the matching
@@ -224,6 +241,7 @@ export type EcvMetricKey =
 // only populated for the matching `level`, mirroring KeyEcvRow.
 export interface EcvVaccCovRow {
   year: number;
+  ageGroup: AgeGroup;
   milieu: Milieu;
   level: ProfileScopeLevel;
   province: string | null;
@@ -249,6 +267,7 @@ export interface EcvCaracteristicValue {
 // `<root>_pct/_low/_high` columns are picked up without type changes.
 export interface EcvCaracteristicsRow {
   year: number;
+  ageGroup: AgeGroup;
   milieu: Milieu;
   level: ProfileScopeLevel;
   province: string | null;

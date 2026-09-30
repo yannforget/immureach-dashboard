@@ -35,7 +35,7 @@ export function ModelIndicatorCard({
   const displayValue = Math.round(value)
   const suffix = '%'
   const formattedCount = Math.round(count).toLocaleString()
-  const countLabel = `${formattedCount} (6 à 24 mois)`
+  const countLabel = `${formattedCount} (6 à 11 mois)`
 
   const metricDescription = getMetricDescription(metricKey)
   const countDescription = getCountDescription(metricKey)

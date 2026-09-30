@@ -19,7 +19,7 @@ pop_6_24mo, births_per_year.
 
 Methodology follows scripts/prepare-data.py:
   births = pop_u1 / (1 - imr / 1000)
-  pop_6_12mo = pop_u1 * 0.5
+  pop_6_12mo = pop_u1 * 0.5   (6-11 months, both bounds included)
   pop_12_24mo = (pop_u5 - pop_u1) * 0.25
   pop_6_24mo = pop_6_12mo + pop_12_24mo
 

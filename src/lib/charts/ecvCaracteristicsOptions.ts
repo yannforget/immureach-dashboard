@@ -1,4 +1,10 @@
-import type { EChartsOption, TooltipComponentFormatterCallbackParams } from 'echarts'
+import type {
+  CustomSeriesRenderItemAPI,
+  CustomSeriesRenderItemParams,
+  CustomSeriesRenderItemReturn,
+  EChartsOption,
+  TooltipComponentFormatterCallbackParams,
+} from 'echarts'
 import {
   ECV_CARACTERISTIC_SERIES_COLORS,
   ECV_HEATMAP_OUTLINE_COLOR,
@@ -66,18 +72,21 @@ function buildHeatmapOptions(config: EcvCaracteristicsConfig): EChartsOption {
     rows.forEach((series, y) => {
       const pct = area.values[series.key]?.pct ?? null
       if (typeof pct === 'number') numeric.push(pct)
-      cells.push({
-        value: [x, y, pct],
-        // The selected zone gets an outline rather than a fill: the cell has
-        // to keep showing its value colour. Blue, not the dashboard amber —
-        // the ramp underneath is amber, so an amber outline vanished on the
-        // high-value cells it most needed to mark.
-        itemStyle: area.highlighted
-          ? { borderColor: ECV_HEATMAP_OUTLINE_COLOR, borderWidth: 2 }
-          : undefined,
-      })
+      cells.push({ value: [x, y, pct] })
     })
   })
+
+  // The selected zone gets an outline rather than a fill: the cells have to
+  // keep showing their value colour. Blue, not the dashboard amber — the ramp
+  // underneath is amber, so an amber outline vanished on the high-value cells
+  // it most needed to mark. Drawn as one rectangle around the whole column by
+  // an overlay series: per-cell borders were partly painted over by the next
+  // column's white cell borders (thinner right edge) and drew blue lines
+  // between rows.
+  // Items are explicit [x, y] pairs: a bare number on a cartesian grid is read
+  // as the y value with x taken from the item's position in the array, which
+  // pinned the outline to the first column whatever the selected zone.
+  const highlightedColumns = areas.flatMap((a, x) => (a.highlighted ? [[x, 0]] : []))
 
   // Printing the value inside the cell only survives a handful of columns;
   // past that the numbers collide and the colour carries the reading.
@@ -98,6 +107,8 @@ function buildHeatmapOptions(config: EcvCaracteristicsConfig): EChartsOption {
         const ci = area.values[series.key]
         if (ci?.low != null && ci?.high != null) {
           html += `<br/>IC 95%: ${ci.low.toFixed(1)}% – ${ci.high.toFixed(1)}%`
+        } else if (pct != null) {
+          html += '<br/>IC 95%: NA'
         }
         // Multi-select: the rows overlap, so no column total is meaningful.
         html += '<br/><span style="opacity:.7">Choix multiples — un enfant peut compter dans plusieurs lignes</span>'
@@ -114,6 +125,7 @@ function buildHeatmapOptions(config: EcvCaracteristicsConfig): EChartsOption {
       right: 10,
       itemWidth: 10,
       itemHeight: 90,
+      seriesIndex: 0,
       inRange: { color: ECV_HEATMAP_RAMP },
       outOfRange: { color: '#e5e7eb' },
       textStyle: { color: '#475569', fontSize: 10 },
@@ -170,6 +182,30 @@ function buildHeatmapOptions(config: EcvCaracteristicsConfig): EChartsOption {
           itemStyle: { borderColor: ECV_HEATMAP_OUTLINE_COLOR, borderWidth: 2 },
         },
       },
+      {
+        type: 'custom',
+        silent: true,
+        z: 3,
+        data: highlightedColumns,
+        renderItem: (
+          _params: CustomSeriesRenderItemParams,
+          api: CustomSeriesRenderItemAPI,
+        ): CustomSeriesRenderItemReturn => {
+          const x = api.value(0) as number
+          const [cellWidth, cellHeight] = api.size!([1, 1]) as number[]
+          const [cx, topY] = api.coord([x, rows.length - 1])
+          return {
+            type: 'rect',
+            shape: {
+              x: cx - cellWidth / 2,
+              y: topY - cellHeight / 2,
+              width: cellWidth,
+              height: cellHeight * rows.length,
+            },
+            style: { fill: 'none', stroke: ECV_HEATMAP_OUTLINE_COLOR, lineWidth: 2 },
+          }
+        },
+      },
     ],
   }
 }
@@ -206,7 +242,6 @@ function buildStackedOptions(config: EcvCaracteristicsConfig): EChartsOption {
           total += value
           html += `${p.seriesName}: ${value.toFixed(1)}%<br/>`
         }
-        if (list.length > 1) html += `Total: ${total.toFixed(1)}%`
         return html
       },
     },

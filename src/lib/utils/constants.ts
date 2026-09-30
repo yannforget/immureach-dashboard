@@ -31,7 +31,7 @@ export const MODEL_METRIC_META: Record<MetricKey, MetricMeta> = {
     },
     pred_var: {
         key: 'pred_var',
-        label: 'Varicelle',
+        label: 'Rougeole',
         countKey: 'pred_var_count',
         isZeroDose: false,
         description: 'Vaccin contre la rougeole',

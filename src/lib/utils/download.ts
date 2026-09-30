@@ -1,6 +1,6 @@
 import type { EcvCaracteristicBar, EcvCaracteristicGroup, EcvLineData } from '@/hooks'
-import type { EcvVaccCovRow, Milieu, ZoneRow } from '@/types'
-import { MILIEU_LABELS } from '@/types'
+import type { AgeGroup, EcvVaccCovRow, Milieu, ZoneRow } from '@/types'
+import { AGE_GROUP_LABELS, MILIEU_LABELS } from '@/types'
 import { zoneJoinKey } from '@/lib/utils/ecvVaccCov'
 
 function toSlug(value: string): string {
@@ -45,6 +45,7 @@ function csvNumber(value: number | null | undefined): string {
 export interface EcvCsvScope {
   province: string | null
   zone: string | null
+  ageGroup: AgeGroup
   milieu: Milieu
 }
 
@@ -53,6 +54,7 @@ export interface EcvCsvScope {
 function findZoneRow(
   rows: EcvVaccCovRow[],
   year: number,
+  ageGroup: AgeGroup,
   milieu: Milieu,
   zoneKey: string,
 ): EcvVaccCovRow | null {
@@ -61,6 +63,7 @@ function findZoneRow(
       r =>
         r.level === 'zone' &&
         r.year === year &&
+        r.ageGroup === ageGroup &&
         r.milieu === milieu &&
         zoneJoinKey(r.province, r.zone) === zoneKey,
     ) ?? null
@@ -73,9 +76,10 @@ export function buildEcvEvolutionCsv(
   rows: EcvVaccCovRow[],
   zones: ZoneRow[],
 ): string {
-  // `milieu` is a column of its own: the same province and year appear once
-  // per habitat, so a file without it cannot be read back unambiguously.
-  const header = ['year', 'milieu', 'province', 'zone']
+  // `age_group` and `milieu` are columns of their own: the same province and
+  // year appear once per age window and habitat, so a file without them cannot
+  // be read back unambiguously.
+  const header = ['year', 'age_group', 'milieu', 'province', 'zone']
   for (const s of data.series) {
     header.push(
       `${s.name} (%)`,
@@ -87,11 +91,13 @@ export function buildEcvEvolutionCsv(
   const lines = [header.map(csvCell).join(',')]
   const includeZones = scope.zone === null && scope.province !== null
 
+  const ageGroupLabel = AGE_GROUP_LABELS[scope.ageGroup]
   const milieuLabel = MILIEU_LABELS[scope.milieu]
 
   data.years.forEach((year, i) => {
     const cells = [
       String(year),
+      csvCell(ageGroupLabel),
       csvCell(milieuLabel),
       csvCell(scope.province ?? ''),
       csvCell(scope.zone ?? ''),
@@ -106,11 +112,13 @@ export function buildEcvEvolutionCsv(
       const row = findZoneRow(
         rows,
         year,
+        scope.ageGroup,
         scope.milieu,
         zoneJoinKey(zone.provinceId, zone.displayName),
       )
       const zoneCells = [
         String(year),
+        csvCell(ageGroupLabel),
         csvCell(milieuLabel),
         csvCell(scope.province ?? ''),
         csvCell(zone.displayName),

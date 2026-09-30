@@ -4,8 +4,13 @@ import { useKeyEcvData } from '@/hooks'
 
 const formatNumber = (v: number | null): string => (v == null ? '—' : Math.round(v).toLocaleString())
 const formatPercent = (v: number | null): string => (v == null ? '—' : `${Math.round(v)}%`)
-const formatCi = (low: number | null, high: number | null): string | undefined =>
-    low != null && high != null ? `IC 95 % : ${low.toFixed(1)} % – ${high.toFixed(1)} %` : undefined
+// A value with no interval is an observed 0% / 100%, where no CI is computed.
+const formatCi = (value: number | null, low: number | null, high: number | null): string | undefined =>
+    low != null && high != null
+        ? `IC 95 % : ${low.toFixed(1)} % – ${high.toFixed(1)} %`
+        : value != null
+            ? 'IC 95 % : NA'
+            : undefined
 
 export function EcvIndicatorCardGrid() {
     const row = useKeyEcvData()
@@ -39,14 +44,14 @@ export function EcvIndicatorCardGrid() {
                 key: 'penta_cov',
                 label: 'Couverture Penta',
                 value: formatPercent(row?.penta_cov ?? null),
-                confidenceInterval: formatCi(row?.penta_cov_low ?? null, row?.penta_cov_high ?? null),
+                confidenceInterval: formatCi(row?.penta_cov ?? null, row?.penta_cov_low ?? null, row?.penta_cov_high ?? null),
                 description: "Couverture vaccinale pentavalente mesurée par l'enquête ECV (3 doses).",
             },
             {
                 key: 'zdc_cov',
                 label: 'Enfants zéro dose',
                 value: formatPercent(row?.zdc_cov ?? null),
-                confidenceInterval: formatCi(row?.zdc_cov_low ?? null, row?.zdc_cov_high ?? null),
+                confidenceInterval: formatCi(row?.zdc_cov ?? null, row?.zdc_cov_low ?? null, row?.zdc_cov_high ?? null),
                 description: "Proportion d'enfants zéro dose mesurée par l'enquête ECV (aucune dose d'aucun vaccin).",
             },
         ],

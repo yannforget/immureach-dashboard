@@ -127,6 +127,8 @@ export function buildEcvEvolutionLineOptions(config: EcvLineConfig): EChartsOpti
           const high = s.ciHigh[p.dataIndex]
           if (low != null && high != null) {
             row += ` (IC 95%: ${low.toFixed(1)} – ${high.toFixed(1)})`
+          } else {
+            row += ' (IC 95%: NA)'
           }
           html += `${row}<br/>`
         }

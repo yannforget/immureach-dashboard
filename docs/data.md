@@ -125,7 +125,8 @@ pop_12_24mo     = (pop_u5 - pop_u1) * 0.25
 pop_6_24mo      = pop_6_12mo + pop_12_24mo
 ```
 
-The 6–24 month band is the denominator for vaccine coverage counts shown in
+The 6–12 month band (`pop_6_12mo`, i.e. children aged 6–11 months, both
+bounds included) is the denominator for the vaccine coverage counts shown in
 the dashboard.
 
 ### `data/output/accessibility/`
@@ -174,8 +175,8 @@ Produced by `scripts/prepare-predictions.py`.
 - `zones.csv` — one row per zone with all eight `pred_*` columns from the
   predictions geopackage.
 - `provinces.csv` — predictions averaged across zones, weighted by
-  `pop_6_24mo`.
-- `country.csv` — single row, national average weighted by `pop_6_24mo`.
+  `pop_6_12mo`.
+- `country.csv` — single row, national average weighted by `pop_6_12mo`.
 
 The eight metrics are: `pred_bcg`, `pred_rota`, `pred_var`, `pred_vaa`,
 `pred_polio`, `pred_pcv`, `pred_zerodosepenta`, `pred_zerodoseall`. All are
@@ -215,7 +216,7 @@ browser):
 | `births_per_year`              | ✅         | ✅     |                                    |
 | `imr`                          | ✅         | ✅     |                                    |
 | `pred_<metric>`                | ✅         | ✅     | 8 metrics, `0..1` or `null`         |
-| `pred_<metric>_count`          | ✅         | ✅     | `pred_<metric> * pop_6_24mo`, or `null` |
+| `pred_<metric>_count`          | ✅         | ✅     | `pred_<metric> * pop_6_12mo`, or `null` |
 | `level_{1,2,3}_{id,name}`      | ✅         | ✅     | Kept verbatim for future joins     |
 
 Null handling: the 11 zones without coverage predictions emit `null` for every
@@ -268,7 +269,7 @@ write to `public/data/`; everything else stays inside `data/output/`.
   `level_2_name` for provinces). Population joins similarly.
 - Hard-fails if the number of zones without predictions diverges from the
   known 11; this guards against silent upstream drift.
-- Computes `pred_<m>_count = pred_<m> * pop_6_24mo` once at build time so the
+- Computes `pred_<m>_count = pred_<m> * pop_6_12mo` once at build time so the
   runtime doesn't have to.
 - Renames `level_2_name → q101`, `level_3_name → q103`, `pop_u1 → pop_0_12mo`,
   `pop_u5 → pop_0_5yo` to match the dashboard's existing field contract.

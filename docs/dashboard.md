@@ -323,11 +323,10 @@ to the top).
 2. **Demographics** — six tiles in the same visual rhythm as `IndicatorCard`
    (slate-50 background, label + `?` info popover, large bold value):
    `total_population`, `births_per_year`, `pop_0_12mo` (under 1),
-   `pop_6_24mo` (the vaccine-target denominator), `pop_0_5yo` (under 5),
+   `pop_6_12mo` (6–11 months, the vaccine-target denominator), `pop_0_5yo` (under 5),
    and `imr` (per 1,000 births). Each tile's `?` tooltip carries a one-line
    description and a "Source" line attributing the value (GRID3 population
-   rasters, DHS 2024 IMR, or the combination used for `births_per_year` /
-   `pop_6_24mo`).
+   rasters, DHS 2024 IMR, or the combination used for `births_per_year`).
 3. **Coverage vs province & national average** — 2-column grid of small
    comparison cards, one per metric. Each card shows three stacked mini-bars
    (zone / province / national) on a shared 0–100 scale. The zone bar uses
@@ -335,7 +334,7 @@ to the top).
    and national bars use slate-300. Zones with `null` predictions render
    "No data for this zone." instead of empty bars. National values are a
    population-weighted aggregate across provinces
-   (`Σ pred_*_count / Σ pop_6_24mo` × 100), computed once and memoised.
+   (`Σ pred_*_count / Σ pop_6_12mo` × 100), computed once and memoised.
 
 Drill-up is handled entirely by the top-level `Breadcrumb` — neither
 `ZoneTable` nor `ZoneDetail` ship their own back-link UI.
@@ -350,7 +349,7 @@ scope:
   pop-weighted `pred_*` and `pred_*_count` (do **not** average over the
   province's zones — those values are already weighted at build time).
 - **No selection** → national pop-weighted aggregate
-  `Σ pred_*_count / Σ pop_6_24mo` across all provinces.
+  `Σ pred_*_count / Σ pop_6_12mo` across all provinces.
 
 ---
 

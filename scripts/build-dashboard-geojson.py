@@ -140,12 +140,17 @@ def load_population_zones() -> dict[tuple[str, str], dict[str, float]]:
     }
 
 
-def add_predictions(props: dict, preds: dict | None, pop_6_24mo: float | None) -> None:
+# Denominator of the pred_*_count columns: children aged 6-11 months (both
+# bounds included), i.e. the upper half of the under-1 population.
+COUNT_POP_FIELD = "pop_6_12mo"
+
+
+def add_predictions(props: dict, preds: dict | None, target_pop: float | None) -> None:
     for key in METRIC_KEYS:
         pred = _to_optional_float(preds[key]) if preds is not None else None
         props[key] = pred
-        if pred is not None and pop_6_24mo is not None:
-            props[f"{key}_count"] = pred * pop_6_24mo
+        if pred is not None and target_pop is not None:
+            props[f"{key}_count"] = pred * target_pop
         else:
             props[f"{key}_count"] = None
 
@@ -165,7 +170,7 @@ def build_province_feature(
     }
     for field in POP_FIELDS_ORDER:
         props[field] = pops.get(field)
-    add_predictions(props, preds, pops.get("pop_6_24mo"))
+    add_predictions(props, preds, pops.get(COUNT_POP_FIELD))
     return {"type": "Feature", "geometry": feature["geometry"], "properties": props}
 
 
@@ -189,7 +194,7 @@ def build_zone_feature(
     }
     for field in POP_FIELDS_ORDER:
         props[field] = pops.get(field)
-    add_predictions(props, preds, pops.get("pop_6_24mo"))
+    add_predictions(props, preds, pops.get(COUNT_POP_FIELD))
     return {"type": "Feature", "geometry": feature["geometry"], "properties": props}
 
 
