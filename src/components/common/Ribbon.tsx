@@ -7,8 +7,8 @@ import { AGE_GROUP_LABELS, MILIEU_LABELS } from '@/types'
 import type { AgeGroup, DashboardSection, Milieu, Year } from '@/types'
 
 const SECTIONS: { value: DashboardSection; label: string }[] = [
-    { value: 'ecv', label: 'Données brutes ECV' },
-    { value: 'zerodose', label: 'Modèle Zéro dose' },
+    { value: 'ecv', label: 'Exploration ECV' },
+    { value: 'zerodose', label: 'Prédictions zone santé ' },
     { value: 'determinants', label: 'Déterminants ménages' },
     { value: 'actions', label: 'Actions / interventions' },
 ]
