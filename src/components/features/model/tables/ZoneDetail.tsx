@@ -188,7 +188,7 @@ export function ZoneDetail({ row, zoneName }: ZoneDetailProps) {
   )
 
   // National = population-weighted across provinces via pre-computed
-  // pred_*_count / pop_6_24mo, mirroring the IndicatorCards logic.
+  // pred_*_count / pop_6_12mo (6-11 months), mirroring the IndicatorCards logic.
   const nationalByMetric = useMemo(() => {
     const result: Record<MetricKey, number | null> = {} as any
     MODEL_METRIC_KEYS.forEach(key => {
@@ -197,7 +197,7 @@ export function ZoneDetail({ row, zoneName }: ZoneDetailProps) {
       let popSum = 0
       provinces.forEach((p: ProvinceRow) => {
         const c = (p.properties as any)[meta.countKey]
-        const pop = (p.properties as any).pop_6_24mo
+        const pop = (p.properties as any).pop_6_12mo
         if (typeof c === 'number' && typeof pop === 'number') {
           countSum += c
           popSum += pop
@@ -245,10 +245,10 @@ export function ZoneDetail({ row, zoneName }: ZoneDetailProps) {
             source="Estimations démographiques GRID3"
           />
           <DemographicTile
-            label="Enfants de 6 à 24 mois"
-            value={props.pop_6_24mo}
-            description="Population estimée âgée de 6 à 24 mois — dénominateur utilisé pour le calcul de la couverture vaccinale."
-            source="Estimations démographiques par grille GRID3 combinées au taux de mortalité infantile (TMI) de l'enquête DHS 2024"
+            label="Enfants de 6 à 11 mois"
+            value={props.pop_6_12mo}
+            description="Population estimée âgée de 6 à 11 mois (bornes incluses), soit la moitié de la population de moins de 1 an — population cible utilisée pour estimer le nombre d'enfants vaccinés ou zéro dose."
+            source="Estimations démographiques GRID3"
           />
           <DemographicTile
             label="Enfants moins 5 ans"
@@ -272,7 +272,7 @@ export function ZoneDetail({ row, zoneName }: ZoneDetailProps) {
           <h4 className="text-sm font-semibold text-slate-700">
             Couverture par rapport à la moyenne provinciale et nationale
           </h4>
-          <span className="text-xs text-slate-500">% des enfants âgés de 6 à 24 mois</span>
+          <span className="text-xs text-slate-500">% des enfants âgés de 6 à 11 mois</span>
         </div>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {MODEL_METRIC_KEYS.map(key => {

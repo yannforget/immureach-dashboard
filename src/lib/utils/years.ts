@@ -31,6 +31,18 @@ export function resolveSectionYear(section: DashboardSection, current: Year): Ye
   return allowed[allowed.length - 1];
 }
 
+// Sections whose results describe a later year than the survey they are
+// computed from. The zero-dose model is fitted on the 2024 survey and predicts
+// the 2025 cohort, so the ribbon shows 2025 while the data stays keyed by 2024.
+const SECTION_YEAR_DISPLAY_OFFSET: Partial<Record<DashboardSection, number>> = {
+  zerodose: 1,
+};
+
+/** Year as the ribbon displays it on a section. */
+export function displayYear(section: DashboardSection, year: Year): string {
+  return String(year + (SECTION_YEAR_DISPLAY_OFFSET[section] ?? 0));
+}
+
 /** Ribbon caption for the year filter. */
 export function yearLabel(section: DashboardSection): string {
   // On ECV the distinction matters: the numbers are named after the year the
@@ -42,7 +54,13 @@ export function yearLabel(section: DashboardSection): string {
 export function yearInfo(section: DashboardSection): string | undefined {
   // The ECV survey measures the cohort born the year before collection, which
   // is easy to misread from the year label alone.
-  return section === 'ecv'
-    ? "L'enquête de l'année sélectionnée cherche à estimer le statut vaccinal de la cohorte d'enfants née l'année précédente."
-    : undefined;
+  // On the zero-dose model, the ribbon year is the survey the model is fitted
+  // on, not the cohort and year its predictions describe.
+  if (section === 'ecv') {
+    return "L'enquête de l'année sélectionnée cherche à estimer le statut vaccinal de la cohorte d'enfants née l'année précédente.";
+  }
+  if (section === 'zerodose') {
+    return "Résultats prédits sur la cohorte 6-11 mois pour l'année 2025.";
+  }
+  return undefined;
 }

@@ -18,7 +18,7 @@ export interface MetricMeta {
 
 export interface ProvinceProperties {
   q101: string;
-  pop_6_24mo: number;
+  pop_6_12mo: number; // 6-11 months, both bounds included
   pred_bcg: number | null;
   pred_rota: number | null;
   pred_var: number | null;

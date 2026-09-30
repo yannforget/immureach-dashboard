@@ -1,7 +1,7 @@
 import { useDashboardStore } from '@/store/dashboardStore'
 import { useAvailableAgeGroups, useAvailableMilieux, useProvinceData, useSectionYears, useZoneData } from '@/hooks'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { yearInfo, yearLabel } from '@/lib/utils/years'
+import { displayYear, yearInfo, yearLabel } from '@/lib/utils/years'
 import { InfoBubble } from '@/components/common/InfoBubble'
 import { AGE_GROUP_LABELS, MILIEU_LABELS } from '@/types'
 import type { AgeGroup, DashboardSection, Milieu, Year } from '@/types'
@@ -103,7 +103,7 @@ export function Ribbon() {
                 <Segmented<Year>
                     label={yearLabel(activeSection)}
                     info={yearInfo(activeSection)}
-                    options={years.map(y => ({ value: y, label: String(y) }))}
+                    options={years.map(y => ({ value: y, label: displayYear(activeSection, y) }))}
                     value={selectedYear}
                     onChange={setSelectedYear}
                 />

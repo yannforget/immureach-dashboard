@@ -12,7 +12,7 @@ export function ModelIndicatorCardGrid() {
 
   // Pick the single row when a zone or province is selected; otherwise
   // compute the national value as a population-weighted aggregate via the
-  // pre-computed pred_*_count columns (count / pop_6_24mo).
+  // pre-computed pred_*_count columns (count / pop_6_12mo, i.e. 6-11 months).
   const cards = useMemo(() => {
     const zoneRow = selectedZoneId ? zones.find(z => z.id === selectedZoneId) : undefined
     const provinceRow = selectedProvince ? provinces.find(p => p.displayName === selectedProvince) : undefined
@@ -33,7 +33,7 @@ export function ModelIndicatorCardGrid() {
         let popSum = 0
         provinces.forEach(p => {
           const c = (p.properties as any)[meta.countKey]
-          const pop = (p.properties as any).pop_6_24mo
+          const pop = (p.properties as any).pop_6_12mo
           if (typeof c === 'number' && typeof pop === 'number') {
             countSum += c
             popSum += pop

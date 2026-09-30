@@ -2,14 +2,15 @@
 """Prepare ImmuReach predictions for the dashboard.
 
 Reads the zone-level predictions GeoPackage and joins it with the population
-table (data/output/population/zones.csv) to attach pop_6_24mo as the aggregation
-weight. Produces three CSVs in data/output/predictions/:
+table (data/output/population/zones.csv) to attach pop_6_12mo (children aged 6-11
+months, both bounds included) as the aggregation weight. Produces three CSVs
+in data/output/predictions/:
 
   - zones.csv:     one row per health zone with all pred_* columns
   - provinces.csv: one row per province, pred_* averaged across zones weighted
-                   by pop_6_24mo
+                   by pop_6_12mo
   - country.csv:   one row, pred_* averaged across all zones weighted by
-                   pop_6_24mo
+                   pop_6_12mo
 
 Run: uv run scripts/prepare-predictions.py
 """
@@ -19,7 +20,7 @@ from pathlib import Path
 import geopandas as gpd
 import pandas as pd
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 PREDICTIONS_GPKG = PROJECT_ROOT / "data/input/immureach/data_and_predictions_260317.gpkg"
 POPULATION_ZONES_CSV = PROJECT_ROOT / "data/output/population/zones.csv"
@@ -40,7 +41,8 @@ PRED_COLS = [
     "pred_pcv",
 ]
 
-WEIGHT_COL = "pop_6_24mo"
+# Target population of the zero-dose model tab: 6-11 months, bounds included.
+WEIGHT_COL = "pop_6_12mo"
 
 
 def weighted_average(df: pd.DataFrame, value_cols: list[str], weight_col: str) -> pd.Series:
