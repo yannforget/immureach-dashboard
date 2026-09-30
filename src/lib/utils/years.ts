@@ -37,3 +37,12 @@ export function yearLabel(section: DashboardSection): string {
   // survey went to the field, not the year the source export was cut.
   return section === 'ecv' ? 'Année de collecte' : 'Année';
 }
+
+/** Help text shown next to the year filter, or undefined when none is needed. */
+export function yearInfo(section: DashboardSection): string | undefined {
+  // The ECV survey measures the cohort born the year before collection, which
+  // is easy to misread from the year label alone.
+  return section === 'ecv'
+    ? "L'enquête de l'année sélectionnée cherche à estimer le statut vaccinal de la cohorte d'enfants née l'année précédente."
+    : undefined;
+}

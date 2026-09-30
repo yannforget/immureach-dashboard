@@ -1,7 +1,8 @@
 import { useDashboardStore } from '@/store/dashboardStore'
 import { useAvailableAgeGroups, useAvailableMilieux, useProvinceData, useSectionYears, useZoneData } from '@/hooks'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { yearLabel } from '@/lib/utils/years'
+import { yearInfo, yearLabel } from '@/lib/utils/years'
+import { InfoBubble } from '@/components/common/InfoBubble'
 import { AGE_GROUP_LABELS, MILIEU_LABELS } from '@/types'
 import type { AgeGroup, DashboardSection, Milieu, Year } from '@/types'
 
@@ -20,11 +21,13 @@ const selectClass =
 // Pill group used by the ribbon's single-choice filters (année, âge, milieu).
 function Segmented<T extends string | number>({
     label,
+    info,
     options,
     value,
     onChange,
 }: {
     label: string
+    info?: string
     options: { value: T; label: string }[]
     value: T
     onChange: (value: T) => void
@@ -32,6 +35,7 @@ function Segmented<T extends string | number>({
     return (
         <div className="flex items-center gap-2">
             <span className="text-xs font-medium text-slate-500">{label}</span>
+            {info && <InfoBubble text={info} />}
             <div className="inline-flex rounded-md bg-slate-100 p-1">
                 {options.map(option => (
                     <button
@@ -98,6 +102,7 @@ export function Ribbon() {
                 {/* Year */}
                 <Segmented<Year>
                     label={yearLabel(activeSection)}
+                    info={yearInfo(activeSection)}
                     options={years.map(y => ({ value: y, label: String(y) }))}
                     value={selectedYear}
                     onChange={setSelectedYear}
