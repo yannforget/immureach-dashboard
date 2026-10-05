@@ -112,16 +112,21 @@ export function useEcvCaracteristicsData(): EcvCaracteristicsData {
   return useMemo(() => {
     // Whitelist + order the charted variables; the CSV may carry extra
     // `<root>_pct` families that this panel does not show.
-    const available = new Set(Object.keys(ecvCaracteristics[0]?.values ?? {}))
-    const variables = ECV_CARACTERISTIC_KEYS.filter(v => available.has(v))
-    const groups = buildGroups(variables)
-
     const rows = ecvCaracteristics.filter(
       r =>
         r.year === selectedYear &&
         r.ageGroup === selectedAgeGroup &&
         r.milieu === selectedMilieu,
     )
+
+    // A variable is charted only when the selected round measured it: every
+    // CSV row carries every column, but a question dropped from a round's
+    // questionnaire (BeSD6, BeSD19 and BeSD21 in 2026) leaves that round's
+    // cells empty, and its tab would otherwise draw an empty chart.
+    const available = new Set(Object.keys(ecvCaracteristics[0]?.values ?? {}))
+    const measured = (v: string) => rows.some(r => r.values[v]?.pct != null)
+    const variables = ECV_CARACTERISTIC_KEYS.filter(v => available.has(v) && measured(v))
+    const groups = buildGroups(variables)
 
     const toBar = (row: EcvCaracteristicsRow, name: string, highlighted = false): EcvCaracteristicBar => {
       const values: Record<string, EcvCaracteristicValue> = {}

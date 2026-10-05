@@ -1,8 +1,9 @@
 """Compute ECV household/child characteristics from the raw survey microdata.
 
-Reads the Stata exports in data/input/ecv/ (ECV_2022_* and ECV_2023_*) and
-writes public/data/ecv_caracteristics.csv -- one row per national / province /
-zone domain, year, age group and milieu, with a `_pct` / `_low` / `_high`
+Reads the Stata exports in data/input/ecv/ (ECV_2022_*, ECV_2023_* and
+ECV2026_*, see constants.SOURCE_GLOB) and writes
+public/data/ecv_caracteristics.csv -- one row per national / province / zone
+domain, year, age group and milieu, with a `_pct` / `_low` / `_high`
 triplet per variable (point estimate and 95% confidence interval, 0-100).
 
 `age_group` is the dashboard's age ribbon filter, read off `vs25` (age in
@@ -74,7 +75,6 @@ GEO_COLUMNS = [
     cst.STRATUM_COL,
     cst.ZONE_COL,
     cst.AREA_COL,
-    cst.WEIGHT_COL,
     cst.AGE_COL,
     cst.MILIEU_COL,
 ]
@@ -101,7 +101,8 @@ def load_year(
     """
     print(f"  reading {dta_path.name} ...")
     available = stata_columns(dta_path)
-    absent_geo = [c for c in GEO_COLUMNS if c not in available]
+    design_cols = [*GEO_COLUMNS, utils.weight_col(year)]
+    absent_geo = [c for c in design_cols if c not in available]
     if absent_geo:
         raise ValueError(
             f"{dta_path.name} is missing the design/geography column(s) "
@@ -117,15 +118,16 @@ def load_year(
     source_cols = [c for c in wanted if c in available]
 
     raw = pd.read_stata(
-        dta_path, columns=GEO_COLUMNS + source_cols, convert_categoricals=False
+        dta_path, columns=design_cols + source_cols, convert_categoricals=False
     )
+    province, zone, area = utils.geography_names(raw, year)
 
     df = pd.DataFrame(
         {
-            "province": utils.clean_name(raw[cst.STRATUM_COL]),
-            "zone": utils.clean_name(raw[cst.ZONE_COL]),
-            "area": utils.clean_name(raw[cst.AREA_COL]),
-            "weight": pd.to_numeric(raw[cst.WEIGHT_COL], errors="coerce"),
+            "province": province,
+            "zone": zone,
+            "area": area,
+            "weight": pd.to_numeric(raw[utils.weight_col(year)], errors="coerce"),
             "age": pd.to_numeric(raw[cst.AGE_COL], errors="coerce"),
             "milieu": pd.to_numeric(raw[cst.MILIEU_COL], errors="coerce").map(
                 cst.MILIEU_BY_CODE
@@ -284,6 +286,7 @@ def process_file(
     zones: dict[str, tuple[str, str]],
 ) -> pd.DataFrame:
     print(f"\n=== {year} ===")
+    age_groups = utils.age_groups_for(year, age_groups)
     df, source_cols = load_year(dta_path, year, variables, provinces, zones)
     spec = indicator_spec(variables, year)
 
@@ -347,7 +350,7 @@ def main() -> None:
         "--years",
         default=",".join(cst.YEARS),
         help=f"comma-separated source-file years to process, as named in the\n"
-        f"ECV_<year>_*.dta filenames (default: {','.join(cst.YEARS)})",
+        f"source filenames (default: {','.join(cst.YEARS)})",
     )
     parser.add_argument(
         "--variables",
@@ -415,17 +418,9 @@ def main() -> None:
 
     frames = []
     for year in years:
-        matches = sorted(cst.INPUT_DIR.glob(f"ECV_{year}_*.dta"))
-        if not matches:
-            raise FileNotFoundError(f"no ECV_{year}_*.dta in {cst.INPUT_DIR}")
-        if len(matches) > 1:
-            print(
-                f"  WARNING: {len(matches)} files match ECV_{year}_*.dta, using "
-                f"{matches[0].name}"
-            )
         frames.append(
             process_file(
-                matches[0],
+                utils.source_file(year),
                 year,
                 variables,
                 milieux,

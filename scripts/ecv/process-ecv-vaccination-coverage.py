@@ -1,9 +1,10 @@
 """Compute ECV vaccination-coverage percentages from the raw survey microdata.
 
-Reads the Stata exports in data/input/ecv/ (ECV_2022_* and ECV_2023_*) and
-writes public/data/ecv_vaccination_coverage.csv -- one row per national /
-province / zone domain, year, age group and milieu, with a `_pct` / `_low` /
-`_high` triplet per metric (point estimate and 95% confidence interval, 0-100).
+Reads the Stata exports in data/input/ecv/ (ECV_2022_*, ECV_2023_* and
+ECV2026_*, see constants.SOURCE_GLOB) and writes
+public/data/ecv_vaccination_coverage.csv -- one row per national / province /
+zone domain, year, age group and milieu, with a `_pct` / `_low` / `_high`
+triplet per metric (point estimate and 95% confidence interval, 0-100).
 
 `age_group` is the dashboard's age ribbon filter, read off `vs25` (age in
 completed months): R estimates every domain once per window of AGE_GROUPS
@@ -72,11 +73,11 @@ VACCINES_COLUMNS = list(cst.VACCINES_MAPPING.values())
 # check the derived zero_dose against it.
 ZERO_DOSE_REF_COL = "dose0_1"
 
+# The weight column is added per round (see utils.weight_col).
 LOAD_COLUMNS = [
     cst.STRATUM_COL,
     cst.ZONE_COL,
     cst.AREA_COL,
-    cst.WEIGHT_COL,
     cst.AGE_COL,
     cst.AREAS_TOTAL_COL,
     cst.AREAS_SURVEYED_COL,
@@ -90,18 +91,24 @@ COUNT_COLS = ["nb_children", "nb_as", "as_enq"]
 
 def load_year(
     dta_path: Path,
+    year: str,
     provinces: dict[str, str],
     zones: dict[str, tuple[str, str]],
 ) -> pd.DataFrame:
     """Read one ECV Stata export into the child-level frame handed to R."""
-    raw = pd.read_stata(dta_path, columns=LOAD_COLUMNS, convert_categoricals=False)
+    raw = pd.read_stata(
+        dta_path,
+        columns=[*LOAD_COLUMNS, utils.weight_col(year)],
+        convert_categoricals=False,
+    )
+    province, zone, area = utils.geography_names(raw, year)
 
     df = pd.DataFrame(
         {
-            "province": utils.clean_name(raw[cst.STRATUM_COL]),
-            "zone": utils.clean_name(raw[cst.ZONE_COL]),
-            "area": utils.clean_name(raw[cst.AREA_COL]),
-            "weight": pd.to_numeric(raw[cst.WEIGHT_COL], errors="coerce"),
+            "province": province,
+            "zone": zone,
+            "area": area,
+            "weight": pd.to_numeric(raw[utils.weight_col(year)], errors="coerce"),
             "age": pd.to_numeric(raw[cst.AGE_COL], errors="coerce"),
             "nb_as": pd.to_numeric(raw[cst.AREAS_TOTAL_COL], errors="coerce"),
             "as_enq_file": pd.to_numeric(raw[cst.AREAS_SURVEYED_COL], errors="coerce"),
@@ -243,7 +250,8 @@ def process_file(
     zones: dict[str, tuple[str, str]],
 ) -> pd.DataFrame:
     print(f"\n=== {year} ===")
-    df = load_year(dta_path, provinces, zones)
+    age_groups = utils.age_groups_for(year, age_groups)
+    df = load_year(dta_path, year, provinces, zones)
     print(
         f"  {len(df):,} children (all ages) in {df['province'].nunique()} provinces / "
         f"{df['psu_key'].nunique()} areas"
@@ -309,7 +317,7 @@ def main() -> None:
         "--years",
         default=",".join(cst.YEARS),
         help=f"comma-separated source-file years to process, as named in the\n"
-        f"ECV_<year>_*.dta filenames (default: {','.join(cst.YEARS)})",
+        f"source filenames (default: {','.join(cst.YEARS)})",
     )
     parser.add_argument(
         "--metrics",
@@ -376,17 +384,9 @@ def main() -> None:
 
     frames = []
     for year in years:
-        matches = sorted(cst.INPUT_DIR.glob(f"ECV_{year}_*.dta"))
-        if not matches:
-            raise FileNotFoundError(f"no ECV_{year}_*.dta in {cst.INPUT_DIR}")
-        if len(matches) > 1:
-            print(
-                f"  WARNING: {len(matches)} files match ECV_{year}_*.dta, using "
-                f"{matches[0].name}"
-            )
         frames.append(
             process_file(
-                matches[0],
+                utils.source_file(year),
                 year,
                 metrics,
                 milieux,

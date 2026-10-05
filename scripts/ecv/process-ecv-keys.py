@@ -1,8 +1,8 @@
 """Compute ECV key figures for young children from the raw survey microdata.
 
-Reads the Stata exports in data/input/ecv/ (ECV_2022_* and ECV_2023_*) and
-derives the two headline indicators the dashboard shows, for children inside
-the age window (`vs25`, age in completed months; see AGE_MIN_MONTHS):
+Reads the Stata exports in data/input/ecv/ (ECV_2022_*, ECV_2023_* and
+ECV2026_*, see constants.SOURCE_GLOB) and derives the two headline
+indicators the dashboard shows, for children inside the age window (`vs25`, age in completed months; see AGE_MIN_MONTHS):
 
   * penta_cov -- Penta3 coverage (3rd dose of the pentavalent vaccine)
   * zdc_cov   -- zero-dose children (no antigen at all)
@@ -64,23 +64,27 @@ LOAD_COLUMNS = [
     cst.STRATUM_COL,
     cst.ZONE_COL,
     cst.AREA_COL,
-    cst.WEIGHT_COL,
     cst.AGE_COL,
     cst.AREAS_TOTAL_COL,
     cst.MILIEU_COL,
 ] + VACCINES_COLUMNS
 
 
-def load_year(dta_path: Path) -> pd.DataFrame:
+def load_year(dta_path: Path, year: str) -> pd.DataFrame:
     """Read one ECV Stata export into the child-level frame handed to R."""
-    raw = pd.read_stata(dta_path, columns=LOAD_COLUMNS, convert_categoricals=False)
+    raw = pd.read_stata(
+        dta_path,
+        columns=[*LOAD_COLUMNS, utils.weight_col(year)],
+        convert_categoricals=False,
+    )
+    province, zone, area = utils.geography_names(raw, year)
 
     df = pd.DataFrame(
         {
-            "province": utils.clean_name(raw[cst.STRATUM_COL]),
-            "zone": utils.clean_name(raw[cst.ZONE_COL]),
-            "area": utils.clean_name(raw[cst.AREA_COL]),
-            "weight": pd.to_numeric(raw[cst.WEIGHT_COL], errors="coerce"),
+            "province": province,
+            "zone": zone,
+            "area": area,
+            "weight": pd.to_numeric(raw[utils.weight_col(year)], errors="coerce"),
             "age": pd.to_numeric(raw[cst.AGE_COL], errors="coerce"),
             "nb_areas_tot": pd.to_numeric(raw[cst.AREAS_TOTAL_COL], errors="coerce"),
             "milieu": pd.to_numeric(raw[cst.MILIEU_COL], errors="coerce").map(
@@ -90,6 +94,12 @@ def load_year(dta_path: Path) -> pd.DataFrame:
     )
     for col in VACCINES_COLUMNS:
         df[col] = pd.to_numeric(raw[col], errors="coerce")
+
+    # The coded rounds' names are upper case and unaccented; show them the way
+    # the free-text rounds and the map spell them.
+    if year in cst.CODED_GEOGRAPHY_YEARS:
+        _, zones = utils.load_geojson_names(cst.ZONES_GEOJSON)
+        df = utils.geojson_spelling(df, zones)
 
     # An aire de sante name is not unique nationally, so key the PSU on the zone.
     df["zone_key"] = df["province"] + " | " + df["zone"]
@@ -210,7 +220,7 @@ def process_file(
     age_max: int = cst.AGE_MAX_MONTHS,
 ) -> pd.DataFrame:
     print(f"reading {dta_path.name} ...")
-    df = load_year(dta_path)
+    df = load_year(dta_path, year)
     print(
         f"  {len(df):,} children in {df['zone_key'].nunique()} zones / "
         f"{df['psu_key'].nunique()} areas"
@@ -286,13 +296,10 @@ def main() -> None:
         raise SystemExit(f"unknown milieu(x): {unknown}\nknown milieux: {cst.MILIEUX}")
 
     frames = []
-    for year in cst.COLLECTION_YEAR:
-        matches = sorted(cst.INPUT_DIR.glob(f"ECV_{year}_*.dta"))
-        if not matches:
-            raise FileNotFoundError(f"no ECV_{year}_*.dta in {cst.INPUT_DIR}")
+    for year in cst.YEARS:
         frames.append(
             process_file(
-                matches[0], year, milieux, args.workdir, args.age_min, args.age_max
+                utils.source_file(year), year, milieux, args.workdir, args.age_min, args.age_max
             )
         )
 

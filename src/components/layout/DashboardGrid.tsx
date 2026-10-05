@@ -53,7 +53,12 @@ export function DashboardGrid() {
             >
               ici
             </a>
-            .
+            . L'ECV 2026 (collectée en avril-mai 2026) couvre 24 provinces : le Nord-Kivu et le
+            Sud-Kivu n'ont pas été enquêtés. Elle cible les enfants de 12 à 23 mois ; la tranche
+            6-11 mois n'est donc pas publiée pour 2026, et sa tranche 6-23 mois est presque
+            entièrement composée d'enfants de 12-23 mois. Pour comparer 2026 aux années
+            précédentes, préférez la tranche 12-23 mois. Certaines questions sur les déterminants
+            (BeSD6, BeSD19, BeSD21) ne figurent plus dans le questionnaire 2026.
           </Notes>
         </div>
       </section>

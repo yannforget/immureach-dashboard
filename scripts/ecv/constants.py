@@ -18,9 +18,19 @@ R_CARACTERISTICS_PATH = (
     PROJECT_ROOT / "scripts" / "ecv" / "rscripts" / "rscript_caracteristics.R"
 )
 
+## Survey rounds
+# Rounds are keyed by the year in the source filename. The 2022 and 2023
+# exports are named after the year before collection; 2026 is named after its
+# own fieldwork (April-May 2026). See docs/ecv2026.md.
+YEARS = ("2022", "2023", "2026")
+COLLECTION_YEAR = {"2022": "2023", "2023": "2024", "2026": "2026"}
+SOURCE_GLOB = {
+    "2022": "ECV_2022_*.dta",
+    "2023": "ECV_2023_*.dta",
+    "2026": "ECV2026_*.dta",
+}
+
 ## Filters
-YEARS = ("2022", "2023")
-COLLECTION_YEAR = {"2022": "2023", "2023": "2024"}
 AGE_MIN_MONTHS = 6
 AGE_MAX_MONTHS = 24
 
@@ -30,15 +40,56 @@ AGE_MAX_MONTHS = 24
 # Only the coverage and characteristics files are split by age; key_ecv.csv
 # (the cards) keeps the single AGE_MIN_MONTHS-AGE_MAX_MONTHS window.
 AGE_GROUPS = ("6-11", "12-23", "6-23")
+# Rounds that only support some of the windows. ECV 2026 targeted 12-23 month
+# olds: its file holds fewer than a thousand 6-11 month olds nationally, too few
+# for any province or zone estimate, so that window is not published for 2026.
+AGE_GROUPS_BY_YEAR = {"2026": ("12-23", "6-23")}
 
 # Survey design + geography columns, identical to the coverage script.
 STRATUM_COL = "q101"  # "Nom de la strate (de la province)"
 ZONE_COL = "q103"  # "Nom de la zone de santé"
 AREA_COL = "q105"  # "Nom de la grappe (de l'Aire de santé)" -- the PSU
 WEIGHT_COL = "ponderation"
+# Rounds whose child weight sits under another name. The 2026 weight is also on
+# a different scale (it sums to ~0.8M instead of ~8.8M); every published figure
+# is a proportion, so only the name matters here.
+WEIGHT_COL_BY_YEAR = {"2026": "PonderationG"}
 AGE_COL = "vs25"
 AREAS_TOTAL_COL = "nbre_as"  # health areas in the zone (sampling frame)
 AREAS_SURVEYED_COL = "nbre_asenq"  # health areas actually surveyed, per the file
+# Rounds whose q101 / q103 / q105 hold codes ("KL", "KL_KL_BAGATA",
+# "KL_KL_BAGATA_KL_MOSANGO") instead of free-text names; see
+# utils.geography_names(). PROVINCE_BY_CODE is the crosswalk to the names
+# zones.geojson uses (derived in docs/ecv2026.md).
+CODED_GEOGRAPHY_YEARS = {"2026"}
+PROVINCE_BY_CODE = {
+    "BU": "Bas Uele",
+    "EQ": "Equateur",
+    "HK": "Haut Katanga",
+    "HL": "Haut Lomami",
+    "HU": "Haut Uele",
+    "IT": "Ituri",
+    "KC": "Kongo Central",
+    "KE": "Kasai Oriental",
+    "KG": "Kwango",
+    "KL": "Kwilu",
+    "KN": "Kinshasa",
+    "KR": "Kasai Central",
+    "KS": "Kasai",
+    "LL": "Lualaba",
+    "LM": "Lomami",
+    "MD": "Maindombe",
+    "MG": "Mongala",
+    "MN": "Maniema",
+    "NK": "Nord Kivu",
+    "NU": "Nord Ubangi",
+    "SK": "Sud Kivu",
+    "SN": "Sankuru",
+    "SU": "Sud Ubangi",
+    "TN": "Tanganyika",
+    "TP": "Tshopo",
+    "TU": "Tshuapa",
+}
 MILIEU_COL = "q108"  # "Milieu de localisation du ménage"
 MILIEU_BY_CODE = {1: "urbain", 2: "rural"}
 MILIEUX = ("all", *MILIEU_BY_CODE.values())

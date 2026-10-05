@@ -5,6 +5,11 @@ import type { DashboardSection, Year } from '@/types';
 // produced, one year earlier, and the pipeline shifts them on the way out.
 export const DEFAULT_YEARS: Year[] = [2023, 2024];
 
+// ECV rounds the dashboard knows about, used until the ECV CSVs have loaded.
+// The ECV section offers the years those files hold rather than the profile's
+// (which lists the model years only); see useSectionYears.
+export const DEFAULT_ECV_YEARS: Year[] = [2023, 2024, 2026];
+
 // Sections that only publish a subset of the collected years. The zero-dose
 // model is fitted on the latest survey alone, so offering the older year there
 // would point the maps and cards at data the model does not cover.

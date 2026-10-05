@@ -90,6 +90,12 @@ That keeps each year internally consistent, but it does not make the two years
 equivalent: 2023 only let the most dissatisfied 5% name a problem, so its
 besd21_* rates are structurally far below 2022's. Compare within a year, across
 provinces and zones, rather than across years.
+
+ECV 2026 dropped BeSD6 and both batteries (BeSD19 / BeSD20-21) from the
+questionnaire: the BeSD6 column is absent from the file and `reason()` /
+the per-year besd19 / besd21 sources have no 2026 entry, so those variables
+come out empty for 2026. Every other variable reads the same column and codes
+as before (docs/ecv2026.md).
 """
 
 from collections.abc import Mapping

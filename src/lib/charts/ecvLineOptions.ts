@@ -96,7 +96,8 @@ export function buildEcvEvolutionLineOptions(config: EcvLineConfig): EChartsOpti
         silent: true,
         lineStyle: { type: 'dashed', color: '#94a3b8' },
         label: { formatter: `${selectedYear}`, color: '#475569' },
-        data: [{ xAxis: selectedYear }],
+        // A category axis reads a number as an index; match the category by name.
+        data: [{ xAxis: String(selectedYear) }],
       }
     }
 
