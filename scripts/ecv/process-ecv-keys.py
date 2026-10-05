@@ -30,6 +30,10 @@ once on the whole sample (`all`) and once on each q108 modality (`urbain`,
 `rural`). See MILIEUX. `nb_zones` counts the health zones the *survey*
 reached, so it reads the same under every milieu.
 
+`survey_start` / `survey_end` bound the fieldwork in the domain: the first and
+last interview date (`q117`) over every child of the file, whatever the age or
+milieu. Implausible dates (typos, see MAX_UPLOAD_LAG_DAYS) are ignored.
+
 Requires R with the `survey` package installed:
 
     Rscript -e 'install.packages("survey", repos = "https://cloud.r-project.org")'
@@ -68,6 +72,8 @@ LOAD_COLUMNS = [
     cst.AGE_COL,
     cst.AREAS_TOTAL_COL,
     cst.MILIEU_COL,
+    cst.INTERVIEW_DATE_COL,
+    cst.SUBMISSION_DATE_COL,
 ] + VACCINES_COLUMNS
 
 
@@ -86,6 +92,13 @@ def load_year(dta_path: Path) -> pd.DataFrame:
             "milieu": pd.to_numeric(raw[cst.MILIEU_COL], errors="coerce").map(
                 cst.MILIEU_BY_CODE
             ),
+            # ISO strings: q117 is a string in the 2022 file, a date in 2023.
+            "interview_date": pd.to_datetime(
+                raw[cst.INTERVIEW_DATE_COL], errors="coerce"
+            ).dt.strftime("%Y-%m-%d"),
+            "submission_date": pd.to_datetime(
+                raw[cst.SUBMISSION_DATE_COL], errors="coerce"
+            ).dt.strftime("%Y-%m-%d"),
         }
     )
     for col in VACCINES_COLUMNS:
@@ -146,6 +159,8 @@ def run_survey_r(
             "age": df["age"],
             "milieu": df["milieu"],
             "nb_areas_tot": df["nb_areas_tot"],
+            "interview_date": df["interview_date"],
+            "submission_date": df["submission_date"],
             **{col: df[col] for col in VACCINES_COLUMNS},
         }
     )
@@ -164,6 +179,7 @@ def run_survey_r(
             str(age_min),
             str(age_max),
             ",".join(milieux),
+            str(cst.MAX_UPLOAD_LAG_DAYS),
         ],
         capture_output=True,
         text=True,
@@ -308,6 +324,8 @@ def main() -> None:
             "nb_zones",
             "nb_areas",
             "nb_areas_tot",
+            "survey_start",
+            "survey_end",
             "penta_cov",
             "penta_cov_low",
             "penta_cov_high",

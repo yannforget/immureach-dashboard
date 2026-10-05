@@ -35,6 +35,8 @@ function parseKeyEcvCsv(text: string): KeyEcvRow[] {
     nb_zones: toNum(r.nb_zones),
     nb_areas: toNum(r.nb_areas),
     nb_areas_tot: toNum(r.nb_areas_tot),
+    survey_start: toStr(r.survey_start),
+    survey_end: toStr(r.survey_end),
     penta_cov: toNum(r.penta_cov),
     zdc_cov: toNum(r.zdc_cov),
     penta_cov_low: toNum(r.penta_cov_low),

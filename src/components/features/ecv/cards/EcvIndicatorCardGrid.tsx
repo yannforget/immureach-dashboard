@@ -3,6 +3,17 @@ import { EcvIndicatorCard } from './EcvIndicatorCard'
 import { useKeyEcvData } from '@/hooks'
 
 const formatNumber = (v: number | null): string => (v == null ? '—' : Math.round(v).toLocaleString())
+// ISO "2023-03-02" -> "2 mars 2023". Parsed as UTC and formatted in UTC so the
+// viewer's timezone cannot shift the day.
+const formatDate = (iso: string | null): string =>
+    iso == null
+        ? '—'
+        : new Date(`${iso}T00:00:00Z`).toLocaleDateString('fr-FR', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+            timeZone: 'UTC',
+        })
 const formatPercent = (v: number | null): string => (v == null ? '—' : `${Math.round(v)}%`)
 // A value with no interval is an observed 0% / 100%, where no CI is computed.
 const formatCi = (value: number | null, low: number | null, high: number | null): string | undefined =>
@@ -17,6 +28,13 @@ export function EcvIndicatorCardGrid() {
 
     const cards = useMemo(
         () => [
+            {
+                key: 'survey_dates',
+                label: "Dates de l'enquête",
+                value: [`Du ${formatDate(row?.survey_start ?? null)}`, `au ${formatDate(row?.survey_end ?? null)}`],
+                confidenceInterval: undefined,
+                description: "Premier et dernier jour de collecte de l'enquête ECV pour la sélection courante (province, zone), d'après la date des entretiens.",
+            },
             {
                 key: 'nb_people',
                 label: 'Enfants enquêtés',
@@ -61,7 +79,7 @@ export function EcvIndicatorCardGrid() {
     return (
         <div className="space-y-3">
             <h2 className="text-sm font-semibold text-slate-700">Chiffres clés ECV</h2>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
                 {cards.map(c => (
                     <EcvIndicatorCard key={c.key} label={c.label} value={c.value} confidenceInterval={c.confidenceInterval} description={c.description} subtext={c.subtext} />
                 ))}

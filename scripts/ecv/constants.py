@@ -39,9 +39,15 @@ WEIGHT_COL = "ponderation"
 AGE_COL = "vs25"
 AREAS_TOTAL_COL = "nbre_as"  # health areas in the zone (sampling frame)
 AREAS_SURVEYED_COL = "nbre_asenq"  # health areas actually surveyed, per the file
+INTERVIEW_DATE_COL = "q117"  # "Date de début de l'interview lors de la visite"
+SUBMISSION_DATE_COL = "SubmissionDate"  # server-side upload timestamp
 MILIEU_COL = "q108"  # "Milieu de localisation du ménage"
 MILIEU_BY_CODE = {1: "urbain", 2: "rural"}
 MILIEUX = ("all", *MILIEU_BY_CODE.values())
+# q117 is typed on the tablet and carries typos (years 2020, 2028...). An
+# interview date is kept only if it falls this many days or fewer before the
+# form's upload; 99% of forms are uploaded within ~26 days.
+MAX_UPLOAD_LAG_DAYS = 30
 
 ## Variables and indicators
 VACCINATED = 1

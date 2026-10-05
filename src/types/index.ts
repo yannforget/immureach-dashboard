@@ -179,10 +179,11 @@ export const AGE_GROUP_LABELS: Record<AgeGroup, string> = {
 };
 
 // One row of public/data/key_ecv.csv (columns: year, milieu, level, province,
-// zone, nb_people, nb_zones, penta_cov, zdc_cov, penta_cov_low/high,
-// zdc_cov_low/high). `province`/`zone` are only populated for the matching
-// `level`; penta_cov/zdc_cov and the *_low/_high pairs bound their 95%
-// confidence interval, all as 0-100 percentages.
+// zone, nb_people, nb_zones, survey_start/end, penta_cov, zdc_cov,
+// penta_cov_low/high, zdc_cov_low/high). `province`/`zone` are only populated
+// for the matching `level`; penta_cov/zdc_cov and the *_low/_high pairs bound
+// their 95% confidence interval, all as 0-100 percentages. survey_start/end
+// are the first and last fieldwork days in the domain, as ISO dates.
 export interface KeyEcvRow {
   year: Year;
   milieu: Milieu;
@@ -193,6 +194,8 @@ export interface KeyEcvRow {
   nb_zones: number | null;
   nb_areas: number | null;
   nb_areas_tot: number | null;
+  survey_start: string | null;
+  survey_end: string | null;
   penta_cov: number | null;
   zdc_cov: number | null;
   penta_cov_low: number | null;

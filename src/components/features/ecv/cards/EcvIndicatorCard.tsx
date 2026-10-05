@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 interface EcvIndicatorCardProps {
     label: string
-    value: string
+    value: string | string[]  // several strings render one per line
     description?: string
     subtext?: string  // add nb of visited health areas in nb visited zone card 
     confidenceInterval?: string  // 95% CI displayed lightly next to the value
@@ -43,7 +43,15 @@ export function EcvIndicatorCard({ label, value, description, subtext, confidenc
                     </div>
                 )}
             </div>
-            <p className="mt-2 text-2xl font-bold text-slate-900">{value}</p>
+            {Array.isArray(value) ? (
+                <div className="mt-2 text-base font-bold leading-snug text-slate-900">
+                    {value.map(line => (
+                        <p key={line}>{line}</p>
+                    ))}
+                </div>
+            ) : (
+                <p className="mt-2 text-2xl font-bold text-slate-900">{value}</p>
+            )}
             {confidenceInterval && (
                 <p className="mt-0.5 text-sm font-normal text-slate-400">{confidenceInterval}</p>
             )}
