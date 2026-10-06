@@ -53,7 +53,13 @@ export function EcvIndicatorCard({ label, value, description, subtext, confidenc
                 <p className="mt-2 text-2xl font-bold text-slate-900">{value}</p>
             )}
             {confidenceInterval && (
-                <p className="mt-0.5 text-sm font-normal text-slate-400">{confidenceInterval}</p>
+                // Container query on a wrapper (not the card, which would trap the tooltip's
+                // z-index): font size scales with the card width so the CI stays on one line
+                <div className="mt-0.5 [container-type:inline-size]">
+                    <p className="whitespace-nowrap text-[length:clamp(10.5px,7cqi,15px)] font-normal leading-tight text-slate-400">
+                        {confidenceInterval}
+                    </p>
+                </div>
             )}
             {subtext && (
                 <p className="mt-1 text-xs text-slate-400">{subtext}</p>
