@@ -1,4 +1,4 @@
-import type { EcvMetricKey, MetricKey, MetricMeta } from '@/types';
+import type { EcvMetricKey, EcvSeriesKey, MetricKey, MetricMeta } from '@/types';
 import { EcvMetricMeta } from './ecvVaccCov';
 
 
@@ -135,6 +135,22 @@ export const ECV_BAR_METRIC_KEYS: EcvMetricKey[] = ECV_METRIC_KEYS.filter(
 export const ECV_LINE_METRIC_KEYS: EcvMetricKey[] = ECV_METRIC_KEYS.filter(
     k => !['possession_carte', 'couverture_de_base', 'couverture_complete'].includes(k)
 );
+
+// ECV COMPLETE SERIES (indicators_ecv.csv) //
+// The "Indicateurs clés" cards of the ECV tab, in display order: one card per
+// vaccine, showing the share of children who received every dose of it.
+export const ECV_SERIES_KEYS: EcvSeriesKey[] = ['bcg', 'penta', 'polio', 'pcv', 'rota', 'vpi', 'var', 'vaa'];
+
+export const ECV_SERIES_META: Record<EcvSeriesKey, { label: string; description: string }> = {
+    bcg: { label: 'BCG', description: "Proportion d'enfants ayant reçu la dose de BCG (tuberculose)." },
+    penta: { label: 'Penta (3 doses)', description: "Proportion d'enfants ayant reçu les 3 doses de pentavalent (Penta1, Penta2 et Penta3)." },
+    polio: { label: 'Polio (4 doses)', description: "Proportion d'enfants ayant reçu les 4 doses de vaccin polio oral (VPO0, VPO1, VPO2 et VPO3)." },
+    pcv: { label: 'PCV (3 doses)', description: "Proportion d'enfants ayant reçu les 3 doses de vaccin pneumococcique conjugué (PCV1, PCV2 et PCV3)." },
+    rota: { label: 'Rota (3 doses)', description: "Proportion d'enfants ayant reçu les 3 doses de vaccin contre le rotavirus (Rota1, Rota2 et Rota3)." },
+    vpi: { label: 'VPI', description: "Proportion d'enfants ayant reçu la dose de vaccin polio inactivé (VPI)." },
+    var: { label: 'Rougeole', description: "Proportion d'enfants ayant reçu la dose de vaccin antirougeoleux (VAR)." },
+    vaa: { label: 'Fièvre jaune', description: "Proportion d'enfants ayant reçu la dose de vaccin antiamaril (VAA)." },
+};
 
 // ECV CARACTERISTICS //
 

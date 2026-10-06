@@ -1,7 +1,7 @@
 import { Ribbon } from '../common/Ribbon'
 import { Notes } from '../common/Notes'
 import { PlaceholderPanel } from '../common/PlaceholderPanel'
-import { EcvIndicatorCardGrid, EcvZeroDoseMap, EcvVaccineBarChart, EcvEvolutionLineChart, EcvCaracteristicsChart } from '@/components/features/ecv'
+import { EcvIndicatorCardGrid, EcvSeriesCardGrid, EcvZeroDoseMap, EcvVaccineBarChart, EcvEvolutionLineChart, EcvCaracteristicsChart } from '@/components/features/ecv'
 import { ModelIndicatorCardGrid, ModelCoverageMap, ModelBarChart, ModelVaccinationDataTable, ProfilingPanel } from '@/components/features/model'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
 import { useDashboardStore } from '@/store/dashboardStore'
@@ -22,6 +22,10 @@ export function DashboardGrid() {
       {activeSection === 'ecv' && (<section className="mb-8">
         {/* Indicator Cards */}
         <EcvIndicatorCardGrid />
+        {/* Complete vaccination series, one card per vaccine */}
+        <div className="mt-6">
+          <EcvSeriesCardGrid />
+        </div>
         {/* Charts Grid: zero-dose map (left) + vaccine coverage bar chart (right) */}
         <section className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
           <div className="flex flex-col gap-6">

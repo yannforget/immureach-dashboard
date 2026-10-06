@@ -163,9 +163,10 @@ export const MILIEU_LABELS: Record<Milieu, string> = {
 
 // Age filter, in completed months (`vs25`), both bounds included: '6-11'
 // keeps the 11-month-olds, '12-23' and '6-23' the 23-month-olds. Only the
-// coverage and characteristics CSVs are split by age -- key_ecv.csv (the
-// cards) is not, so the cards ignore it. Rows written before the split carried
-// no column and parse as '6-23', the whole window those files held.
+// coverage, characteristics and indicators CSVs are split by age --
+// key_ecv.csv (the "Chiffres clés" cards) is not, so those cards ignore it.
+// Rows written before the split carried no column and parse as '6-23', the
+// whole window those files held.
 export type AgeGroup = '6-11' | '12-23' | '6-23';
 
 export const AGE_GROUPS: AgeGroup[] = ['6-11', '12-23', '6-23'];
@@ -202,6 +203,26 @@ export interface KeyEcvRow {
   penta_cov_high: number | null;
   zdc_cov_low: number | null;
   zdc_cov_high: number | null;
+}
+
+// Vaccine series of public/data/indicators_ecv.csv: `<key>_cov` is the share
+// of children who received EVERY dose of that vaccine's schedule (3 Penta,
+// 4 VPO, 3 PCV, ...). Same order as VACCINE_SERIES in scripts/ecv/constants.py.
+export type EcvSeriesKey = 'bcg' | 'penta' | 'polio' | 'pcv' | 'rota' | 'vpi' | 'var' | 'vaa';
+
+// One row of public/data/indicators_ecv.csv, keyed like KeyEcvRow (year,
+// milieu, level, province, zone) plus the age group. Each series value is a
+// 0-100 percentage with its 95% CI, any of the three null when the estimate
+// is missing.
+export interface IndicatorsEcvRow {
+  year: Year;
+  ageGroup: AgeGroup;
+  milieu: Milieu;
+  level: ProfileScopeLevel;
+  province: string | null;
+  zone: string | null;
+  nb_people: number | null;
+  series: Record<EcvSeriesKey, EcvMetricValue>;
 }
 
 // A single `<metric>_pct` + `<metric>_95CI` pair from the ECV vaccination

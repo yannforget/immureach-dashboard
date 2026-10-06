@@ -5,7 +5,8 @@ import { parseCsv } from '@/lib/utils/csv'
 // import type { KeyEcvRow, ProfileData, ProfileScopeLevel, ProvinceRow, Year, ZoneRow } from '@/types'
 import { parseEcvVaccCovCsv, parseMilieu } from '@/lib/utils/ecvVaccCov'
 import { parseEcvCaracteristicsCsv } from '@/lib/utils/ecvCaracteristics'
-import type { EcvCaracteristicsRow, EcvVaccCovRow, KeyEcvRow, ProfileData, ProfileScopeLevel, ProvinceRow, Year, ZoneRow } from '@/types'
+import { parseIndicatorsEcvCsv } from '@/lib/utils/ecvIndicators'
+import type { EcvCaracteristicsRow, EcvVaccCovRow, IndicatorsEcvRow, KeyEcvRow, ProfileData, ProfileScopeLevel, ProvinceRow, Year, ZoneRow } from '@/types'
 
 export type Bbox = [number, number, number, number] // [minLon, minLat, maxLon, maxLat]
 
@@ -14,6 +15,7 @@ interface DataContextType {
   zones: ZoneRow[]
   profile: ProfileData | null
   keyEcv: KeyEcvRow[]
+  indicatorsEcv: IndicatorsEcvRow[]
   ecvVaccCov: EcvVaccCovRow[]
   ecvCaracteristics: EcvCaracteristicsRow[]
   provinceBboxes: Record<string, Bbox>
@@ -85,6 +87,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [zones, setZones] = useState<ZoneRow[]>([])
   const [profile, setProfile] = useState<ProfileData | null>(null)
   const [keyEcv, setKeyEcv] = useState<KeyEcvRow[]>([])
+  const [indicatorsEcv, setIndicatorsEcv] = useState<IndicatorsEcvRow[]>([])
   const [ecvVaccCov, setEcvVaccCov] = useState<EcvVaccCovRow[]>([])
   const [ecvCaracteristics, setEcvCaracteristics] = useState<EcvCaracteristicsRow[]>([])
   const [provinceBboxes, setProvinceBboxes] = useState<Record<string, Bbox>>({})
@@ -202,6 +205,17 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           console.warn('Failed to load key_ecv.csv:', keyEcvErr)
         }
 
+        // indicators_ecv.csv (complete vaccination series, built by
+        // scripts/ecv/process-ecv-indicators.py) is likewise optional and non-fatal.
+        try {
+          const indicatorsEcvRes = await fetch('data/indicators_ecv.csv')
+          if (indicatorsEcvRes.ok) {
+            setIndicatorsEcv(parseIndicatorsEcvCsv(await indicatorsEcvRes.text()))
+          }
+        } catch (indicatorsEcvErr) {
+          console.warn('Failed to load indicators_ecv.csv:', indicatorsEcvErr)
+        }
+
         // ecv_vaccination_coverage.csv (health-zone-level EPSK survey, built by
         // scripts/prepare-ecv-vaccination-coverage.py) is likewise optional and
         // non-fatal.
@@ -239,7 +253,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   return (
     // <DataContext.Provider value={{ provinces, zones, profile, keyEcv, provinceBboxes, loading, error }}>
-    <DataContext.Provider value={{ provinces, zones, profile, keyEcv, ecvVaccCov, ecvCaracteristics, provinceBboxes, loading, error }}>
+    <DataContext.Provider value={{ provinces, zones, profile, keyEcv, indicatorsEcv, ecvVaccCov, ecvCaracteristics, provinceBboxes, loading, error }}>
       {children}
     </DataContext.Provider>
   )

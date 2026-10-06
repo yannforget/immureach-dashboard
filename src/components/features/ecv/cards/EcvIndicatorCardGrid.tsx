@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { EcvIndicatorCard } from './EcvIndicatorCard'
 import { useKeyEcvData } from '@/hooks'
+import { formatCi, formatPercent } from '@/lib/utils/ecvFormat'
 
 const formatNumber = (v: number | null): string => (v == null ? '—' : Math.round(v).toLocaleString())
 // ISO "2023-03-02" -> "2 mars 2023". Parsed as UTC and formatted in UTC so the
@@ -14,14 +15,6 @@ const formatDate = (iso: string | null): string =>
             year: 'numeric',
             timeZone: 'UTC',
         })
-const formatPercent = (v: number | null): string => (v == null ? '—' : `${Math.round(v)}%`)
-// A value with no interval is an observed 0% / 100%, where no CI is computed.
-const formatCi = (value: number | null, low: number | null, high: number | null): string | undefined =>
-    low != null && high != null
-        ? `IC 95 % : ${low.toFixed(1)} % – ${high.toFixed(1)} %`
-        : value != null
-            ? 'IC 95 % : NA'
-            : undefined
 
 export function EcvIndicatorCardGrid() {
     const row = useKeyEcvData()
@@ -40,7 +33,7 @@ export function EcvIndicatorCardGrid() {
                 label: 'Enfants enquêtés',
                 value: formatNumber(row?.nb_people ?? null),
                 confidenceInterval: undefined,
-                description: "Nombre d'enfants âgés de 6 à 24 mois couverts par l'enquête ECV pour la sélection courante (année, province, zone).",
+                description: "Nombre d'enfants âgés de 6 à 24 mois couverts par l'enquête ECV pour la sélection courante (année, milieu, province, zone).",
             },
             {
                 key: 'nb_zones',
