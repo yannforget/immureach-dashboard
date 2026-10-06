@@ -1,0 +1,12 @@
+The Basic Idea
+The COM-B model for behavior change cites capability (C), opportunity (O), and motivation (M) as three key factors capable of changing behavior (B). Capability refers to an individual’s psychological and physical ability to participate in an activity. Opportunity refers to external factors that make a behavior possible. Lastly, motivation refers to the conscious and unconscious cognitive processes that direct and inspire change.5
+
+Let’s look into each of these factors in a little bit more detail:
+
+Capability
+Capability, in the context of COM-B, refers to whether we have the knowledge, skills, and abilities to engage in a behavior. This comprises psychological capability, including mental states, knowledge, and skills, as well as physical capability. For example, to make an individual feel capable of performing a behavior or achieving an outcome, implementing a training session to help support learning may boost feelings of capability.
+Opportunity
+Opportunity, in the context of COM-B, refers to external factors that make the execution of a behavior possible. Physical opportunity, opportunities provided by the environment, and social opportunity are all valid components. For example, to create the opportunity to begin performing a behavior like new dietary patterns, free nutrition classes might help.
+Motivation
+Motivation, in the context of COM-B, refers to the internal processes that influence decision-making and behavior. According to the model, two main components are reflective motivation (the reflective process involved in making plans) and automatic motivation (automatic processes such as impulses and inhibition). For example, to improve motivation, it may be helpful to turn a desired behavior from something one needs to do to something one wants to do, encouraging reflection on the benefits of performing that behavior.
+An individual’s behavior will change if the above potential levers of change are successfully implemented. This model recognizes that behavior is influenced by many factors and that behavior change is induced by modifying at least one of these components.5 The COM-B model is particularly important when considering intervention methods, as interveners need to ensure the sustainability of learned behavior. To assist with its application, the COM-B is also often used in conjunction with the Behavior Change Wheel, which identifies categories of intervention that can be used to encourage behaviors in a target population.
