@@ -3,7 +3,7 @@ import EChartsReact from 'echarts-for-react'
 import { useIndicatorComparison } from '@/hooks'
 import { buildDumbbellOptions } from '@/lib/charts/dumbbellOptions'
 
-export function ModelDumbbellChart() {
+export function BehaviourIndicatorsChart() {
   const comparison = useIndicatorComparison()
 
   const options = useMemo(() => {
@@ -19,7 +19,7 @@ export function ModelDumbbellChart() {
             Behaviour indicators
           </h3>
         </div>
-        <div className="flex flex-1 items-center justify-center bg-slate-50 text-sm text-slate-500">
+        <div className="flex h-64 items-center justify-center bg-slate-50 text-sm text-slate-500">
           No survey indicators for this selection.
         </div>
       </div>
@@ -38,20 +38,18 @@ export function ModelDumbbellChart() {
           Indicateurs comportementaux · {comparison.scopeLabel}
         </h3>
         <p className="text-xs text-slate-500">
-          Enfants non vaccinés vs enfants vaccinés, classés en fonction de l'écart (sur une échelle de 0 à 1)
+          Enfants non vaccinés vs enfants vaccinés, classés par catégorie puis en fonction de l'écart (sur une échelle de 0 à 1)
           {comparison.scopeLevel !== comparison.requestedLevel && (
             <span className="ml-1 text-amber-600">· showing {comparison.scopeLevel} fallback</span>
           )}
         </p>
       </div>
-      <div className="flex-1 overflow-y-auto">
-        <div style={{ height: chartHeight }}>
-          <EChartsReact
-            option={options}
-            theme="dashboard"
-            style={{ width: '100%', height: '100%' }}
-          />
-        </div>
+      <div style={{ height: chartHeight }}>
+        <EChartsReact
+          option={options}
+          theme="dashboard"
+          style={{ width: '100%', height: '100%' }}
+        />
       </div>
     </div>
   )

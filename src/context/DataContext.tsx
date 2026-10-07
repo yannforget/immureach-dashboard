@@ -6,7 +6,7 @@ import { parseCsv } from '@/lib/utils/csv'
 import { parseEcvVaccCovCsv, parseMilieu } from '@/lib/utils/ecvVaccCov'
 import { parseEcvCaracteristicsCsv } from '@/lib/utils/ecvCaracteristics'
 import { parseIndicatorsEcvCsv } from '@/lib/utils/ecvIndicators'
-import type { CovariateRow, EcvCaracteristicsRow, EcvVaccCovRow, IndicatorsEcvRow, KeyEcvRow, ProfileData, ProfileScopeLevel, ProvinceRow, RelativeInfluenceRow, Year, ZoneRow } from '@/types'
+import type { BehaviourIndicatorsData, CovariateRow, EcvCaracteristicsRow, EcvVaccCovRow, IndicatorsEcvRow, KeyEcvRow, ProfileData, ProfileScopeLevel, ProvinceRow, RelativeInfluenceRow, Year, ZoneRow } from '@/types'
 
 export type Bbox = [number, number, number, number] // [minLon, minLat, maxLon, maxLat]
 
@@ -14,6 +14,7 @@ interface DataContextType {
   provinces: ProvinceRow[]
   zones: ZoneRow[]
   profile: ProfileData | null
+  behaviourIndicators: BehaviourIndicatorsData | null
   keyEcv: KeyEcvRow[]
   indicatorsEcv: IndicatorsEcvRow[]
   ecvVaccCov: EcvVaccCovRow[]
@@ -106,6 +107,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [provinces, setProvinces] = useState<ProvinceRow[]>([])
   const [zones, setZones] = useState<ZoneRow[]>([])
   const [profile, setProfile] = useState<ProfileData | null>(null)
+  const [behaviourIndicators, setBehaviourIndicators] = useState<BehaviourIndicatorsData | null>(null)
   const [keyEcv, setKeyEcv] = useState<KeyEcvRow[]>([])
   const [indicatorsEcv, setIndicatorsEcv] = useState<IndicatorsEcvRow[]>([])
   const [ecvVaccCov, setEcvVaccCov] = useState<EcvVaccCovRow[]>([])
@@ -282,6 +284,15 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           console.warn('Failed to load relative_influences.csv:', riErr)
         }
 
+        try {
+          const biRes = await fetch('data/household_model/behaviour_indicators.json')
+          if (biRes.ok) {
+            setBehaviourIndicators((await biRes.json()) as BehaviourIndicatorsData)
+          }
+        } catch (biErr) {
+          console.warn('Failed to load behaviour_indicators.json:', biErr)
+        }
+
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Unknown error'))
         console.error('Failed to load data:', err)
@@ -295,7 +306,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   return (
     // <DataContext.Provider value={{ provinces, zones, profile, keyEcv, provinceBboxes, loading, error }}>
-    <DataContext.Provider value={{ provinces, zones, profile, keyEcv, indicatorsEcv, ecvVaccCov, ecvCaracteristics, covariates, relativeInfluences, provinceBboxes, loading, error }}>
+    <DataContext.Provider value={{ provinces, zones, profile, behaviourIndicators, keyEcv, indicatorsEcv, ecvVaccCov, ecvCaracteristics, covariates, relativeInfluences, provinceBboxes, loading, error }}>
       {children}
     </DataContext.Provider>
   )

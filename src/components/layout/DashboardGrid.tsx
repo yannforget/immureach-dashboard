@@ -3,7 +3,7 @@ import { Notes } from '../common/Notes'
 import { PlaceholderPanel } from '../common/PlaceholderPanel'
 import { EcvIndicatorCardGrid, EcvSeriesCardGrid, EcvZeroDoseMap, EcvVaccineBarChart, EcvEvolutionLineChart, EcvCaracteristicsChart } from '@/components/features/ecv'
 import { ModelIndicatorCardGrid, ModelCoverageMap, ModelBarChart, ModelVaccinationDataTable, ProfilingPanel } from '@/components/features/model'
-import { DeterminantCardGrid, DeterminantRadarChart } from '@/components/features/determinants'
+import { DeterminantCardGrid, DeterminantRadarChart, BehaviourIndicatorsChart } from '@/components/features/determinants'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
 import { useDashboardStore } from '@/store/dashboardStore'
 import type { ViewMode } from '@/types'
@@ -73,6 +73,12 @@ export function DashboardGrid() {
           <section className="mb-8">
             <div className="rounded-lg border border-slate-200 bg-white p-4" style={{ height: 560 }}>
               <DeterminantRadarChart />
+            </div>
+          </section>
+          {/* Behaviour indicators dumbbell */}
+          <section className="mb-8">
+            <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+              <BehaviourIndicatorsChart />
             </div>
           </section>
           {/* COM-B explanation */}

@@ -2,19 +2,21 @@
 
 Run: uv run scripts/build-profile-json.py
 
-Reads two per-domain output trees:
+Reads the accessibility output tree:
     data/output/accessibility/{national,province,zone}_{2023,2024}.csv
-    data/output/indicators/{national,province,zone}_{2023,2024}.csv
 
 and emits a single JSON file consumed by the Profiling-mode panel:
 
     public/data/profile.json
-        { "years": [...], "accessibility": {...}, "indicators": {...} }
+        { "years": [...], "accessibility": {...} }
 
 Area keys (`q101`, `q103`) match the raw level_2_name / level_3_name strings
 already used as ECharts shape keys by the runtime geojsons, so the frontend
 looks up profile rows with the same identifiers it already has on the bar /
 map data points.
+
+The household behaviour indicators live in their own sidecar, built by
+scripts/household_model/build-behaviour-indicators.py.
 """
 
 from __future__ import annotations
@@ -28,9 +30,8 @@ import pandas as pd
 
 # Mirror of cleanName() in src/lib/dataUtils.ts: drops the "<lo> " prefix and
 # the " Province" / " Zone de Santé" suffixes. The accessibility CSVs already
-# carry cleaned names, the indicators CSVs carry raw prefixed names, and the
-# frontend resolves scope by cleaned displayName — so we normalise everything
-# to the cleaned form on the way out.
+# carry cleaned names, and the frontend resolves scope by cleaned displayName —
+# so we normalise everything to the cleaned form on the way out.
 _PREFIX_RE = re.compile(r"^[a-z]{2}\s")
 
 
@@ -45,68 +46,10 @@ def _clean_name(name: str) -> str:
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 ACCESS_DIR = PROJECT_ROOT / "data" / "output" / "accessibility"
-INDIC_DIR = PROJECT_ROOT / "data" / "output" / "indicators"
 OUT_PATH = PROJECT_ROOT / "public" / "data" / "profile.json"
 
 YEARS = [2023, 2024]
 THRESHOLDS = [30, 60, 90, 120, 150, 180]
-
-INDICATORS = [
-    "trust_in_hcw",
-    "affordability",
-    "missed_opportunities",
-    "ease_to_vaccinate_children",
-    "outreach",
-    "community_norms",
-    "fear_side_effects",
-    "fear_diseases",
-    "opinion_on_vaccines",
-    "self_efficacy",
-    "knowledge_diseases",
-    "knowledge_vaccines",
-    "household_travel_ohe",
-    "is_max_ethnic_group",
-]
-
-INDICATORS_LABEL = {
-    "trust_in_hcw": "Confiance personnels santé",
-    "affordability": "Abordabilité",
-    "missed_opportunities": "Opportunités manquées",
-    "ease_to_vaccinate_children": "Facilité de vaccination",
-    "outreach": "Sensibilisation",
-    "community_norms": "Normes communautaires",
-    "fear_side_effects": "Peur effets secondaires",
-    "fear_diseases": "Peur maladies",
-    "opinion_on_vaccines": "Opinion sur les vaccins",
-    "self_efficacy": "Confiance propre capacité",
-    "knowledge_diseases": "Connaissance maladies",
-    "knowledge_vaccines": "Connaissance vaccins",
-    "household_travel_ohe": "Déplacements ménages",
-    "is_max_ethnic_group": "Alignement culturel",
-}
-
-INDICATOR_DESCRIPTIONS = {
-    "trust_in_hcw": "Accueil perçu et qualité des échanges au centre de santé lors de la dernière visite.",
-    "affordability": "Frais à la charge des ménages liés à la vaccination (par exemple, le coût du carnet de vaccination).",
-    "missed_opportunities": "Cas antérieurs où un enfant a été amené dans un centre de santé pour être vacciné, mais n'a pas été vacciné.",
-    "ease_to_vaccinate_children": "Perception de la facilité d'accès aux services de vaccination pour son enfant.",
-    "outreach": "Fréquence des visites à domicile effectuées par les intervenants de vaccination de proximité.",
-    "community_norms": "Conviction selon laquelle la plupart des parents de la communauté font vacciner leurs enfants.",
-    "fear_side_effects": "Cas signalés d'enfants ayant présenté des effets indésirables (par exemple, un abcès) après la vaccination.",
-    "fear_diseases": "Perception de la gravité des maladies évitables par la vaccination.",
-    "opinion_on_vaccines": "Importance perçue des vaccins pour la santé de l'enfant.",
-    "self_efficacy": "Confiance des personnes qui s'occupent de l'enfant dans leur capacité à l'amener aux séances de vaccination prévues.",
-    "knowledge_diseases": "Connaissance des maladies infantiles qui peuvent être évitées grâce à la vaccination.",
-    "knowledge_vaccines": "Connaissance de la vaccination : campagnes, dates, tranches d'âge cibles.",
-    "household_travel_ohe": "Si les membres du foyer ont vécu ou voyagé loin de chez eux au cours de l'année écoulée.",
-    "is_max_ethnic_group": "Alignement culturel entre le groupe ethnique de la personne interrogée et le groupe dominant de la zone.",
-}
-
-
-def _label(key: str) -> str:
-    if key in INDICATORS_LABEL:
-        return INDICATORS_LABEL[key]
-    return key.replace("_", " ").capitalize()
 
 
 def _opt(value) -> float | None:
@@ -166,88 +109,13 @@ def build_accessibility() -> dict:
     return out
 
 
-def _indicator_entries(rows_zd: pd.Series | None, rows_nzd: pd.Series | None) -> dict:
-    """Return { indicator_key: { zd, vacc, zd_raw, vacc_raw } } for the two groups.
-
-    zero_dose_penta == 1 → zero-dose; zero_dose_penta == 0 → vaccinated.
-    Either row may be absent (small / unsampled areas), in which case the
-    corresponding values are None.
-    """
-    entry: dict = {}
-    for ind in INDICATORS:
-        entry[ind] = {
-            "zd": _opt(rows_zd[f"{ind}_scaled"]) if rows_zd is not None else None,
-            "vacc": _opt(rows_nzd[f"{ind}_scaled"]) if rows_nzd is not None else None,
-            "zd_raw": _opt(rows_zd[ind]) if rows_zd is not None else None,
-            "vacc_raw": _opt(rows_nzd[ind]) if rows_nzd is not None else None,
-        }
-    return entry
-
-
-def _split_zero_dose(df: pd.DataFrame, area_col: str | None) -> dict:
-    """Group rows by area, returning { area: { 0: vacc_row, 1: zd_row } }.
-
-    For national-level data pass area_col=None; the result then has the single
-    sentinel key "_national_".
-    """
-    result: dict = {}
-    if area_col is None:
-        groups = [("_national_", df)]
-    else:
-        groups = list(df.groupby(area_col))
-
-    for area, sub in groups:
-        rows: dict = {}
-        for _, row in sub.iterrows():
-            zd = int(row["zero_dose_penta"])
-            rows[zd] = row
-        result[area] = rows
-    return result
-
-
-def build_indicators() -> dict:
-    out: dict = {
-        "meta": [
-            {
-                "key": k,
-                "label": _label(k),
-                "description": INDICATOR_DESCRIPTIONS.get(k, ""),
-            }
-            for k in INDICATORS
-        ],
-    }
-    for year in YEARS:
-        national_df = pd.read_csv(INDIC_DIR / f"national_{year}.csv")
-        province_df = pd.read_csv(INDIC_DIR / f"province_{year}.csv")
-        zone_df = pd.read_csv(INDIC_DIR / f"zone_{year}.csv")
-
-        national_groups = _split_zero_dose(national_df, None)["_national_"]
-        national = _indicator_entries(national_groups.get(1), national_groups.get(0))
-
-        provinces: dict = {}
-        for area, rows in _split_zero_dose(province_df, "province").items():
-            provinces[_clean_name(area)] = _indicator_entries(rows.get(1), rows.get(0))
-
-        zones: dict = {}
-        for area, rows in _split_zero_dose(zone_df, "zone").items():
-            zones[_clean_name(area)] = _indicator_entries(rows.get(1), rows.get(0))
-
-        out[str(year)] = {
-            "national": national,
-            "provinces": provinces,
-            "zones": zones,
-        }
-    return out
-
-
 def main() -> None:
-    print(f"Reading from: {ACCESS_DIR} and {INDIC_DIR}")
+    print(f"Reading from: {ACCESS_DIR}")
     print(f"Writing to:   {OUT_PATH}")
 
     payload = {
         "years": YEARS,
         "accessibility": build_accessibility(),
-        "indicators": build_indicators(),
     }
 
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -263,7 +131,7 @@ def main() -> None:
     n_zones = len(payload["accessibility"][str(YEARS[-1])]["zones"])
     print(
         f"Wrote {OUT_PATH.relative_to(PROJECT_ROOT)}  ({size_kb:.1f} KB, "
-        f"{n_provinces} provinces, {n_zones} zones, {len(INDICATORS)} indicators)"
+        f"{n_provinces} provinces, {n_zones} zones)"
     )
 
 

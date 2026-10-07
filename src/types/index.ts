@@ -139,10 +139,13 @@ export interface ProfileData {
   accessibility: {
     thresholds: number[];
   } & Record<string, AccessibilityYear>;
-  indicators: {
-    meta: IndicatorMeta[];
-  } & Record<string, IndicatorsYear>;
 }
+
+// Household-survey behaviour indicators (zero-dose vs vaccinated children),
+// loaded from public/data/household_model/behaviour_indicators.json.
+export type BehaviourIndicatorsData = {
+  meta: IndicatorMeta[];
+} & Record<string, IndicatorsYear>;
 
 export type ProfileScopeLevel = 'national' | 'province' | 'zone';
 

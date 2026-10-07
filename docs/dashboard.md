@@ -24,8 +24,8 @@ ECharts chart contract, and the conventions to follow when extending the app.
 
 The repository also vendors a Python pipeline for the data layer (see
 [data.md](./data.md)); the dashboard itself consumes the two
-`public/data/*.geojson` files and the `public/data/profile.json` sidecar
-produced by that pipeline.
+`public/data/*.geojson` files, the `public/data/profile.json` sidecar and the
+`public/data/household_model/` files produced by that pipeline.
 
 ---
 
@@ -67,7 +67,7 @@ src/
 │   ├── useZoneData.ts           # returns ZoneRow[], optional province filter
 │   ├── useTableData.ts          # picks the right rows for the table mode
 │   ├── useAccessibilityProfile.ts  # scope-resolved accessibility profile
-│   └── useIndicatorComparison.ts   # scope-resolved indicator pairs
+│   └── determinants/useIndicatorComparison.ts  # scope-resolved indicator pairs
 │
 ├── store/
 │   └── dashboardStore.ts        # Zustand: selectedMetric, selectedProvince, …
@@ -108,7 +108,7 @@ src/
 ├──────────────────────────┴──────────────────────────────────────┤
 │ [Data] [Profiling]                       Survey year [2023][2024] │
 ├─────────────────────────────────────────────────────────────────┤
-│ Data table  -or-  Profiling charts (accessibility + dumbbell)   │
+│ Data table  -or-  Profiling chart (accessibility)               │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -276,7 +276,7 @@ its own row of vertical space.
 
 ### Profiling panel
 
-`ProfilingPanel.tsx` is just the two-column chart grid; it no longer owns the
+`ProfilingPanel.tsx` wraps the accessibility chart; it no longer owns the
 year toggle (now `YearSelector.tsx`, hoisted into the Tabs row).
 
 - `AccessibilityChart` — cumulative bar chart of the share of 0-dose children
@@ -284,12 +284,16 @@ year toggle (now `YearSelector.tsx`, hoisted into the Tabs row).
   site. Driven by `useAccessibilityProfile()`, with options built by
   `buildAccessibilityOptions()`. Tooltip shows the cumulative percentage and
   the raw count at each threshold.
-- `DumbbellChart` — per-indicator zero-dose vs vaccinated dumbbell, sorted by
+
+### Behaviour indicators (household determinants tab)
+
+- `BehaviourIndicatorsChart` (`features/determinants/charts/`) — sits below
+  the COM-B radar. Per-indicator zero-dose vs vaccinated dumbbell, sorted by
   gap size and using the percentile-clipped 0–1 scaled values for a shared
   x-axis (raw values shown in the tooltip). Driven by
   `useIndicatorComparison()`, with options built by `buildDumbbellOptions()`.
   Tooltip surfaces the one-line indicator description shipped in
-  `profile.json → indicators.meta[].description` (authored from the
+  `household_model/behaviour_indicators.json → meta[].description` (authored from the
   `Household - details` sheet of `data/input/immureach/details_models.xlsx`),
   followed by the scaled and raw values for both groups and the gap.
 
@@ -378,12 +382,13 @@ npm install
 npm run dev               # vite dev server, http://localhost:5173
 npm run build             # tsc -b && vite build  →  dist/
 npm run preview           # serve the production build
-npm run build-data        # regenerate public/data/{provinces,zones}.geojson + profile.json
+npm run build-data        # regenerate geojsons, profile.json, household_model/behaviour_indicators.json
 npm run deploy            # build, then publish dist/ to gh-pages
 ```
 
-`build-data` runs both `uv run scripts/build-dashboard-geojson.py` (geojsons)
-and `uv run scripts/build-profile-json.py` (Profiling-mode sidecar). The other
+`build-data` runs `uv run scripts/build-dashboard-geojson.py` (geojsons),
+`uv run scripts/build-profile-json.py` (Profiling-mode sidecar) and
+`uv run scripts/household_model/build-behaviour-indicators.py`. The other
 scripts in `scripts/` run independently; see [data.md](./data.md) for the full
 pipeline.
 

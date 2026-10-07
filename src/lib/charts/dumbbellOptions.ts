@@ -1,5 +1,6 @@
 import type { EChartsOption } from 'echarts'
 import type { IndicatorRow } from '@/hooks'
+import { CATEGORY_COLORS } from '@/hooks/determinants/useDeterminantData'
 
 interface DumbbellConfig {
   items: IndicatorRow[]
@@ -60,9 +61,6 @@ export function buildDumbbellOptions(config: DumbbellConfig): EChartsOption {
       type: 'value',
       min: 0,
       max: 1,
-      name: 'scaled 0–1',
-      nameLocation: 'middle',
-      nameGap: 22,
       splitLine: { lineStyle: { color: '#f1f5f9' } },
       axisLabel: { color: '#475569' },
     },
@@ -70,7 +68,23 @@ export function buildDumbbellOptions(config: DumbbellConfig): EChartsOption {
       type: 'category',
       inverse: true,
       data: categories,
-      axisLabel: { color: '#334155', fontSize: 12 },
+      // Labels are coloured by COM-B category, matching the radar spokes.
+      axisLabel: {
+        color: '#334155',
+        fontSize: 12,
+        rich: {
+          cap: { color: CATEGORY_COLORS.Capacity, fontWeight: 'bold', fontSize: 12 },
+          mot: { color: CATEGORY_COLORS.Motivation, fontWeight: 'bold', fontSize: 12 },
+          opp: { color: CATEGORY_COLORS.Opportunity, fontWeight: 'bold', fontSize: 12 },
+        },
+        formatter: (value: string, index: number) => {
+          const category = items[index]?.category
+          if (!category) return value
+          const key =
+            category === 'Capacity' ? 'cap' : category === 'Motivation' ? 'mot' : 'opp'
+          return `{${key}|${value}}`
+        },
+      },
       axisTick: { show: false },
     },
     series: [

@@ -14,5 +14,5 @@ export { type EcvMapFeatureValue, useEcvZeroDoseMapData } from './ecv/useEcvZero
 export { useKeyEcvData } from './ecv/useKeyEcvData';
 export { useIndicatorsEcvData } from './ecv/useIndicatorsEcvData';
 export { type AccessibilityProfile, useAccessibilityProfile } from './model/useAccessibilityProfile';
-export { type IndicatorRow, type IndicatorComparison, useIndicatorComparison } from './model/useIndicatorComparison';
+export { type IndicatorRow, type IndicatorComparison, useIndicatorComparison } from './determinants/useIndicatorComparison';
 export { type DeterminantData, useDeterminantData, CATEGORY_COLORS, CATEGORY_LABELS, CATEGORY_ORDER, CATEGORY_DESCRIPTIONS } from './determinants/useDeterminantData';
