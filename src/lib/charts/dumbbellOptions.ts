@@ -23,7 +23,9 @@ export function buildDumbbellOptions(config: DumbbellConfig): EChartsOption {
   const zdPoints = items.map((r, i) => [r.zd, i])
 
   return {
-    grid: { left: 170, right: 32, top: 40, bottom: 32 },
+    // Generous left margin shifts the start of the 0–1 scale to the right,
+    // leaving the right edge (x = 1) in place.
+    grid: { left: 200, right: 32, top: 40, bottom: 32 },
     legend: {
       top: 8,
       right: 16,
@@ -51,8 +53,8 @@ export function buildDumbbellOptions(config: DumbbellConfig): EChartsOption {
         return (
           `<strong>${r.label}</strong>` +
           desc +
-          `<span style="color:${VACC}">●</span> Vacciné: ${r.vacc.toFixed(2)} (raw ${rawVacc})<br/>` +
-          `<span style="color:${ZD}">●</span> Zéro-dose: ${r.zd.toFixed(2)} (raw ${rawZd})<br/>` +
+          `<span style="color:${VACC}">●</span> Vacciné: ${r.vacc.toFixed(2)} (brut ${rawVacc})<br/>` +
+          `<span style="color:${ZD}">●</span> Zéro-dose: ${r.zd.toFixed(2)} (brut ${rawZd})<br/>` +
           `Ecart (0-dose − vacc): ${sign}${gap.toFixed(2)}`
         )
       },

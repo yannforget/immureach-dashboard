@@ -101,13 +101,13 @@ export function useIndicatorComparison(): IndicatorComparison | null {
       })
     }
     // Group by COM-B category (Capacité, Motivation, Opportunité, then
-    // uncategorised), largest absolute gap first within each group.
+    // uncategorised), alphabetical by label within each group.
     const categoryRank = (c: DeterminantCategory | null) =>
       c ? CATEGORY_ORDER.indexOf(c) : CATEGORY_ORDER.length
     items.sort(
       (a, b) =>
         categoryRank(a.category) - categoryRank(b.category) ||
-        Math.abs(b.gap) - Math.abs(a.gap),
+        a.label.localeCompare(b.label, 'fr', { sensitivity: 'base' }),
     )
 
     const scopeLabel =

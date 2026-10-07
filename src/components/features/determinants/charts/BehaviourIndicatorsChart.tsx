@@ -38,7 +38,7 @@ export function BehaviourIndicatorsChart() {
           Indicateurs comportementaux · {comparison.scopeLabel}
         </h3>
         <p className="text-xs text-slate-500">
-          Enfants non vaccinés vs enfants vaccinés, classés par catégorie puis en fonction de l'écart (sur une échelle de 0 à 1)
+          Enfants non vaccinés vs enfants vaccinés, classés par catégorie puis par ordre alphabétique (sur une échelle de 0 à 1)
           {comparison.scopeLevel !== comparison.requestedLevel && (
             <span className="ml-1 text-amber-600">· showing {comparison.scopeLevel} fallback</span>
           )}
