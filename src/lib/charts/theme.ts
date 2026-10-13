@@ -26,6 +26,10 @@ export const ECV_LINE_COLORS: Record<EcvMetricKey, string> = {
   vaa: '#f97316',
 };
 
+// Zero-dose red ramp, light -> dark: the ECV zero-dose map's visualMap and
+// the "Enfants zéro dose" card share it so both read as one red.
+export const ZERO_DOSE_RAMP: [string, string] = ['#fee2e2', '#7f1d1d']
+
 // Amber used to highlight the currently selected area/zone across charts
 // (map selection, bar emphasis, ECV characteristics selected bar).
 export const ECV_HIGHLIGHT_COLOR = '#ffdf33'

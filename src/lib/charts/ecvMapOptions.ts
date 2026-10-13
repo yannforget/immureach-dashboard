@@ -1,6 +1,6 @@
 import type { EChartsOption } from 'echarts'
 import { getColorScaleBounds } from '@/lib/utils/dataUtils'
-import { MAP_NO_DATA_COLOR, MAP_OUT_OF_SCOPE_COLOR } from '@/lib/charts/theme'
+import { MAP_NO_DATA_COLOR, MAP_OUT_OF_SCOPE_COLOR, ZERO_DOSE_RAMP } from '@/lib/charts/theme'
 import type { EcvMapFeatureValue } from '@/hooks'
 
 // Zoom bounds, shared with the map's +/- buttons. `1` is the fitted view.
@@ -96,7 +96,7 @@ export function buildEcvZeroDoseMapOptions(config: EcvMapConfig): EChartsOption 
       min,
       max,
       inRange: {
-        color: ['#fee2e2', '#7f1d1d'], // light red to dark red
+        color: ZERO_DOSE_RAMP, // light red to dark red
       },
       // Unreachable in practice — every valueless shape opts out of the
       // ramp above — but a sane fallback if one ever slips through.

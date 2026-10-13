@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import { EcvIndicatorCard } from './EcvIndicatorCard'
 import { useKeyEcvData } from '@/hooks'
-import { formatCi, formatPercent } from '@/lib/utils/ecvFormat'
 
 const formatNumber = (v: number | null): string => (v == null ? '—' : Math.round(v).toLocaleString())
 // ISO "2023-03-02" -> "2 mars 2023". Parsed as UTC and formatted in UTC so the
@@ -51,20 +50,6 @@ export function EcvIndicatorCardGrid() {
                             ? `${formatNumber(row.nb_areas)} aires de santé enquêtées`
                             : undefined,
             },
-            {
-                key: 'penta_cov',
-                label: 'Couverture Penta',
-                value: formatPercent(row?.penta_cov ?? null),
-                confidenceInterval: formatCi(row?.penta_cov ?? null, row?.penta_cov_low ?? null, row?.penta_cov_high ?? null),
-                description: "Couverture vaccinale pentavalente mesurée par l'enquête ECV (3 doses).",
-            },
-            {
-                key: 'zdc_cov',
-                label: 'Enfants zéro dose',
-                value: formatPercent(row?.zdc_cov ?? null),
-                confidenceInterval: formatCi(row?.zdc_cov ?? null, row?.zdc_cov_low ?? null, row?.zdc_cov_high ?? null),
-                description: "Proportion d'enfants zéro dose mesurée par l'enquête ECV (aucune dose d'aucun vaccin).",
-            },
         ],
         [row]
     )
@@ -72,7 +57,7 @@ export function EcvIndicatorCardGrid() {
     return (
         <div className="space-y-3">
             <h2 className="text-sm font-semibold text-slate-700">Chiffres clés ECV</h2>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {cards.map(c => (
                     <EcvIndicatorCard key={c.key} label={c.label} value={c.value} confidenceInterval={c.confidenceInterval} description={c.description} subtext={c.subtext} />
                 ))}
