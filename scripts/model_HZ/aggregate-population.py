@@ -27,7 +27,7 @@ Province slugs are derived from level_2_name in zones.geojson by stripping the
 leading 2-letter code prefix and the trailing " Province". The script raises
 LookupError if a province's agesex rasters or IMR value cannot be located.
 
-Run: uv run scripts/aggregate-population.py
+Run: uv run scripts/model_HZ/aggregate-population.py
 """
 
 from pathlib import Path
@@ -36,7 +36,7 @@ import geopandas as gpd
 import pandas as pd
 from rasterstats import zonal_stats
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 GRID3_DIR = PROJECT_ROOT / "data/input/grid3"
 GRIDDED_RASTER = (

@@ -11,6 +11,7 @@ const SECTIONS: { value: DashboardSection; label: string }[] = [
     { value: 'zerodose', label: 'Prédictions zone santé ' },
     { value: 'determinants', label: 'Déterminants ménages' },
     { value: 'actions', label: 'Actions / interventions' },
+    { value: 'methodologie', label: 'Méthodologie' },
 ]
 
 const selectClass =

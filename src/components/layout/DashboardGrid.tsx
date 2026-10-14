@@ -3,7 +3,7 @@ import { Notes } from '../common/Notes'
 import { PlaceholderPanel } from '../common/PlaceholderPanel'
 import { EcvIndicatorCardGrid, EcvSeriesCardGrid, EcvZeroDoseMap, EcvVaccineBarChart, EcvEvolutionLineChart, EcvCaracteristicsChart } from '@/components/features/ecv'
 import { ModelIndicatorCardGrid, ModelCoverageMap, ModelBarChart, ModelVaccinationDataTable, ProfilingPanel } from '@/components/features/model'
-import { DeterminantCardGrid, DeterminantRadarChart, BehaviourIndicatorsChart } from '@/components/features/determinants'
+import { DeterminantCardGrid, BehaviourIndicatorsChart } from '@/components/features/determinants'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
 import { useDashboardStore } from '@/store/dashboardStore'
 import type { ViewMode } from '@/types'
@@ -15,7 +15,7 @@ export function DashboardGrid() {
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-8">
-      {/* Ribbon: 4 section tabs + filters (year, province, zone) */}
+      {/* Ribbon: 5 section tabs + filters (year, province, zone) */}
       <section className="mb-8">
         <Ribbon />
       </section>
@@ -69,12 +69,6 @@ export function DashboardGrid() {
           <section className="mb-8">
             <DeterminantCardGrid />
           </section>
-          {/* Radar chart */}
-          <section className="mb-8">
-            <div className="rounded-lg border border-slate-200 bg-white p-4" style={{ height: 560 }}>
-              <DeterminantRadarChart />
-            </div>
-          </section>
           {/* Behaviour indicators dumbbell */}
           <section className="mb-8">
             <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
@@ -93,6 +87,7 @@ export function DashboardGrid() {
         </>
       )}
       {activeSection === 'actions' && <PlaceholderPanel title="Actions / interventions" />}
+      {activeSection === 'methodologie' && <PlaceholderPanel title="Méthodologie" />}
 
       {activeSection === 'zerodose' && (
         <>

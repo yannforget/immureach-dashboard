@@ -70,7 +70,7 @@ export function buildDumbbellOptions(config: DumbbellConfig): EChartsOption {
       type: 'category',
       inverse: true,
       data: categories,
-      // Labels are coloured by COM-B category, matching the radar spokes.
+      // Labels are coloured by COM-B category, matching the category cards.
       axisLabel: {
         color: '#334155',
         fontSize: 12,

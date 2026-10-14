@@ -84,7 +84,7 @@ export type TableMode = 'province' | 'zone' | 'detail';
 
 export type ViewMode = 'data' | 'profiling';
 
-export type DashboardSection = 'ecv' | 'zerodose' | 'determinants' | 'actions';
+export type DashboardSection = 'ecv' | 'zerodose' | 'determinants' | 'actions' | 'methodologie';
 
 // Year the ECV survey was collected (the source exports are named after the
 // year before, see scripts/process-ecv-*.py).
@@ -309,24 +309,7 @@ export interface CovariateRow {
   variable_name: string;
 }
 
-export interface RelativeInfluenceRow {
-  Variable: string;
-  mean_ri: number;
-  median_ri: number;
-  lower_q_ri: number;
-  upper_q_ri: number;
-}
-
 export type DeterminantCategory = 'Capacity' | 'Motivation' | 'Opportunity';
-
-export interface DeterminantVariable {
-  variable_name: string;
-  var_description: string;
-  category: DeterminantCategory;
-  mean_ri: number;
-  /** Log-scaled (1-100) value used for radar rendering so near-zero variables stay visible */
-  scaled_ri: number;
-}
 
 export interface CategorySummary {
   category: DeterminantCategory;

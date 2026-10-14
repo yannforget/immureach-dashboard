@@ -12,14 +12,14 @@ Outputs six CSV files (2 years x 3 levels) to data/output/accessibility/.
 
 Run from the project root:
 
-    uv run scripts/aggregate-accessibility.py
+    uv run scripts/model_HZ/aggregate-accessibility.py
 """
 
 from pathlib import Path
 
 import duckdb
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 INPUT_DIR = PROJECT_ROOT / "data/input/immureach"
 OUT_DIR = PROJECT_ROOT / "data/output/accessibility"
 

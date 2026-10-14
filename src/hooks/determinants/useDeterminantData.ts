@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useData } from '@/context/DataContext'
-import type { CategorySummary, DeterminantCategory, DeterminantVariable } from '@/types'
+import type { CategorySummary, DeterminantCategory } from '@/types'
 
 export const CATEGORY_ORDER: DeterminantCategory[] = ['Capacity', 'Motivation', 'Opportunity']
 
@@ -10,9 +10,9 @@ export const CATEGORY_LABELS: Record<DeterminantCategory, string> = {
   Opportunity: 'Opportunité',
 }
 
-// Hex colours for each COM-B category, used both by the radar axes and the
-// category cards. They are intentionally distinct so the radar spokes read as
-// three coordinated groups at a glance.
+// Hex colours for each COM-B category, used by the category cards and the
+// behaviour-indicator labels. They are intentionally distinct so the three
+// groups read as coordinated at a glance.
 export const CATEGORY_COLORS: Record<DeterminantCategory, string> = {
   Capacity: '#0d9488', // teal-600
   Motivation: '#f59e0b', // amber-500
@@ -31,64 +31,31 @@ export const CATEGORY_DESCRIPTIONS: Record<DeterminantCategory, string> = {
 }
 
 export interface DeterminantData {
-  variables: DeterminantVariable[]
   categories: CategorySummary[]
 }
 
-// Joins covariates_description.csv (variable_name → category + description)
-// with relative_influences.csv (mean_ri) on variable_name == Variable, keeping
-// only the three COM-B categories.
-// Values are standardised for the radar: the raw mean_ri follows a strongly
-// skewed distribution (from ~0.01 to ~26), so near-zero variables were
-// invisible. A log10 transform followed by a min-max rescale maps every value
-// onto the [1, 100] range while the original figure is preserved for tooltips.
-function standardize(values: number[]): number[] {
-  const logs = values.map(v => Math.log10(v))
-  const min = Math.min(...logs)
-  const max = Math.max(...logs)
-  const span = max - min || 1
-  return logs.map(l => 1 + (99 * (l - min)) / span)
-}
-
+// Counts the variables of each COM-B category in covariates_description.csv.
+// Control covariates (age, sex, wealth...) are dropped, and a variable listed
+// twice in the description file is only counted once.
 export function useDeterminantData(): DeterminantData {
-  const { covariates, relativeInfluences } = useData()
+  const { covariates } = useData()
 
-  const variables = useMemo<DeterminantVariable[]>(() => {
-    const riMap = new Map(relativeInfluences.map(r => [r.Variable, r]))
-    // Control covariates (age, sex, wealth...) are dropped, and a variable listed
-    // twice in the description file keeps its first description only.
+  const categories = useMemo<CategorySummary[]>(() => {
     const seen = new Set<string>()
-    const joined = covariates
-      .map(c => {
-        const ri = riMap.get(c.variable_name)
-        if (!ri || !CATEGORY_ORDER.includes(c.Category as DeterminantCategory) || seen.has(c.variable_name)) { return null }
-        seen.add(c.variable_name)
-        return {
-          variable_name: c.variable_name,
-          var_description: c.var_description,
-          category: c.Category as DeterminantCategory,
-          mean_ri: ri.mean_ri,
-        }
-      })
-      .filter((v): v is DeterminantVariable & { scaled_ri?: number } => v !== null)
+    const counts = new Map<DeterminantCategory, number>()
+    for (const c of covariates) {
+      const cat = c.Category as DeterminantCategory
+      if (!CATEGORY_ORDER.includes(cat) || seen.has(c.variable_name)) { continue }
+      seen.add(c.variable_name)
+      counts.set(cat, (counts.get(cat) ?? 0) + 1)
+    }
+    return CATEGORY_ORDER.map(cat => ({
+      category: cat,
+      label: CATEGORY_LABELS[cat],
+      description: CATEGORY_DESCRIPTIONS[cat],
+      variableCount: counts.get(cat) ?? 0,
+    }))
+  }, [covariates])
 
-    const scaled = standardize(joined.map(v => v.mean_ri))
-    return joined.map((v, i) => ({ ...v, scaled_ri: scaled[i] }))
-  }, [covariates, relativeInfluences])
-
-  const categories = useMemo<CategorySummary[]>(
-    () =>
-      CATEGORY_ORDER.map(cat => {
-        const vars = variables.filter(v => v.category === cat)
-        return {
-          category: cat,
-          label: CATEGORY_LABELS[cat],
-          description: CATEGORY_DESCRIPTIONS[cat],
-          variableCount: vars.length,
-        }
-      }),
-    [variables]
-  )
-
-  return { variables, categories }
+  return { categories }
 }

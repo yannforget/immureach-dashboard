@@ -155,7 +155,6 @@ export const DASHBOARD_THEME: any = {
     subtextStyle: { color: '#475569', }, // slate-600
   },
   line: { itemStyle: { borderWidth: 2, }, lineStyle: { width: 2, }, symbolSize: 6, },
-  radar: { itemStyle: { borderWidth: 2, }, lineStyle: { width: 2, }, symbolSize: 6, },
   bar: { itemStyle: { barBorderRadius: [2, 2, 0, 0], }, },
   pie: { itemStyle: { borderRadius: 4, borderColor: '#fff', borderWidth: 2, }, },
   scatter: { itemStyle: { borderWidth: 0, borderColor: '#fff', }, },

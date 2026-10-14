@@ -1,7 +1,7 @@
 """Build the household behaviour-indicators sidecar
 (public/data/household_model/behaviour_indicators.json).
 
-Run: uv run scripts/household_model/build-behaviour-indicators.py
+Run: uv run scripts/model_HZ/build-behaviour-indicators.py
 
 Reads the household-survey indicator aggregates:
     data/output/indicators/{national,province,zone}_{2023,2024}.csv
