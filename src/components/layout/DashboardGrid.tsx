@@ -49,9 +49,15 @@ export function DashboardGrid() {
         <div className="mt-6">
           {/* Bottom page notes */}
           <Notes>
-            Données collectées en RDC par l'EPSK, et accessibles{' '}
+            L’Enquête de couverture vaccinale (ECV) est une enquête nationale conduite au niveau de ménages et des
+            établissements de soins de 519 zones de santé de la RDC, en prenant au minimum cinq aires de santé par
+            zones de santé. Les données sur les conditions de ménages, les chefs de ménages, les mères gardiennes des
+            enfants de 6-23 mois, la vaccination des enfants et la localisation géoréférencée sont collectées par interviews
+            et par observation de cartes. Les analyses produisent notamment des indicateurs de couverture vaccinales,
+            les raisons de non vaccination et la perception des services de vaccination.
+            Données accessibles{' '}
             <a
-              href="https://espkinshasa.net/note-dinformation-enquete-de-couverture-vaccinale-ecv-rdc-2023-01/"
+              href="https://espkinshasa.net/?s=ECV"
               target="_blank"
               rel="noopener noreferrer"
               className="font-medium text-teal-700 underline hover:text-teal-800"

@@ -13,21 +13,37 @@ interface RiTreemapConfig {
 }
 
 const LABEL_FONT_SIZE = 11
-const LABEL_FONT = `${LABEL_FONT_SIZE}px DM Sans, sans-serif`
-const LABEL_LINE_HEIGHT = LABEL_FONT_SIZE * 1.3
+// Smaller sizes tried, in order, when the name doesn't fit at the default one,
+// so long names in narrow tiles (e.g. "Normes communautaires") still show.
+const LABEL_FONT_SIZES = [LABEL_FONT_SIZE, 10, 9]
+const labelFont = (size: number) => `${size}px DM Sans, sans-serif`
+const labelLineHeight = (size: number) => Math.round(size * 1.3)
 // Default treemap label padding (5px each side) plus the 1px leaf border.
 const LABEL_INSET = 12
 
-// Show "name\nvalue" when the name fits the tile without being cut, the value
-// alone when only it fits, and nothing otherwise.
+// One rich-text style per font size, referenced by the label formatter.
+const LABEL_RICH = Object.fromEntries(
+  LABEL_FONT_SIZES.map(size => [`s${size}`, { fontSize: size, lineHeight: labelLineHeight(size) }]),
+)
+
+// Show "name\nvalue" when the name fits the tile without being cut (shrinking
+// the font if needed), the value alone when only it fits, and nothing otherwise.
 function fitLabel(name: string, value: string, size?: { width: number; height: number }): string {
-  if (!size) return `${name}\n${value}`
+  // Keep the line break inside a single rich token: with overflow 'break',
+  // ECharts drops a bare "\n" placed between two tokens.
+  const styled = (text: string, fontSize: number) => `{s${fontSize}|${text}}`
+  if (!size) return styled(`${name}\n${value}`, LABEL_FONT_SIZE)
   const width = size.width - LABEL_INSET
-  const maxLines = Math.floor((size.height - LABEL_INSET) / LABEL_LINE_HEIGHT)
-  const valueFits = maxLines >= 1 && measureText(value, LABEL_FONT) <= width
-  if (!valueFits) return ''
-  const nameLines = wrappedLineCount(name, width, LABEL_FONT)
-  return nameLines != null && nameLines + 1 <= maxLines ? `${name}\n${value}` : value
+  const fits = (fontSize: number, lines: number) =>
+    lines * labelLineHeight(fontSize) <= size.height - LABEL_INSET
+  if (!fits(LABEL_FONT_SIZE, 1) || measureText(value, labelFont(LABEL_FONT_SIZE)) > width) return ''
+  for (const fontSize of LABEL_FONT_SIZES) {
+    const nameLines = wrappedLineCount(name, width, labelFont(fontSize))
+    if (nameLines != null && fits(fontSize, nameLines + 1)) {
+      return styled(`${name}\n${value}`, fontSize)
+    }
+  }
+  return styled(value, LABEL_FONT_SIZE)
 }
 
 export function buildRiTreemapOptions(config: RiTreemapConfig): EChartsOption {
@@ -91,6 +107,7 @@ export function buildRiTreemapOptions(config: RiTreemapConfig): EChartsOption {
           fontSize: LABEL_FONT_SIZE,
           overflow: 'break',
           formatter: (p: any) => fitLabel(p.name, formatRi(p.value), getItemSize?.(p.dataIndex)),
+          rich: LABEL_RICH,
         },
         upperLabel: {
           show: true,

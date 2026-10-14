@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useRef } from 'react'
 import EChartsReact from 'echarts-for-react'
 import { useRelativeInfluence } from '@/hooks'
+import { InfoBubble } from '@/components/common/InfoBubble'
 import { buildRiTreemapOptions } from '@/lib/charts/riTreemapOptions'
 
 export function RelativeInfluenceTreemap() {
@@ -24,7 +25,10 @@ export function RelativeInfluenceTreemap() {
   return (
     <div className="flex h-full flex-col">
       <div className="border-b border-slate-200 px-4 py-3">
-        <h3 className="text-sm font-semibold text-slate-700">Poids des composantes COM-B</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-slate-700">Poids des composantes COM-B (échelle nationale)</h3>
+          <InfoBubble text="Part du pouvoir prédictif du modèle ménage attribuée à chaque variable (total = 100 %). Elle indique l'importance d'un déterminant, pas le sens de son effet sur la vaccination." />
+        </div>
         <p className="text-xs text-slate-500">
           {top
             ? "Cliquer sur une composante pour l'agrandir."
