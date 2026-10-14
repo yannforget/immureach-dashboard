@@ -311,6 +311,20 @@ export interface CovariateRow {
 
 export type DeterminantCategory = 'Capacity' | 'Motivation' | 'Opportunity';
 
+// Relative influence of one household-model variable, in % (all rows sum to
+// ~100), loaded from public/data/household_model/relative_influences.csv.
+// lower/upper are the bootstrap 95% interval bounds.
+export interface RelativeInfluenceRow {
+  variable: string;
+  mean: number;
+  median: number;
+  lower: number;
+  upper: number;
+}
+
+// COM-B categories plus the model's control covariates (age, sex, wealth...).
+export type RiCategory = DeterminantCategory | 'Control';
+
 export interface CategorySummary {
   category: DeterminantCategory;
   label: string;

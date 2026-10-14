@@ -100,13 +100,10 @@ export function useIndicatorComparison(): IndicatorComparison | null {
         gap,
       })
     }
-    // Group by COM-B category (Capacité, Motivation, Opportunité, then
-    // uncategorised), alphabetical by label within each group.
-    const categoryRank = (c: DeterminantCategory | null) =>
-      c ? CATEGORY_ORDER.indexOf(c) : CATEGORY_ORDER.length
+    // Descending by vaccinated value (highest at the top), alphabetical on ties.
     items.sort(
       (a, b) =>
-        categoryRank(a.category) - categoryRank(b.category) ||
+        b.vacc - a.vacc ||
         a.label.localeCompare(b.label, 'fr', { sensitivity: 'base' }),
     )
 

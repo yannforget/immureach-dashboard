@@ -3,7 +3,7 @@ import { Notes } from '../common/Notes'
 import { PlaceholderPanel } from '../common/PlaceholderPanel'
 import { EcvIndicatorCardGrid, EcvSeriesCardGrid, EcvZeroDoseMap, EcvVaccineBarChart, EcvEvolutionLineChart, EcvCaracteristicsChart } from '@/components/features/ecv'
 import { ModelIndicatorCardGrid, ModelCoverageMap, ModelBarChart, ModelVaccinationDataTable, ProfilingPanel } from '@/components/features/model'
-import { DeterminantCardGrid, BehaviourIndicatorsChart } from '@/components/features/determinants'
+import { DeterminantCardGrid, BehaviourIndicatorsChart, RelativeInfluenceTreemap } from '@/components/features/determinants'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
 import { useDashboardStore } from '@/store/dashboardStore'
 import type { ViewMode } from '@/types'
@@ -69,6 +69,12 @@ export function DashboardGrid() {
           <section className="mb-8">
             <DeterminantCardGrid />
           </section>
+          {/* Relative influence of the household-model variables */}
+          <section className="mb-8">
+            <div className="h-[32rem] overflow-hidden rounded-lg border border-slate-200 bg-white">
+              <RelativeInfluenceTreemap />
+            </div>
+          </section>
           {/* Behaviour indicators dumbbell */}
           <section className="mb-8">
             <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
@@ -82,6 +88,10 @@ export function DashboardGrid() {
               l'interaction entre trois composantes : <em>Capacité</em> (connaissances, aptitudes),
               <em> Motivation</em> (croyances, attitudes, peurs) et <em>Opportunité</em> (accès,
               normes sociales, coûts).
+              <br />
+              <strong>Influence relative&nbsp;:</strong> part du pouvoir prédictif du modèle ménage
+              attribuée à chaque variable (total = 100&nbsp;%). Elle indique l'importance d'un
+              déterminant, pas le sens de son effet sur la vaccination.
             </Notes>
           </section>
         </>

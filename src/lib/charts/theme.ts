@@ -128,6 +128,13 @@ export const ECV_LINE_PALETTE: string[] = [
   '#c026d3',
 ];
 
+// Grey for the household model's control covariates (age, sex, wealth...) in
+// the relative-influence charts, next to the COM-B category colours.
+export const RI_CONTROL_COLOR = '#94a3b8' // slate-400
+
+// Dark label colour for text drawn over the tinted treemap tiles.
+export const RI_LABEL_COLOR = '#0f172a' // slate-900
+
 export const ANTENNE_PALETTE: string[] = [
   '#6366f1',
   '#f59e0b',
