@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import EChartsReact from 'echarts-for-react'
 import { ChevronDown, Download } from 'lucide-react'
 import { useDashboardStore } from '@/store/dashboardStore'
@@ -19,14 +19,13 @@ export function EcvCaracteristicsChart() {
   const selectedAgeGroup = useDashboardStore(s => s.selectedAgeGroup)
 
   const { groups, areas } = useEcvCaracteristicsData()
-  const groupsKey = groups.map(g => g.key).join('|')
 
-  const [groupIndex, setGroupIndex] = useState(0)
-  useEffect(() => {
-    setGroupIndex(0)
-  }, [groupsKey])
-
-  const activeGroup = groups[Math.min(groupIndex, Math.max(groups.length - 1, 0))]
+  // Track the chosen variable by key, not by tab position: the tab list
+  // changes with the year (some questions were dropped in 2026), and the
+  // choice must survive that. Falls back to the first tab only when the
+  // chosen variable is not measured for the current selection.
+  const [groupKey, setGroupKey] = useState<string | null>(null)
+  const activeGroup = groups.find(g => g.key === groupKey) ?? groups[0]
 
   const options = useMemo(
     () => (activeGroup && areas.length > 0 ? buildEcvCaracteristicsOptions({ group: activeGroup, areas }) : {}),
@@ -129,7 +128,7 @@ export function EcvCaracteristicsChart() {
           {hasTabs ? (
             <select
               value={activeGroup?.key ?? ''}
-              onChange={e => setGroupIndex(groups.findIndex(g => g.key === e.target.value))}
+              onChange={e => setGroupKey(e.target.value)}
               aria-label="Variable"
               className="max-w-56 rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
             >
