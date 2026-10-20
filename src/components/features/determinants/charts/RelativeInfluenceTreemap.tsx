@@ -2,6 +2,7 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import EChartsReact from 'echarts-for-react'
 import { ChevronDown, Download } from 'lucide-react'
 import { useRelativeInfluence } from '@/hooks'
+import { useDashboardStore } from '@/store/dashboardStore'
 import { InfoBubble } from '@/components/common/InfoBubble'
 import { buildRiTreemapOptions } from '@/lib/charts/riTreemapOptions'
 import { downloadDataUrl } from '@/lib/utils/download'
@@ -11,6 +12,18 @@ export function RelativeInfluenceTreemap() {
   const { categories } = useRelativeInfluence()
   const chartRef = useRef<EChartsReact>(null)
   const [downloadOpen, setDownloadOpen] = useState(false)
+  const setSelectedRiVariable = useDashboardStore(s => s.setSelectedRiVariable)
+
+  // Clicking a variable tile shows its effect curve below the treemap;
+  // clicking a category tile keeps zooming into it.
+  const onEvents = useMemo(
+    () => ({
+      click: (params: any) => {
+        if (params.data?.variable) setSelectedRiVariable(params.data.variable)
+      },
+    }),
+    [setSelectedRiVariable],
+  )
 
   // Tile size of a treemap node once laid out, so labels too long for their
   // tile can be hidden. getModel() is internal to ECharts, hence the cast.
@@ -45,7 +58,7 @@ export function RelativeInfluenceTreemap() {
           </div>
           <p className="text-xs text-slate-500">
             {top
-              ? "Cliquer sur une composante pour l'agrandir."
+              ? "Cliquer sur une composante pour l'agrandir, sur une variable pour voir son effet ci-dessous."
               : "Part de l'influence totale par composante."}
           </p>
         </div>
@@ -84,6 +97,7 @@ export function RelativeInfluenceTreemap() {
           <EChartsReact
             ref={chartRef}
             option={options}
+            onEvents={onEvents}
             theme="dashboard"
             style={{ width: '100%', height: '100%' }}
           />

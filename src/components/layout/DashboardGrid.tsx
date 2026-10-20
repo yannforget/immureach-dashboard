@@ -3,7 +3,7 @@ import { Notes } from '../common/Notes'
 import { PlaceholderPanel } from '../common/PlaceholderPanel'
 import { EcvIndicatorCardGrid, EcvSeriesCardGrid, EcvZeroDoseMap, EcvVaccineBarChart, EcvEvolutionLineChart, EcvCaracteristicsChart } from '@/components/features/ecv'
 import { ModelIndicatorCardGrid, ModelCoverageMap, ModelBarChart, ModelVaccinationDataTable, ProfilingPanel } from '@/components/features/model'
-import { DeterminantCardGrid, BehaviourIndicatorsChart, RelativeInfluenceTreemap } from '@/components/features/determinants'
+import { DeterminantCardGrid, BehaviourIndicatorsChart, PartialDependenceChart, PartialDependenceGrid, RelativeInfluenceTreemap } from '@/components/features/determinants'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
 import { useDashboardStore } from '@/store/dashboardStore'
 import type { ViewMode } from '@/types'
@@ -75,16 +75,25 @@ export function DashboardGrid() {
           <section className="mb-8">
             <DeterminantCardGrid />
           </section>
+          {/* Behaviour indicators dumbbell */}
+          <section className="mb-8">
+            <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+              <BehaviourIndicatorsChart />
+            </div>
+          </section>
           {/* Relative influence of the household-model variables */}
           <section className="mb-8">
             <div className="h-[32rem] overflow-hidden rounded-lg border border-slate-200 bg-white">
               <RelativeInfluenceTreemap />
             </div>
           </section>
-          {/* Behaviour indicators dumbbell */}
-          <section className="mb-8">
+          {/* Partial dependency: effect of the selected variable + overview */}
+          <section className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div className="h-[32rem] overflow-hidden rounded-lg border border-slate-200 bg-white">
+              <PartialDependenceChart />
+            </div>
             <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-              <BehaviourIndicatorsChart />
+              <PartialDependenceGrid />
             </div>
           </section>
           {/* COM-B explanation */}

@@ -135,6 +135,12 @@ export const RI_CONTROL_COLOR = '#94a3b8' // slate-400
 // Dark label colour for text drawn over the tinted treemap tiles.
 export const RI_LABEL_COLOR = '#0f172a' // slate-900
 
+// Partial dependency charts: outline of each small-multiple panel, the
+// selected panel being outlined with RI_LABEL_COLOR instead.
+export const PDP_PANEL_BORDER_COLOR = '#e2e8f0' // slate-200
+// Muted text (panel titles' influence, axis names).
+export const PDP_MUTED_TEXT_COLOR = '#64748b' // slate-500
+
 export const ANTENNE_PALETTE: string[] = [
   '#6366f1',
   '#f59e0b',

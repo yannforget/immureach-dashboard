@@ -322,6 +322,18 @@ export interface RelativeInfluenceRow {
   upper: number;
 }
 
+// One point of a partial dependency curve of the household model, loaded from
+// public/data/household_model/partial_dependency.csv. y is the predicted share
+// (0-1) of non-zero-dose children when the variable takes the value x, the
+// other variables kept as observed. iteration identifies one of the model
+// replicates (one curve each).
+export interface PartialDependencyRow {
+  variable: string;
+  x: number;
+  y: number;
+  iteration: number;
+}
+
 // COM-B categories plus the model's control covariates (age, sex, wealth...).
 export type RiCategory = DeterminantCategory | 'Control';
 
