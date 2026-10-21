@@ -6,7 +6,8 @@ import { parseCsv } from '@/lib/utils/csv'
 import { parseEcvVaccCovCsv, parseMilieu } from '@/lib/utils/ecvVaccCov'
 import { parseEcvCaracteristicsCsv } from '@/lib/utils/ecvCaracteristics'
 import { parseIndicatorsEcvCsv } from '@/lib/utils/ecvIndicators'
-import type { BehaviourIndicatorsData, CovariateRow, EcvCaracteristicsRow, EcvVaccCovRow, IndicatorsEcvRow, KeyEcvRow, PartialDependencyRow, ProfileData, ProfileScopeLevel, ProvinceRow, RelativeInfluenceRow, Year, ZoneRow } from '@/types'
+import { parseCounterfactualsCsv } from '@/lib/utils/counterfactuals'
+import type { BehaviourIndicatorsData, CounterfactualRow, CovariateRow, EcvCaracteristicsRow, EcvVaccCovRow, IndicatorsEcvRow, KeyEcvRow, PartialDependencyRow, ProfileData, ProfileScopeLevel, ProvinceRow, RelativeInfluenceRow, Year, ZoneRow } from '@/types'
 
 export type Bbox = [number, number, number, number] // [minLon, minLat, maxLon, maxLat]
 
@@ -22,6 +23,7 @@ interface DataContextType {
   covariates: CovariateRow[]
   relativeInfluences: RelativeInfluenceRow[]
   partialDependence: PartialDependencyRow[]
+  counterfactuals: CounterfactualRow[]
   provinceBboxes: Record<string, Bbox>
   loading: boolean
   error: Error | null
@@ -131,6 +133,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [covariates, setCovariates] = useState<CovariateRow[]>([])
   const [relativeInfluences, setRelativeInfluences] = useState<RelativeInfluenceRow[]>([])
   const [partialDependence, setPartialDependence] = useState<PartialDependencyRow[]>([])
+  const [counterfactuals, setCounterfactuals] = useState<CounterfactualRow[]>([])
   const [provinceBboxes, setProvinceBboxes] = useState<Record<string, Bbox>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
@@ -314,6 +317,17 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           console.warn('Failed to load partial_dependency.csv:', pdErr)
         }
 
+        // counterfactuals.csv (household model "what if" scenarios, actions
+        // tab) is likewise optional and non-fatal.
+        try {
+          const cfRes = await fetch('data/household_model/counterfactuals.csv')
+          if (cfRes.ok) {
+            setCounterfactuals(parseCounterfactualsCsv(await cfRes.text()))
+          }
+        } catch (cfErr) {
+          console.warn('Failed to load counterfactuals.csv:', cfErr)
+        }
+
         try {
           const biRes = await fetch('data/household_model/behaviour_indicators.json')
           if (biRes.ok) {
@@ -336,7 +350,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   return (
     // <DataContext.Provider value={{ provinces, zones, profile, keyEcv, provinceBboxes, loading, error }}>
-    <DataContext.Provider value={{ provinces, zones, profile, behaviourIndicators, keyEcv, indicatorsEcv, ecvVaccCov, ecvCaracteristics, covariates, relativeInfluences, partialDependence, provinceBboxes, loading, error }}>
+    <DataContext.Provider value={{ provinces, zones, profile, behaviourIndicators, keyEcv, indicatorsEcv, ecvVaccCov, ecvCaracteristics, covariates, relativeInfluences, partialDependence, counterfactuals, provinceBboxes, loading, error }}>
       {children}
     </DataContext.Provider>
   )

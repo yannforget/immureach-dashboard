@@ -4,6 +4,7 @@ import { PlaceholderPanel } from '../common/PlaceholderPanel'
 import { EcvIndicatorCardGrid, EcvSeriesCardGrid, EcvZeroDoseMap, EcvVaccineBarChart, EcvEvolutionLineChart, EcvCaracteristicsChart } from '@/components/features/ecv'
 import { ModelIndicatorCardGrid, ModelCoverageMap, ModelBarChart, ModelVaccinationDataTable, ProfilingPanel } from '@/components/features/model'
 import { DeterminantCardGrid, BehaviourIndicatorsChart, PartialDependenceChart, PartialDependenceGrid, RelativeInfluenceTreemap } from '@/components/features/determinants'
+import { ActionKpiGrid, SegmentChart, ProbabilityShiftChart, LeverChart, ChildScatterChart } from '@/components/features/actions'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
 import { useDashboardStore } from '@/store/dashboardStore'
 import type { ViewMode } from '@/types'
@@ -15,7 +16,7 @@ export function DashboardGrid() {
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-8">
-      {/* Ribbon: 5 section tabs + filters (year, province, zone) */}
+      {/* Ribbon: 5 section tabs + filters (year, province, zone; varies by section) */}
       <section className="mb-8">
         <Ribbon />
       </section>
@@ -111,7 +112,45 @@ export function DashboardGrid() {
           </section>
         </>
       )}
-      {activeSection === 'actions' && <PlaceholderPanel title="Actions / interventions" />}
+      {activeSection === 'actions' && (
+        <>
+          {/* Key figures of the counterfactual scenarios */}
+          <section className="mb-8">
+            <ActionKpiGrid />
+          </section>
+          {/* Who each approach reaches (left) + mean probability shift (right) */}
+          <section className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div className="h-96 overflow-hidden rounded-lg border border-slate-200 bg-white">
+              <SegmentChart />
+            </div>
+            <div className="h-96 overflow-hidden rounded-lg border border-slate-200 bg-white">
+              <ProbabilityShiftChart />
+            </div>
+          </section>
+          {/* Levers to act on (left) + child-level scatter (right), both
+              filtered by the selected segment */}
+          <section className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div className="h-[28rem] overflow-hidden rounded-lg border border-slate-200 bg-white">
+              <LeverChart />
+            </div>
+            <div className="h-[28rem] overflow-hidden rounded-lg border border-slate-200 bg-white">
+              <ChildScatterChart />
+            </div>
+          </section>
+          <section className="mt-8">
+            <Notes>
+              <strong>Analyse contrefactuelle&nbsp;:</strong> pour chaque enfant zéro-dose de
+              l'enquête, le modèle ménage recalcule sa probabilité d'être vacciné (au moins une dose)
+              en modifiant ses caractéristiques, toutes choses égales par ailleurs. Le scénario
+              <em> Accès aux services</em> agit sur l'offre (opportunités manquées, sensibilisation,
+              temps de trajet, doses et personnel disponibles), le scénario <em>Facteurs individuels</em> sur
+              la demande (opinion, confiance en sa capacité, connaissances). Un enfant est considéré
+              comme atteint lorsque cette probabilité dépasse le seuil retenu par le modèle (environ 40&nbsp;%). Analyse disponible pour le
+              Kasaï et la Tshopo.
+            </Notes>
+          </section>
+        </>
+      )}
       {activeSection === 'methodologie' && <PlaceholderPanel title="Méthodologie" />}
 
       {activeSection === 'zerodose' && (

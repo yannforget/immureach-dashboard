@@ -3,6 +3,7 @@ import type { AgeGroup, DashboardSection, Milieu, MetricKey, ViewMode, Year } fr
 import { DEFAULT_AGE_GROUP } from '@/types';
 import { MODEL_METRIC_KEYS } from '@/lib/utils/constants';
 import { resolveSectionYear } from '@/lib/utils/years';
+import type { CounterfactualSegment } from '@/lib/utils/counterfactuals';
 
 interface DashboardState {
   // Top-level ribbon tab.
@@ -33,6 +34,10 @@ interface DashboardState {
   // determinants tab (null = the most influential one).
   selectedRiVariable: string | null;
 
+  // Actions tab: counterfactual segment the lever chart is filtered on
+  // (null = every zero-dose child).
+  selectedSegment: CounterfactualSegment | null;
+
   // Actions
   setActiveSection: (section: DashboardSection) => void;
   setMetric: (metric: MetricKey) => void;
@@ -45,6 +50,7 @@ interface DashboardState {
   setSelectedAgeGroup: (ageGroup: AgeGroup) => void;
   setShowAntenne: (show: boolean) => void;
   setSelectedRiVariable: (variable: string | null) => void;
+  setSelectedSegment: (segment: CounterfactualSegment | null) => void;
 }
 
 export const useDashboardStore = create<DashboardState>((set) => ({
@@ -59,6 +65,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   selectedAgeGroup: DEFAULT_AGE_GROUP,
   showAntenne: true,
   selectedRiVariable: null,
+  selectedSegment: null,
 
   // Sections do not all publish every year (the zero-dose model covers the
   // latest one only), so the selection follows the section.
@@ -92,4 +99,6 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   setShowAntenne: (show) => set({ showAntenne: show }),
 
   setSelectedRiVariable: (variable) => set({ selectedRiVariable: variable }),
+
+  setSelectedSegment: (segment) => set({ selectedSegment: segment }),
 }));

@@ -4,8 +4,6 @@ import { useDashboardStore } from '@/store/dashboardStore'
 import { CATEGORY_ORDER } from './useDeterminantData'
 import type {
   DeterminantCategory,
-  IndicatorValueMap,
-  IndicatorsYear,
   ProfileScopeLevel,
 } from '@/types'
 
@@ -30,27 +28,8 @@ export interface IndicatorComparison {
   items: IndicatorRow[]
 }
 
-function pickEntry(
-  yearBlock: IndicatorsYear | undefined,
-  province: string | null,
-  zoneName: string | null,
-): { entry: IndicatorValueMap | null; level: ProfileScopeLevel } {
-  if (!yearBlock) return { entry: null, level: 'national' }
-  if (zoneName) {
-    const z = yearBlock.zones[zoneName]
-    if (z) return { entry: z, level: 'zone' }
-  }
-  if (province) {
-    const p = yearBlock.provinces[province]
-    if (p) return { entry: p, level: 'province' }
-  }
-  return { entry: yearBlock.national, level: 'national' }
-}
-
 export function useIndicatorComparison(): IndicatorComparison | null {
-  const { behaviourIndicators, zones, covariates } = useData()
-  const selectedProvince = useDashboardStore((s) => s.selectedProvince)
-  const selectedZoneId = useDashboardStore((s) => s.selectedZoneId)
+  const { behaviourIndicators, covariates } = useData()
   const selectedYear = useDashboardStore((s) => s.selectedYear)
 
   return useMemo(() => {
@@ -59,25 +38,9 @@ export function useIndicatorComparison(): IndicatorComparison | null {
     const yearBlock = behaviourIndicators[String(selectedYear)]
     if (!yearBlock) return null
 
-    const zoneRow = selectedZoneId ? zones.find((z) => z.id === selectedZoneId) : null
-    const requestedLevel: ProfileScopeLevel = zoneRow
-      ? 'zone'
-      : selectedProvince
-      ? 'province'
-      : 'national'
-
-    const { entry, level } = pickEntry(
-      yearBlock,
-      selectedProvince,
-      zoneRow ? zoneRow.displayName : null,
-    )
+    // The Déterminants tab has no province/zone filter: always national.
+    const entry = yearBlock.national
     if (!entry) return null
-
-    if (level !== requestedLevel) {
-      console.warn(
-        `[indicators] no data at requested ${requestedLevel}, falling back to ${level}`,
-      )
-    }
 
     const categoryByKey = new Map(covariates.map((c) => [c.variable_name, c.Category]))
 
@@ -107,13 +70,6 @@ export function useIndicatorComparison(): IndicatorComparison | null {
         a.label.localeCompare(b.label, 'fr', { sensitivity: 'base' }),
     )
 
-    const scopeLabel =
-      level === 'zone'
-        ? zoneRow!.displayName
-        : level === 'province'
-        ? selectedProvince ?? '—'
-        : 'National'
-
-    return { scopeLabel, scopeLevel: level, requestedLevel, items }
-  }, [behaviourIndicators, zones, covariates, selectedProvince, selectedZoneId, selectedYear])
+    return { scopeLabel: 'National', scopeLevel: 'national', requestedLevel: 'national', items }
+  }, [behaviourIndicators, covariates, selectedYear])
 }

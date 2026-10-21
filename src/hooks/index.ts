@@ -18,3 +18,4 @@ export { type IndicatorRow, type IndicatorComparison, useIndicatorComparison } f
 export { type DeterminantData, useDeterminantData, CATEGORY_COLORS, CATEGORY_LABELS, CATEGORY_ORDER, CATEGORY_DESCRIPTIONS } from './determinants/useDeterminantData';
 export { type RiItem, type RiCategoryGroup, type RelativeInfluenceData, useRelativeInfluence, RI_CATEGORY_COLORS, RI_CATEGORY_LABELS, RI_CATEGORY_ORDER } from './determinants/useRelativeInfluence';
 export { type PdpItem, usePartialDependence, useSelectedPdpItem } from './determinants/usePartialDependence';
+export { type CounterfactualData, type CounterfactualProvinceSummary, type LeverItem, useCounterfactuals } from './actions/useCounterfactuals';

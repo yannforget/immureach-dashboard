@@ -337,6 +337,26 @@ export interface PartialDependencyRow {
 // COM-B categories plus the model's control covariates (age, sex, wealth...).
 export type RiCategory = DeterminantCategory | 'Control';
 
+// Counterfactual scenarios of the household model (counterfactuals.csv):
+// hcs = access to the health care system (supply), indiv = individual
+// factors (demand).
+export type CounterfactualScenario = 'hcs' | 'indiv';
+
+// One zero-dose child under one counterfactual scenario. `childId` is unique
+// across provinces (the source id is only unique within a province). `levers`
+// holds the change applied to each characteristic; levers left untouched are
+// absent.
+export interface CounterfactualRow {
+  scenario: CounterfactualScenario;
+  childId: string;
+  province: string;
+  delta: number;
+  isNowVaccinated: boolean;
+  predFinal: number;
+  predInitial: number;
+  levers: Record<string, number>;
+}
+
 export interface CategorySummary {
   category: DeterminantCategory;
   label: string;

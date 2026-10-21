@@ -289,3 +289,28 @@ export const DASHBOARD_THEME: any = {
   },
   markPoint: { label: { color: '#fff', }, emphasis: { label: { color: '#fff', }, }, },
 };
+
+// Actions tab (counterfactual scenarios). Access to services is supply side,
+// hence the blue of the COM-B "Opportunité" category; individual factors get
+// violet, which no COM-B category uses, so the lever chart (coloured by
+// category) never reads as a scenario.
+export const CF_SCENARIO_COLORS = {
+  hcs: '#2563eb', // blue-600
+  indiv: '#7c3aed', // violet-600
+} as const
+
+// Segments: which scenario lifts a child above the threshold. "Neither" keeps
+// the zero-dose red, "both" the dashboard teal.
+export const CF_SEGMENT_COLORS = {
+  both: '#0d9488', // teal-600
+  hcs: CF_SCENARIO_COLORS.hcs,
+  indiv: CF_SCENARIO_COLORS.indiv,
+  neither: '#b91c1c', // red-700
+} as const
+
+// Probability before any change (dumbbell start point).
+export const CF_INITIAL_COLOR = '#94a3b8' // slate-400
+// Vaccination threshold guide lines.
+export const CF_THRESHOLD_COLOR = '#64748b' // slate-500
+// Faded segment / point when another segment is selected.
+export const CF_FADED_OPACITY = 0.15
