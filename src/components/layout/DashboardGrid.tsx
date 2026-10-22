@@ -3,7 +3,7 @@ import { Notes } from '../common/Notes'
 import { PlaceholderPanel } from '../common/PlaceholderPanel'
 import { EcvIndicatorCardGrid, EcvSeriesCardGrid, EcvZeroDoseMap, EcvVaccineBarChart, EcvEvolutionLineChart, EcvCaracteristicsChart } from '@/components/features/ecv'
 import { ModelIndicatorCardGrid, ModelCoverageMap, ModelBarChart, ModelVaccinationDataTable, ProfilingPanel } from '@/components/features/model'
-import { DeterminantCardGrid, BehaviourIndicatorsChart, PartialDependenceChart, PartialDependenceGrid, RelativeInfluenceTreemap } from '@/components/features/determinants'
+import { DeterminantCardGrid, BehaviourIndicatorsChart, BehaviourIndicatorsMap, PartialDependenceChart, PartialDependenceGrid, RelativeInfluenceTreemap } from '@/components/features/determinants'
 import { ActionKpiGrid, SegmentChart, ProbabilityShiftChart, LeverChart, ChildScatterChart } from '@/components/features/actions'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
 import { useDashboardStore } from '@/store/dashboardStore'
@@ -16,8 +16,11 @@ export function DashboardGrid() {
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-8">
-      {/* Ribbon: 5 section tabs + filters (year, province, zone; varies by section) */}
-      <section className="mb-8">
+      {/* Ribbon: 5 section tabs + filters (year, province, zone; varies by section).
+          Sticky so the filters stay reachable while scrolling; the page-coloured
+          padding hides content scrolling underneath, and z-40 keeps it above
+          the charts' own overlays (map legend, download menus). */}
+      <section className="sticky top-0 z-40 mb-6 bg-slate-50 py-2">
         <Ribbon />
       </section>
 
@@ -76,10 +79,15 @@ export function DashboardGrid() {
           <section className="mb-8">
             <DeterminantCardGrid />
           </section>
-          {/* Behaviour indicators dumbbell */}
-          <section className="mb-8">
+          {/* Behaviour indicators dumbbell (left) + map of the widest-gap
+              indicator's category per area (right); the map stretches to the
+              dumbbell's content-driven height. */}
+          <section className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
             <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
               <BehaviourIndicatorsChart />
+            </div>
+            <div className="min-h-96 overflow-hidden rounded-lg border border-slate-200 bg-white">
+              <BehaviourIndicatorsMap />
             </div>
           </section>
           {/* Relative influence of the household-model variables */}

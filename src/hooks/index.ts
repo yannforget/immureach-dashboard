@@ -15,6 +15,7 @@ export { useKeyEcvData } from './ecv/useKeyEcvData';
 export { useIndicatorsEcvData } from './ecv/useIndicatorsEcvData';
 export { type AccessibilityProfile, useAccessibilityProfile } from './model/useAccessibilityProfile';
 export { type IndicatorRow, type IndicatorComparison, useIndicatorComparison } from './determinants/useIndicatorComparison';
+export { type BehaviourMapFeatureValue, useBehaviourMapData } from './determinants/useBehaviourMapData';
 export { type DeterminantData, useDeterminantData, CATEGORY_COLORS, CATEGORY_LABELS, CATEGORY_ORDER, CATEGORY_DESCRIPTIONS } from './determinants/useDeterminantData';
 export { type RiItem, type RiCategoryGroup, type RelativeInfluenceData, useRelativeInfluence, RI_CATEGORY_COLORS, RI_CATEGORY_LABELS, RI_CATEGORY_ORDER } from './determinants/useRelativeInfluence';
 export { type PdpItem, usePartialDependence, useSelectedPdpItem } from './determinants/usePartialDependence';

@@ -82,11 +82,10 @@ export function Ribbon() {
     const milieux = useAvailableMilieux()
     const ageGroups = useAvailableAgeGroups()
 
-    // The household-model tabs are not split by area: Déterminants keeps the
-    // year alone; Actions and Méthodologie have no filter at all.
+    // Actions and Méthodologie have no filter at all.
     const noFilters = activeSection === 'actions' || activeSection === 'methodologie'
     const showYear = !noFilters
-    const showGeo = !noFilters && activeSection !== 'determinants'
+    const showGeo = !noFilters
     const showFilters = showYear || showGeo
 
     return (

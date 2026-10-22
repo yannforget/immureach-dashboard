@@ -13,6 +13,25 @@ const VACC = '#0d9488'
 const ZD = '#b91c1c'
 const CONNECTOR = '#cbd5e1'
 
+// Tooltip body for one indicator: label, description, both values and the
+// gap. Shared with the Déterminants map so hovering an area reads the same as
+// hovering the matching row of the dumbbell chart.
+export function indicatorTooltipHtml(r: IndicatorRow): string {
+  const sign = r.gap > 0 ? '+' : ''
+  const rawZd = r.zdRaw != null ? r.zdRaw.toFixed(2) : '—'
+  const rawVacc = r.vaccRaw != null ? r.vaccRaw.toFixed(2) : '—'
+  const desc = r.description
+    ? `<div style="margin: 4px 0 6px; color:#475569; font-size: 11px; line-height: 1.35; white-space: normal;">${r.description}</div>`
+    : ''
+  return (
+    `<strong>${r.label}</strong>` +
+    desc +
+    `<span style="color:${VACC}">●</span> Vacciné: ${r.vacc.toFixed(2)} (brut ${rawVacc})<br/>` +
+    `<span style="color:${ZD}">●</span> Zéro-dose: ${r.zd.toFixed(2)} (brut ${rawZd})<br/>` +
+    `Ecart (0-dose − vacc): ${sign}${r.gap.toFixed(2)}`
+  )
+}
+
 export function buildDumbbellOptions(config: DumbbellConfig): EChartsOption {
   const { items } = config
   const categories = items.map((r) => r.label)
@@ -41,22 +60,7 @@ export function buildDumbbellOptions(config: DumbbellConfig): EChartsOption {
       extraCssText: 'max-width: 320px; white-space: normal;',
       formatter: (params: any) => {
         const arr = Array.isArray(params) ? params : [params]
-        const i = arr[0].dataIndex as number
-        const r = items[i]
-        const gap = r.gap
-        const sign = gap > 0 ? '+' : ''
-        const rawZd = r.zdRaw != null ? r.zdRaw.toFixed(2) : '—'
-        const rawVacc = r.vaccRaw != null ? r.vaccRaw.toFixed(2) : '—'
-        const desc = r.description
-          ? `<div style="margin: 4px 0 6px; color:#475569; font-size: 11px; line-height: 1.35; white-space: normal;">${r.description}</div>`
-          : ''
-        return (
-          `<strong>${r.label}</strong>` +
-          desc +
-          `<span style="color:${VACC}">●</span> Vacciné: ${r.vacc.toFixed(2)} (brut ${rawVacc})<br/>` +
-          `<span style="color:${ZD}">●</span> Zéro-dose: ${r.zd.toFixed(2)} (brut ${rawZd})<br/>` +
-          `Ecart (0-dose − vacc): ${sign}${gap.toFixed(2)}`
-        )
+        return indicatorTooltipHtml(items[arr[0].dataIndex as number])
       },
     },
     xAxis: {

@@ -12,7 +12,7 @@ export const SCENARIO_LEVERS: Record<CounterfactualScenario, string[]> = {
 const ALL_LEVERS = [...SCENARIO_LEVERS.hcs, ...SCENARIO_LEVERS.indiv]
 
 export const SCENARIO_LABELS: Record<CounterfactualScenario, string> = {
-  hcs: 'Accès aux services',
+  hcs: 'Système sanitaire',
   indiv: 'Facteurs individuels',
 }
 
@@ -47,8 +47,8 @@ export const SEGMENT_ORDER: CounterfactualSegment[] = ['indiv', 'both', 'hcs', '
 
 export const SEGMENT_LABELS: Record<CounterfactualSegment, string> = {
   both: 'Les deux',
-  hcs: 'Accès seul',
-  indiv: 'Individuel seul',
+  hcs: 'Système sanitaire',
+  indiv: 'Individuel',
   neither: 'Aucun',
 }
 

@@ -68,6 +68,9 @@ export function BehaviourIndicatorsChart() {
           </h3>
           <p className="text-xs text-slate-500">
             Enfants non vaccinés vs enfants vaccinés, classés par valeur décroissante chez les vaccinés (sur une échelle de 0 à 1)
+            {comparison.scopeLevel !== comparison.requestedLevel && (
+              <span className="ml-1 text-amber-600">· données {comparison.scopeLevel === 'province' ? 'provinciales' : 'nationales'} affichées (pas de données pour cette sélection)</span>
+            )}
           </p>
         </div>
         <div className="relative flex-shrink-0">
