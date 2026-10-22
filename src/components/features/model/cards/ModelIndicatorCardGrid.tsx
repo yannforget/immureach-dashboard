@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { ModelIndicatorCard } from './ModelIndicatorCard'
 import { useDashboardStore } from '@/store/dashboardStore'
+import { useData } from '@/context/DataContext'
 import { useProvinceData, useZoneData } from '@/hooks'
 import { MODEL_METRIC_KEYS, MODEL_METRIC_META } from '@/lib/utils/constants'
 
@@ -9,6 +10,7 @@ export function ModelIndicatorCardGrid() {
   const selectedZoneId = useDashboardStore(s => s.selectedZoneId)
   const provinces = useProvinceData()
   const zones = useZoneData(selectedProvince)
+  const { modelConfidence } = useData()
 
   // Pick the single row when a zone or province is selected; otherwise
   // compute the national value as a population-weighted aggregate via the
@@ -61,6 +63,7 @@ export function ModelIndicatorCardGrid() {
             value={value}
             count={count}
             isZeroDose={meta.isZeroDose}
+            confidence={modelConfidence[metricKey]}
           />
         ))}
       </div>

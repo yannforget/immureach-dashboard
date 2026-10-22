@@ -7,7 +7,8 @@ import { parseEcvVaccCovCsv, parseMilieu } from '@/lib/utils/ecvVaccCov'
 import { parseEcvCaracteristicsCsv } from '@/lib/utils/ecvCaracteristics'
 import { parseIndicatorsEcvCsv } from '@/lib/utils/ecvIndicators'
 import { parseCounterfactualsCsv } from '@/lib/utils/counterfactuals'
-import type { BehaviourIndicatorsData, CounterfactualRow, CovariateRow, EcvCaracteristicsRow, EcvVaccCovRow, IndicatorsEcvRow, KeyEcvRow, PartialDependencyRow, ProfileData, ProfileScopeLevel, ProvinceRow, RelativeInfluenceRow, Year, ZoneRow } from '@/types'
+import { type ModelConfidence, parseConfidenceMetricsCsv } from '@/lib/utils/modelConfidence'
+import type { BehaviourIndicatorsData, CounterfactualRow, CovariateRow, EcvCaracteristicsRow, EcvVaccCovRow, IndicatorsEcvRow, KeyEcvRow, MetricKey, PartialDependencyRow, ProfileData, ProfileScopeLevel, ProvinceRow, RelativeInfluenceRow, Year, ZoneRow } from '@/types'
 
 export type Bbox = [number, number, number, number] // [minLon, minLat, maxLon, maxLat]
 
@@ -24,6 +25,7 @@ interface DataContextType {
   relativeInfluences: RelativeInfluenceRow[]
   partialDependence: PartialDependencyRow[]
   counterfactuals: CounterfactualRow[]
+  modelConfidence: Partial<Record<MetricKey, ModelConfidence>>
   provinceBboxes: Record<string, Bbox>
   loading: boolean
   error: Error | null
@@ -134,6 +136,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [relativeInfluences, setRelativeInfluences] = useState<RelativeInfluenceRow[]>([])
   const [partialDependence, setPartialDependence] = useState<PartialDependencyRow[]>([])
   const [counterfactuals, setCounterfactuals] = useState<CounterfactualRow[]>([])
+  const [modelConfidence, setModelConfidence] = useState<Partial<Record<MetricKey, ModelConfidence>>>({})
   const [provinceBboxes, setProvinceBboxes] = useState<Record<string, Bbox>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
@@ -328,6 +331,17 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           console.warn('Failed to load counterfactuals.csv:', cfErr)
         }
 
+        // confidence_metrics.csv (model validation R² per vaccine, model tab
+        // key indicators) is likewise optional and non-fatal.
+        try {
+          const confRes = await fetch('data/confidence_metrics.csv')
+          if (confRes.ok) {
+            setModelConfidence(parseConfidenceMetricsCsv(await confRes.text()))
+          }
+        } catch (confErr) {
+          console.warn('Failed to load confidence_metrics.csv:', confErr)
+        }
+
         try {
           const biRes = await fetch('data/household_model/behaviour_indicators.json')
           if (biRes.ok) {
@@ -350,7 +364,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   return (
     // <DataContext.Provider value={{ provinces, zones, profile, keyEcv, provinceBboxes, loading, error }}>
-    <DataContext.Provider value={{ provinces, zones, profile, behaviourIndicators, keyEcv, indicatorsEcv, ecvVaccCov, ecvCaracteristics, covariates, relativeInfluences, partialDependence, counterfactuals, provinceBboxes, loading, error }}>
+    <DataContext.Provider value={{ provinces, zones, profile, behaviourIndicators, keyEcv, indicatorsEcv, ecvVaccCov, ecvCaracteristics, covariates, relativeInfluences, partialDependence, counterfactuals, modelConfidence, provinceBboxes, loading, error }}>
       {children}
     </DataContext.Provider>
   )
