@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import EChartsReact from 'echarts-for-react'
+import type { ECharts } from 'echarts'
 import { usePartialDependence, useSelectedPdpItem } from '@/hooks'
 import { useDashboardStore } from '@/store/dashboardStore'
 import { InfoBubble } from '@/components/common/InfoBubble'
@@ -16,7 +17,10 @@ export function PartialDependenceGrid() {
   const items = usePartialDependence()
   const selected = useSelectedPdpItem(items)
   const setSelectedRiVariable = useDashboardStore(s => s.setSelectedRiVariable)
-  const chartRef = useRef<EChartsReact>(null)
+  // echarts-for-react initialises asynchronously (a temporary instance is
+  // disposed and replaced once rendered), so the instance is only reliable
+  // from onChartReady, not right after mount.
+  const [chart, setChart] = useState<ECharts | null>(null)
 
   const shown = useMemo(() => items.filter(i => !GRID_EXCLUDED.has(i.variable)).slice(0, GRID_SIZE), [items])
   const rows = Math.ceil(shown.length / COLUMNS)
@@ -31,8 +35,7 @@ export function PartialDependenceGrid() {
   // Clicking anywhere inside a panel (not only on its line) selects its
   // variable for the detail chart.
   useEffect(() => {
-    const chart = chartRef.current?.getEchartsInstance()
-    if (!chart || shown.length === 0) return
+    if (!chart || chart.isDisposed() || shown.length === 0) return
     const zr = chart.getZr()
     const onClick = (e: { offsetX: number; offsetY: number }) => {
       const index = shown.findIndex((_, i) => chart.containPixel({ gridIndex: i }, [e.offsetX, e.offsetY]))
@@ -42,7 +45,7 @@ export function PartialDependenceGrid() {
     return () => {
       zr.off('click', onClick)
     }
-  }, [shown, options, setSelectedRiVariable])
+  }, [chart, shown, setSelectedRiVariable])
 
   return (
     <div className="flex h-full flex-col">
@@ -56,8 +59,8 @@ export function PartialDependenceGrid() {
       {options ? (
         <div className="cursor-pointer px-2 pt-3">
           <EChartsReact
-            ref={chartRef}
             option={options}
+            onChartReady={setChart}
             notMerge
             theme="dashboard"
             style={{ width: '100%', height: rows * ROW_HEIGHT }}
