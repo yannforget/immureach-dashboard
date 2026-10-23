@@ -3,7 +3,7 @@ import { Notes } from '../common/Notes'
 import { PlaceholderPanel } from '../common/PlaceholderPanel'
 import { EcvIndicatorCardGrid, EcvSeriesCardGrid, EcvZeroDoseMap, EcvVaccineBarChart, EcvEvolutionLineChart, EcvCaracteristicsChart } from '@/components/features/ecv'
 import { ModelIndicatorCardGrid, ModelCoverageMap, ModelBarChart, ModelVaccinationDataTable, ProfilingPanel } from '@/components/features/model'
-import { DeterminantCardGrid, BehaviourIndicatorsChart, BehaviourIndicatorsMap, PartialDependenceChart, PartialDependenceGrid, RelativeInfluenceTreemap } from '@/components/features/determinants'
+import { DeterminantCardGrid, BehaviourIndicatorsChart, BehaviourIndicatorsMap, PartialDependenceChart, PartialDependenceGrid, RelativeInfluenceTreemap, IndicatorMethodsNote } from '@/components/features/determinants'
 import { ActionKpiGrid, SegmentChart, ProbabilityShiftChart, LeverChart, ChildScatterChart } from '@/components/features/actions'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
 import { useDashboardStore } from '@/store/dashboardStore'
@@ -116,6 +116,7 @@ export function DashboardGrid() {
               <strong>Influence relative&nbsp;:</strong> part du pouvoir prédictif du modèle ménage
               attribuée à chaque variable (total = 100&nbsp;%). Elle indique l'importance d'un
               déterminant, pas le sens de son effet sur la vaccination.
+              <IndicatorMethodsNote />
             </Notes>
           </section>
         </>

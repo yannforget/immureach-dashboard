@@ -10,7 +10,7 @@ interface NoteProps {
 export function Notes({ children }: NoteProps) {
     return (
         <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm">
-            <p className="text-sm text-slate-500">{children}</p>
+            <div className="text-sm text-slate-500">{children}</div>
         </div>
     )
 }
