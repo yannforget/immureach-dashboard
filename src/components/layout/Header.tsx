@@ -4,7 +4,7 @@ export function Header() {
       <div className="mx-auto max-w-7xl px-6 py-6">
         <h1 className="text-3xl font-bold text-slate-900">ImmuReach</h1>
         <p className="mt-1 text-slate-600">Reaching Missed Communities in DRC</p>
-        <p className="mt-3 text-justify text-sm leading-relaxed text-slate-500">
+        <p className="mt-3 text-sm leading-relaxed text-slate-500">
           L'objectif de ce tableau de bord est d'exploiter les données issues des enquêtes ECV et du
           DHIS2 SNIS afin de faciliter l'identification et le ciblage des enfants sous-vaccinées dans
           le cadre des campagnes de vaccination. Plus précisément, un modèle a été développé et validé

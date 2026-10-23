@@ -59,7 +59,7 @@ export function EcvIndicatorCardGrid() {
             <h2 className="text-sm font-semibold text-slate-700">Chiffres clés ECV</h2>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {cards.map(c => (
-                    <EcvIndicatorCard key={c.key} label={c.label} value={c.value} confidenceInterval={c.confidenceInterval} description={c.description} subtext={c.subtext} />
+                    <EcvIndicatorCard key={c.key} label={c.label} value={c.value} confidenceInterval={c.confidenceInterval} description={c.description} subtext={c.subtext} plainValue />
                 ))}
             </div>
             {!row && (

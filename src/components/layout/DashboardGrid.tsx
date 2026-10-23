@@ -25,6 +25,27 @@ export function DashboardGrid() {
       </section>
 
       {activeSection === 'ecv' && (<section className="mb-8">
+        <div className="mb-6">
+          {/* ECV survey explanation */}
+          <Notes>
+            L’Enquête de couverture vaccinale (ECV) est une enquête nationale conduite au niveau de ménages et des
+            établissements de soins de 519 zones de santé de la RDC, en prenant au minimum cinq aires de santé par
+            zones de santé. Les données sur les conditions de ménages, les chefs de ménages, les mères gardiennes des
+            enfants de 6-23 mois, la vaccination des enfants et la localisation géoréférencée sont collectées par interviews
+            et par observation de cartes. Les analyses produisent notamment des indicateurs de couverture vaccinales,
+            les raisons de non vaccination et la perception des services de vaccination.
+            Données accessibles{' '}
+            <a
+              href="https://espkinshasa.net/?s=ECV"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-teal-700 underline hover:text-teal-800"
+            >
+              ici
+            </a>
+            .
+          </Notes>
+        </div>
         {/* Indicator Cards */}
         <EcvIndicatorCardGrid />
         {/* Complete vaccination series, one card per vaccine */}
@@ -50,27 +71,6 @@ export function DashboardGrid() {
             </div>
           </div>
         </section>
-        <div className="mt-6">
-          {/* Bottom page notes */}
-          <Notes>
-            L’Enquête de couverture vaccinale (ECV) est une enquête nationale conduite au niveau de ménages et des
-            établissements de soins de 519 zones de santé de la RDC, en prenant au minimum cinq aires de santé par
-            zones de santé. Les données sur les conditions de ménages, les chefs de ménages, les mères gardiennes des
-            enfants de 6-23 mois, la vaccination des enfants et la localisation géoréférencée sont collectées par interviews
-            et par observation de cartes. Les analyses produisent notamment des indicateurs de couverture vaccinales,
-            les raisons de non vaccination et la perception des services de vaccination.
-            Données accessibles{' '}
-            <a
-              href="https://espkinshasa.net/?s=ECV"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-teal-700 underline hover:text-teal-800"
-            >
-              ici
-            </a>
-            .
-          </Notes>
-        </div>
       </section>
       )}
       {activeSection === 'determinants' && (
@@ -123,6 +123,19 @@ export function DashboardGrid() {
       )}
       {activeSection === 'actions' && (
         <>
+          {/* Counterfactual analysis explanation */}
+          <section className="mb-8">
+            <Notes>
+              <strong>Analyse contrefactuelle&nbsp;:</strong> pour chaque enfant zéro-dose de
+              l'enquête, le modèle ménage recalcule sa probabilité d'être vacciné (au moins une dose)
+              en modifiant ses caractéristiques, toutes choses égales par ailleurs. Le scénario
+              <em> Accès aux services</em> agit sur l'offre (opportunités manquées, sensibilisation,
+              temps de trajet, doses et personnel disponibles), le scénario <em>Facteurs individuels</em> sur
+              la demande (opinion, confiance en sa capacité, connaissances). Un enfant est considéré
+              comme atteint lorsque cette probabilité dépasse le seuil retenu par le modèle (environ 40&nbsp;%). Analyse disponible pour le
+              Kasaï et la Tshopo.
+            </Notes>
+          </section>
           {/* Key figures of the counterfactual scenarios */}
           <section className="mb-8">
             <ActionKpiGrid />
@@ -145,18 +158,6 @@ export function DashboardGrid() {
             <div className="h-[28rem] overflow-hidden rounded-lg border border-slate-200 bg-white">
               <ChildScatterChart />
             </div>
-          </section>
-          <section className="mt-8">
-            <Notes>
-              <strong>Analyse contrefactuelle&nbsp;:</strong> pour chaque enfant zéro-dose de
-              l'enquête, le modèle ménage recalcule sa probabilité d'être vacciné (au moins une dose)
-              en modifiant ses caractéristiques, toutes choses égales par ailleurs. Le scénario
-              <em> Accès aux services</em> agit sur l'offre (opportunités manquées, sensibilisation,
-              temps de trajet, doses et personnel disponibles), le scénario <em>Facteurs individuels</em> sur
-              la demande (opinion, confiance en sa capacité, connaissances). Un enfant est considéré
-              comme atteint lorsque cette probabilité dépasse le seuil retenu par le modèle (environ 40&nbsp;%). Analyse disponible pour le
-              Kasaï et la Tshopo.
-            </Notes>
           </section>
         </>
       )}
