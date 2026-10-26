@@ -129,11 +129,10 @@ export function DashboardGrid() {
               <strong>Analyse contrefactuelle&nbsp;:</strong> pour chaque enfant zéro-dose de
               l'enquête, le modèle ménage recalcule sa probabilité d'être vacciné (au moins une dose)
               en modifiant ses caractéristiques, toutes choses égales par ailleurs. Le scénario
-              <em> Accès aux services</em> agit sur l'offre (opportunités manquées, sensibilisation,
-              temps de trajet, doses et personnel disponibles), le scénario <em>Facteurs individuels</em> sur
+              <em> Système sanitaire</em> agit sur l'offre (opportunités manquées, sensibilisation,
+              temps de trajet, doses et personnel de santé disponibles), le scénario <em>Facteurs individuels</em> sur
               la demande (opinion, confiance en sa capacité, connaissances). Un enfant est considéré
-              comme atteint lorsque cette probabilité dépasse le seuil retenu par le modèle (environ 40&nbsp;%). Analyse disponible pour le
-              Kasaï et la Tshopo.
+              comme atteint lorsque cette probabilité dépasse le seuil retenu par le modèle (environ 40&nbsp;%).
             </Notes>
           </section>
           {/* Key figures of the counterfactual scenarios */}
@@ -149,14 +148,14 @@ export function DashboardGrid() {
               <ProbabilityShiftChart />
             </div>
           </section>
-          {/* Levers to act on (left) + child-level scatter (right), both
+          {/* Child-level scatter (left) + levers to act on (right), both
               filtered by the selected segment */}
           <section className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
             <div className="h-[28rem] overflow-hidden rounded-lg border border-slate-200 bg-white">
-              <LeverChart />
+              <ChildScatterChart />
             </div>
             <div className="h-[28rem] overflow-hidden rounded-lg border border-slate-200 bg-white">
-              <ChildScatterChart />
+              <LeverChart />
             </div>
           </section>
         </>

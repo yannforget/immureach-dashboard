@@ -1,10 +1,13 @@
 import { useMemo } from 'react'
 import { X } from 'lucide-react'
-import { CATEGORY_COLORS, CATEGORY_LABELS, CATEGORY_ORDER, useCounterfactuals } from '@/hooks'
+import { CATEGORY_COLORS, CATEGORY_LABELS, useCounterfactuals } from '@/hooks'
 import { useDashboardStore } from '@/store/dashboardStore'
 import { buildLeverBarOptions } from '@/lib/charts/counterfactualOptions'
-import { SEGMENT_LABELS } from '@/lib/utils/counterfactuals'
-import { CF_SEGMENT_COLORS } from '@/lib/charts/theme'
+import { SCENARIO_LABELS, SEGMENT_LABELS } from '@/lib/utils/counterfactuals'
+import { CF_SCENARIO_COLORS, CF_SEGMENT_COLORS } from '@/lib/charts/theme'
+import type { CounterfactualScenario } from '@/types'
+
+const SCENARIO_ORDER: CounterfactualScenario[] = ['hcs', 'indiv']
 import { ActionChartPanel } from './ActionChartPanel'
 
 export function LeverChart() {
@@ -13,17 +16,17 @@ export function LeverChart() {
   const setSelectedSegment = useDashboardStore(s => s.setSelectedSegment)
 
   const options = useMemo(
-    () => (data ? buildLeverBarOptions({ levers: data.levers, categoryColors: CATEGORY_COLORS }) : null),
+    () => (data ? buildLeverBarOptions({ levers: data.levers, categoryColors: CATEGORY_COLORS, categoryLabels: CATEGORY_LABELS }) : null),
     [data],
   )
 
   const subtitle = (
     <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
       <span>Part des enfants dont la caractéristique a dû changer.</span>
-      {CATEGORY_ORDER.map(c => (
-        <span key={c} className="inline-flex items-center gap-1">
-          <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: CATEGORY_COLORS[c] }} />
-          {CATEGORY_LABELS[c]}
+      {SCENARIO_ORDER.map(s => (
+        <span key={s} className="inline-flex items-center gap-1">
+          <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: CF_SCENARIO_COLORS[s] }} />
+          {SCENARIO_LABELS[s]}
         </span>
       ))}
     </span>
@@ -45,7 +48,7 @@ export function LeverChart() {
   return (
     <ActionChartPanel
       title="Leviers à actionner"
-      info="Pour chaque caractéristique, part des enfants pour lesquels le scénario a dû la modifier. La couleur du nom indique le scénario (bleu : accès aux services, violet : facteurs individuels) ; la couleur de la barre, la composante COM-B. Le survol donne le changement médian appliqué, dans l'unité de la variable."
+      info="Pour chaque caractéristique, part des enfants pour lesquels le scénario a dû la modifier. La couleur du nom et de la barre indique le scénario (bleu : système sanitaire, violet : facteurs individuels) ; la composante COM-B est donnée au survol. Le survol donne aussi le changement médian appliqué, dans l'unité de la variable."
       subtitle={subtitle}
       options={options}
       filename="actions-leviers"

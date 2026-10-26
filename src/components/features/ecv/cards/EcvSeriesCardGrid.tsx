@@ -46,10 +46,10 @@ export function EcvSeriesCardGrid() {
             {/* Zero-dose card on the left, stretched to the height of the two
                 rows of vaccine cards on its right. */}
             <div className="grid gap-3 lg:grid-cols-5">
-                <EcvIndicatorCard label={zeroDoseCard.label} value={zeroDoseCard.value} confidenceInterval={zeroDoseCard.confidenceInterval} description={zeroDoseCard.description} tone="zeroDose" centered />
+                <EcvIndicatorCard label={zeroDoseCard.label} value={zeroDoseCard.value} confidenceInterval={zeroDoseCard.confidenceInterval} description={zeroDoseCard.description} tone="zeroDose" centered compact />
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:col-span-4">
                     {cards.map(c => (
-                        <EcvIndicatorCard key={c.key} label={c.label} value={c.value} confidenceInterval={c.confidenceInterval} description={c.description} tone={c.tone} centered />
+                        <EcvIndicatorCard key={c.key} label={c.label} value={c.value} confidenceInterval={c.confidenceInterval} description={c.description} tone={c.tone} centered compact />
                     ))}
                 </div>
             </div>

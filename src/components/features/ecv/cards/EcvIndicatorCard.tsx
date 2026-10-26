@@ -26,9 +26,10 @@ interface EcvIndicatorCardProps {
     centered?: boolean  // center the text horizontally; the value block is also centered vertically below the label
     tone?: CoverageTone | 'zeroDose'  // colours the value
     plainValue?: boolean  // value in regular weight at the tab-label size instead of large bold
+    compact?: boolean  // tighter padding and a smaller value, for dense card grids
 }
 
-export function EcvIndicatorCard({ label, value, description, subtext, confidenceInterval, centered = false, tone, plainValue = false }: EcvIndicatorCardProps) {
+export function EcvIndicatorCard({ label, value, description, subtext, confidenceInterval, centered = false, tone, plainValue = false, compact = false }: EcvIndicatorCardProps) {
     const [showTooltip, setShowTooltip] = useState(false)
     // The tooltip opens to the right of the help icon so it does not hide the
     // card's value; when that would overflow the viewport (rightmost cards) it
@@ -47,14 +48,14 @@ export function EcvIndicatorCard({ label, value, description, subtext, confidenc
     const valueClass = TONE_VALUE_CLASSES[tone == null || isZeroDose ? 'neutral' : tone]
 
     return (
-        <div className={`relative rounded-lg border border-slate-200 bg-white px-4 py-3 ${centered ? 'flex flex-col text-center' : 'text-left'}`}>
+        <div className={`relative rounded-lg border border-slate-200 bg-white px-4 ${compact ? 'py-2' : 'py-3'} ${centered ? 'flex flex-col text-center' : 'text-left'}`}>
             {/* The help icon is pinned to the card's top-right corner so it does not
                 push a centered label off-center */}
             <div>
                 <h3 className={`${centered ? 'px-5' : 'pr-5'} text-xs font-semibold text-slate-700`}>{label}</h3>
                 {(description || confidenceInterval) && (
                     <div
-                        className="absolute right-4 top-3"
+                        className={`absolute right-4 ${compact ? 'top-2' : 'top-3'}`}
                         onMouseEnter={() => setShowTooltip(true)}
                         onMouseLeave={() => setShowTooltip(false)}
                     >
@@ -91,7 +92,7 @@ export function EcvIndicatorCard({ label, value, description, subtext, confidenc
             <div className={centered ? 'flex flex-1 flex-col justify-center' : undefined}>
                 {/* Same size as single values; each part of a multi-part value is kept
                     whole so a narrow card wraps between parts, not mid-part */}
-                <p className={`mt-2 ${plainValue ? 'text-sm font-normal' : 'text-2xl font-bold'} ${isZeroDose ? '' : valueClass}`} style={isZeroDose ? ZERO_DOSE_VALUE_STYLE : undefined}>
+                <p className={`${compact ? 'mt-1' : 'mt-2'} ${plainValue ? 'text-sm font-normal' : compact ? 'text-xl font-bold leading-tight' : 'text-2xl font-bold'} ${isZeroDose ? '' : valueClass}`} style={isZeroDose ? ZERO_DOSE_VALUE_STYLE : undefined}>
                     {Array.isArray(value)
                         ? value.map((part, i) => (
                             <Fragment key={part}>

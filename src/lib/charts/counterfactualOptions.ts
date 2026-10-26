@@ -211,6 +211,7 @@ export function buildProbabilityShiftOptions(
 interface LeverBarConfig {
   levers: LeverItem[]
   categoryColors: Record<DeterminantCategory, string>
+  categoryLabels: Record<DeterminantCategory, string>
 }
 
 function formatChange(v: number): string {
@@ -220,7 +221,7 @@ function formatChange(v: number): string {
 }
 
 export function buildLeverBarOptions(config: LeverBarConfig): EChartsOption {
-  const { levers, categoryColors } = config
+  const { levers, categoryColors, categoryLabels } = config
 
   return {
     // Fixed margin: containLabel does not measure the rich-text labels.
@@ -233,9 +234,10 @@ export function buildLeverBarOptions(config: LeverBarConfig): EChartsOption {
         const l = levers[p.dataIndex]
         return (
           `<strong>${l.label}</strong> · ${SCENARIO_LABELS[l.scenario]}<br/>` +
+          `<span style="color:${categoryColors[l.category]}">●</span> ${categoryLabels[l.category]}<br/>` +
           `Modifié pour ${pct(l.share)} des enfants (${l.count})<br/>` +
-          `Changement médian : ${formatChange(l.medianChange)} ` +
-          `<span style="color:#64748b">(unité de la variable, à confirmer)</span>`
+          `Changement médian : ${formatChange(l.medianChange)} ` //+
+          // `<span style="color:#64748b">(unité de la variable, à confirmer)</span>`
         )
       },
     },
@@ -250,7 +252,7 @@ export function buildLeverBarOptions(config: LeverBarConfig): EChartsOption {
       inverse: true,
       data: levers.map(l => l.label),
       axisTick: { show: false },
-      // Label colour gives the scenario, bar colour the COM-B category.
+      // Label and bar share the scenario colour; the COM-B category is in the tooltip.
       axisLabel: {
         formatter: (v: string, i: number) => {
           const l = levers[i]
@@ -274,7 +276,7 @@ export function buildLeverBarOptions(config: LeverBarConfig): EChartsOption {
         },
         data: levers.map(l => ({
           value: l.share,
-          itemStyle: { color: categoryColors[l.category] },
+          itemStyle: { color: CF_SCENARIO_COLORS[l.scenario] },
         })),
       },
     ],
