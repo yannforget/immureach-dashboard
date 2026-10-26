@@ -264,10 +264,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         }
 
         // ecv_vaccination_coverage.csv (health-zone-level EPSK survey, built by
-        // scripts/prepare-ecv-vaccination-coverage.py) is likewise optional and
+        // scripts/ecv/process-ecv-vaccination-coverage.py) is likewise optional and
         // non-fatal.
         try {
-          const ecvVaccCovRes = await fetch('/data/ecv_vaccination_coverage.csv')
+          const ecvVaccCovRes = await fetch('data/ecv_vaccination_coverage.csv')
           if (ecvVaccCovRes.ok) {
             setEcvVaccCov(parseEcvVaccCovCsv(await ecvVaccCovRes.text()))
           }
@@ -276,10 +276,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         }
 
         // ecv_caracteristics.csv (health-zone-level EPSK household-characteristics
-        // survey, built by scripts/prepare-ecv-caracteristics.py) is likewise
+        // survey, built by scripts/ecv/process-ecv-caracteristics.py) is likewise
         // optional and non-fatal.
         try {
-          const ecvCaractRes = await fetch('/data/ecv_caracteristics.csv')
+          const ecvCaractRes = await fetch('data/ecv_caracteristics.csv')
           if (ecvCaractRes.ok) {
             setEcvCaracteristics(parseEcvCaracteristicsCsv(await ecvCaractRes.text()))
           }

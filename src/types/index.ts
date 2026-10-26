@@ -240,7 +240,7 @@ export interface EcvMetricValue {
 
 // Keys for the 21 `_pct`/`_95CI` metric pairs in
 // public/data/ecv_vaccination_coverage.csv, matching the snake_case column
-// prefixes written by scripts/prepare-ecv-vaccination-coverage.py.
+// prefixes written by scripts/ecv/process-ecv-vaccination-coverage.py.
 export type EcvMetricKey =
   | 'possession_carte'
   | 'couverture_de_base'

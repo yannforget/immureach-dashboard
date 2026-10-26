@@ -17,7 +17,7 @@ Outputs:
 Both contain: total_population, pop_u1, pop_u5, pop_6_12mo, pop_12_24mo,
 pop_6_24mo, births_per_year.
 
-Methodology follows scripts/prepare-data.py:
+Methodology follows the former scripts/prepare-data.py (since removed):
   births = pop_u1 / (1 - imr / 1000)
   pop_6_12mo = pop_u1 * 0.5   (6-11 months, both bounds included)
   pop_12_24mo = (pop_u5 - pop_u1) * 0.25

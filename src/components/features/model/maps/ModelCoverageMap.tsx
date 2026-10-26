@@ -1,7 +1,7 @@
-import { useRef } from 'react'
+import { useMemo, useRef } from 'react'
 import EChartsReact from 'echarts-for-react'
 import { useDashboardStore } from '@/store/dashboardStore'
-import { useMapSelectionSync, useProvinceData, useZoneData, useProvinceAntennes } from '@/hooks'
+import { useMapHoverSync, useMapSelectionSync, useProvinceData, useZoneData, useProvinceAntennes } from '@/hooks'
 import { useData } from '@/context/DataContext'
 import { MODEL_METRIC_META } from '@/lib/utils/constants'
 import { buildMapOptions } from '@/lib/charts/mapOptions'
@@ -12,6 +12,7 @@ export function ModelCoverageMap() {
   const selectedProvince = useDashboardStore(s => s.selectedProvince)
   const selectedZoneId = useDashboardStore(s => s.selectedZoneId)
   const selectedMetric = useDashboardStore(s => s.selectedMetric)
+  const hoveredZoneId = useDashboardStore(s => s.hoveredZoneId)
   const showAntenne = useDashboardStore(s => s.showAntenne)
   const setProvince = useDashboardStore(s => s.setProvince)
   const setHoveredZone = useDashboardStore(s => s.setHoveredZone)
@@ -29,18 +30,20 @@ export function ModelCoverageMap() {
   // Zoom into the selected province's bbox. Zone drill-down does not zoom
   // further — max zoom is the province level.
   const provinceBbox = selectedProvince ? provinceBboxes[selectedProvince] : undefined
-  const boundingCoords: [[number, number], [number, number]] | undefined = provinceBbox
-    ? [[provinceBbox[0], provinceBbox[1]], [provinceBbox[2], provinceBbox[3]]]
-    : undefined
 
-  const options = buildMapOptions({
-    features,
-    metric: selectedMetric,
-    isZeroDose: metricMeta.isZeroDose,
-    mapName,
-    boundingCoords,
-    antenneOverlay: showAntenne && antenneGroups ? antenneGroups : undefined,
-  })
+  const options = useMemo(() => {
+    const boundingCoords: [[number, number], [number, number]] | undefined = provinceBbox
+      ? [[provinceBbox[0], provinceBbox[1]], [provinceBbox[2], provinceBbox[3]]]
+      : undefined
+    return buildMapOptions({
+      features,
+      metric: selectedMetric,
+      isZeroDose: metricMeta.isZeroDose,
+      mapName,
+      boundingCoords,
+      antenneOverlay: showAntenne && antenneGroups ? antenneGroups : undefined,
+    })
+  }, [features, selectedMetric, metricMeta.isZeroDose, mapName, provinceBbox, showAntenne, antenneGroups])
 
   const chartKey = `map-${selectedProvince}-${selectedMetric}-${showAntenne ? 'a' : 'm'}`
 
@@ -49,6 +52,13 @@ export function ModelCoverageMap() {
     ? zones.find(z => z.id === selectedZoneId)?.mapKey ?? null
     : null
   useMapSelectionSync(chartRef, selectedMapKey, chartKey)
+
+  // Light up the shape whose bar is hovered in the bar chart (and keep the
+  // map's own hover in step). Rows are provinces or zones, like `features`.
+  const hoveredMapKey = hoveredZoneId
+    ? features.find(f => f.id === hoveredZoneId)?.mapKey ?? null
+    : null
+  useMapHoverSync(chartRef, hoveredMapKey, chartKey)
 
   // Handle map selection and hover interactions. We match against `mapKey`
   // (the raw province-prefixed name) because two zones can share a cleaned
@@ -69,11 +79,13 @@ export function ModelCoverageMap() {
     }
   }
 
+  // Provinces at national level, zones once a province is selected — the
+  // same rows the bar chart lists, so its matching bar turns amber.
   const handleChartMouseOver = (params: any) => {
     if (params.componentType === 'series' && params.name) {
-      const zone = zones.find(z => z.mapKey === params.name)
-      if (zone) {
-        setHoveredZone(zone.id)
+      const feature = features.find(f => f.mapKey === params.name)
+      if (feature) {
+        setHoveredZone(feature.id)
       }
     }
   }

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import EChartsReact from 'echarts-for-react'
 import { ChevronDown, Download } from 'lucide-react'
 import { useDashboardStore } from '@/store/dashboardStore'
@@ -30,7 +30,7 @@ export function EcvVaccineBarChart() {
   // One bar per vaccine dose (BCG, Penta1-3, Polio0-3, PCV1-3, ROTA1-3, VPI, VAR, VAA), each with its 95% CI. 
   // Rows without a value are dropped so missing indicators don't render as 0-bars. 
   // Sorted ascending so the widest bar ends up at the top, matching the dashboard's bar-chart convention.
-  const items: EcvBarItem[] = ECV_BAR_METRIC_KEYS
+  const items: EcvBarItem[] = useMemo(() => ECV_BAR_METRIC_KEYS
     .map(key => {
       const metric = row?.metrics[key]
       return {
@@ -41,9 +41,10 @@ export function EcvVaccineBarChart() {
       }
     })
     .filter((item): item is EcvBarItem => item.value !== null)
-    .sort((a, b) => (a.value as number) - (b.value as number))
+    .sort((a, b) => (a.value as number) - (b.value as number)),
+  [row])
 
-  const options = buildEcvVaccineBarOptions({ items })
+  const options = useMemo(() => buildEcvVaccineBarOptions({ items }), [items])
 
   const scopeLabel = withAgeGroup(
     withMilieu(

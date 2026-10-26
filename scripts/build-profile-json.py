@@ -16,7 +16,7 @@ looks up profile rows with the same identifiers it already has on the bar /
 map data points.
 
 The household behaviour indicators live in their own sidecar, built by
-scripts/household_model/build-behaviour-indicators.py.
+scripts/model_HZ/build-behaviour-indicators.py.
 """
 
 from __future__ import annotations

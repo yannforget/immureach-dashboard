@@ -31,59 +31,45 @@ The repository also vendors a Python pipeline for the data layer (see
 
 ## Project layout 
 
-!!!!!!!!!!!! TO UPDATE !!!!!!!!!!!
-
 ```
 src/
-├── App.tsx                      # mounts DataProvider + DashboardGrid
-├── main.tsx                     # Vite entry
+├── main.tsx                     # Vite entry, registers the 'dashboard' ECharts theme
+├── App.tsx                      # DataProvider > Header + DashboardGrid
 │
 ├── components/
-│   ├── Breadcrumb.tsx           # DRC › Province › Zone navigation (drill-up)
-│   ├── IndicatorCards.tsx       # 8 metric cards (aggregates over selection)
-│   ├── IndicatorCard.tsx        # single card with tooltip
-│   ├── ProfilingPanel.tsx       # Profiling-mode 2-col chart grid
-│   ├── YearSelector.tsx         # 2023/2024 toggle (next to Tabs in profiling mode)
 │   ├── layout/
 │   │   ├── Header.tsx
-│   │   └── DashboardGrid.tsx    # main grid orchestrator
-│   ├── charts/
-│   │   ├── CoverageMap.tsx      # ECharts choropleth (provinces or zones)
-│   │   ├── BarChart.tsx         # ECharts horizontal bar
-│   │   ├── AccessibilityChart.tsx  # cumulative isochrone bar (Profiling mode)
-│   │   └── DumbbellChart.tsx       # zero-dose vs vaccinated indicators
-│   ├── table/
-│   │   ├── DataTable.tsx        # dispatcher → Province / Zone / Detail
-│   │   ├── ProvinceTable.tsx
-│   │   ├── ZoneTable.tsx
-│   │   └── ZoneDetail.tsx
-│   └── ui/                      # shadcn-generated primitives
+│   │   └── DashboardGrid.tsx    # one block per section (ecv, zerodose, determinants, actions, …)
+│   ├── common/
+│   │   ├── Ribbon.tsx           # sticky section tabs + year / age / milieu / province / zone filters
+│   │   ├── InfoBubble.tsx, Notes.tsx, PlaceholderPanel.tsx, YearSelector.tsx
+│   ├── features/                # one folder per section, each with an index.ts barrel
+│   │   ├── ecv/                 # cards/, charts/, maps/ (EcvZeroDoseMap, EcvVaccineBarChart, …)
+│   │   ├── model/               # zerodose section: cards/, charts/, maps/, tables/, ProfilingPanel
+│   │   ├── determinants/        # cards/, charts/ (treemap, PDP, behaviour map)
+│   │   └── actions/             # cards/, charts/ (counterfactual levers, segments)
+│   └── ui/                      # shadcn-generated primitives (button, table, tabs, toggle)
 │
 ├── context/
-│   └── DataContext.tsx          # loads /data/*.geojson, registers ECharts maps
+│   └── DataContext.tsx          # loads public/data/*, registers 'drc-provinces' / 'drc-zones'
 │
-├── hooks/
-│   ├── useProvinceData.ts       # returns ProvinceRow[]
-│   ├── useZoneData.ts           # returns ZoneRow[], optional province filter
-│   ├── useTableData.ts          # picks the right rows for the table mode
-│   ├── useAccessibilityProfile.ts  # scope-resolved accessibility profile
-│   └── determinants/useIndicatorComparison.ts  # scope-resolved indicator pairs
+├── hooks/                       # index.ts barrel re-exports everything below
+│   ├── common/                  # useProvinceData, useZoneData, useTableData,
+│   │                            # useMapSelectionSync, useMapHoverSync, useProvinceAntennes, …
+│   ├── ecv/                     # useEcvZeroDoseMapData, useEcvVaccCovRow, useEcvScope, …
+│   ├── model/                   # useAccessibilityProfile
+│   ├── determinants/            # useRelativeInfluence, usePartialDependence, …
+│   └── actions/                 # useCounterfactuals
 │
 ├── store/
-│   └── dashboardStore.ts        # Zustand: selectedMetric, selectedProvince, …
+│   └── dashboardStore.ts        # Zustand: selections + setters
 │
 ├── lib/
-│   ├── dataUtils.ts             # METRIC_META, cleanName, getColorScaleBounds
-│   ├── utils.ts                 # shadcn cn() helper
-│   └── charts/
-│       ├── mapOptions.ts        # buildMapOptions()
-│       ├── barOptions.ts        # buildBarOptions()
-│       ├── accessibilityOptions.ts # buildAccessibilityOptions()
-│       ├── dumbbellOptions.ts   # buildDumbbellOptions()
-│       └── theme.ts             # echarts.registerTheme('dashboard', …)
+│   ├── charts/                  # option factories (*Options.ts) + theme.ts
+│   └── utils/                   # csv parsing, constants, name joins, formatting, cn()
 │
 └── types/
-    └── index.ts                 # MetricKey, ProvinceRow, ZoneRow, …
+    └── index.ts                 # MetricKey, ProvinceRow, ZoneRow, EcvVaccCovRow, …
 ```
 
 ---
@@ -96,8 +82,8 @@ src/
 │   ImmuReach                                                     │
 │   Reaching Missed Communities in DRC                            │
 ├─────────────────────────────────────────────────────────────────┤
-│ Breadcrumb                                                      │
-│   DRC › Kwilu › Bagata                                          │
+│ Ribbon (sticky)                                                 │
+│   section tabs · Année · Province · Zone                        │
 ├─────────────────────────────────────────────────────────────────┤
 │ Indicator cards                                                 │
 │   [BCG] [Rota] [Var] [VAA] [Polio] [PCV] [0-dose pen] [0-dose all] │
@@ -124,23 +110,23 @@ Selecting any control fans out to the other panels via store subscriptions
 — no prop drilling.
 
 1. **Choose a province** by clicking it on the map (or on a bar in the bar
-   chart, or on a row in the province table). The map switches from provinces
-   to zones and zooms into the province's bbox, the bar chart re-sorts, the
-   `IndicatorCards` re-read from the province row (already pop-weighted), and
-   the data table switches to per-zone mode. The breadcrumb updates to
-   `DRC › <Province>`.
+   chart, a row in the province table, or the ribbon's Province select). The
+   map switches from provinces to zones and zooms into the province's bbox, the
+   bar chart re-sorts, the indicator cards re-read from the province row
+   (already pop-weighted), and the data table switches to per-zone mode.
 2. **Pick a metric** by clicking one of the 8 cards. The map's choropleth and
    the bar chart redraw against that metric.
 3. **Toggle the bar-chart unit**: coverage %, child count
    (`pred_<metric>_count`), or annual births.
 4. **Click a zone** on the map, the bar chart, or the table to drill into the
    per-zone detail view (`ZoneDetail` — demographics + per-metric comparison
-   bars). `IndicatorCards` now read directly from that zone's row. The map
+   bars). The indicator cards now read directly from that zone's row. The map
    stays at province zoom — drilling into a single zone does not zoom
-   further. The breadcrumb updates to `DRC › <Province> › <Zone>`; clicking
-   any ancestor crumb drills back up (zone → province → national).
-5. **Hover** a bar or a map shape to highlight the matching shape in the
-   other panel; the highlight is driven by `hoveredZoneId` in the store.
+   further. The ribbon's Zone select shows the zone; setting it (or the
+   Province select) back to "Toutes" drills back up.
+5. **Hover** a bar or a map shape to highlight the matching item in the
+   other panel; both read and write `hoveredZoneId` in the store (it holds a
+   province id at national level, a zone id once a province is selected).
 
 ---
 
@@ -148,17 +134,24 @@ Selecting any control fans out to the other panels via store subscriptions
 
 ```ts
 {
-  selectedMetric:    MetricKey,           // one of 8 pred_* keys
-  selectedProvince:  string | null,       // cleaned displayName, e.g. "Kwilu"
-  selectedZoneId:    string | null,       // ZoneRow.id (e.g. "zone-142")
-  hoveredZoneId:     string | null,       // cross-panel hover highlight
-  viewMode:          'data' | 'profiling',// lower-panel tab
-  selectedYear:      2023 | 2024,         // collection year for Profiling panel
+  activeSection:      DashboardSection,     // ribbon tab: 'ecv' | 'zerodose' | 'determinants' | …
+  selectedMetric:     MetricKey,            // one of 8 pred_* keys
+  selectedProvince:   string | null,        // cleaned displayName, e.g. "Kwilu"
+  selectedZoneId:     string | null,        // ZoneRow.id (e.g. "zone-142")
+  hoveredZoneId:      string | null,        // cross-panel hover (province or zone id)
+  viewMode:           'data' | 'profiling', // lower-panel tab
+  selectedYear:       2023 | 2024,          // collection year
+  selectedMilieu:     Milieu,               // ECV only: 'all' | 'urbain' | 'rural'
+  selectedAgeGroup:   AgeGroup,             // ECV only: '6-11' | '12-23' | '6-23'
+  showAntenne:        boolean,              // map antenne overlay
+  selectedRiVariable: string | null,        // determinants: PDP variable shown
+  selectedSegment:    CounterfactualSegment | null, // actions: lever filter
 }
 ```
 
-`setProvince()` also clears `selectedZoneId` so navigating provinces resets
-the drill-down. Components read with single-field selectors so re-renders
+`setProvince()` also clears `selectedZoneId` and turns `showAntenne` off, so
+navigating provinces resets the drill-down. `setActiveSection()` snaps
+`selectedYear` to a year the new section has data for. Components read with single-field selectors so re-renders
 are cheap:
 
 ```ts
@@ -170,7 +163,7 @@ const selectedMetric = useDashboardStore(s => s.selectedMetric)
 ## Data flow
 
 1. `DataProvider` (in `context/DataContext.tsx`) `fetch`es
-   `/data/provinces.geojson`, `/data/zones.geojson`, and `/data/profile.json`
+   `data/provinces.geojson`, `data/zones.geojson`, and `data/profile.json`
    on mount (the third feeds the Profiling-mode panel; see below).
 2. For each feature it produces a row:
    ```ts
@@ -231,7 +224,7 @@ tooltips near the edge of the panel.
   on top of the polygon.
 - **Zoom-on-drill.** `buildMapOptions` accepts an optional
   `boundingCoords: [[minLon, minLat], [maxLon, maxLat]]` and forwards it to
-  the `geo` block. `CoverageMap` looks up the bbox for `selectedProvince`
+  the `geo` block. `ModelCoverageMap` looks up the bbox for `selectedProvince`
   from `DataContext.provinceBboxes`; with no province selected it omits the
   field and ECharts auto-fits the full DRC. Province is the maximum zoom
   level — drilling into a single zone does **not** zoom further.
@@ -242,7 +235,7 @@ tooltips near the edge of the panel.
 
 - Horizontal bars sorted ascending (smallest at the top) — the **caller**
   sorts the items array. `buildBarOptions` no longer re-sorts; it indexes by
-  position so event handlers in `BarChart.tsx` can use `params.dataIndex`
+  position so event handlers in `ModelBarChart.tsx` can use `params.dataIndex`
   against the same array.
 - Three modes selected via in-chart buttons: coverage (%), child count
   (`pred_<metric>_count`), and annual births. In the first two modes, rows
@@ -250,15 +243,19 @@ tooltips near the edge of the panel.
   don't appear as 0-bars).
 - Bars are teal by default; `hoveredZoneId` is matched against `item.id` to
   paint the hovered bar amber.
-- Hover and click on a bar update the store (`hoveredZoneId`,
-  `selectedZoneId`).
+- Hover on a bar updates `hoveredZoneId`. Click selects the province at
+  national level (`setProvince`) and the zone once a province is selected
+  (`setSelectedZone`).
 
 ### Cross-chart linkage
 
 The map and the bar chart talk through the store, not directly. The
 `hoveredZoneId` field is the single source of truth; both panels emit/listen
-on it. For programmatic ECharts actions (when needed), reach for the chart
-instance via `chartRef.current?.getEchartsInstance().dispatchAction(...)`.
+on it. The bar chart repaints the hovered bar through its option; the map
+mirrors it as the shape's `emphasis` style with `useMapHoverSync`, and the
+selected zone as its yellow `select` style with `useMapSelectionSync`. Both
+hooks call `chartRef.current?.getEchartsInstance().dispatchAction(...)`
+rather than rebuilding the option.
 
 ---
 
@@ -340,12 +337,12 @@ to the top).
    population-weighted aggregate across provinces
    (`Σ pred_*_count / Σ pop_6_12mo` × 100), computed once and memoised.
 
-Drill-up is handled entirely by the top-level `Breadcrumb` — neither
+Drill-up is handled by the ribbon's Province / Zone selects — neither
 `ZoneTable` nor `ZoneDetail` ship their own back-link UI.
 
 ### Key Indicators scope
 
-`IndicatorCards` reads the same selection state and routes by deepest
+`ModelIndicatorCardGrid` reads the same selection state and routes by deepest
 scope:
 
 - **Zone selected** → the zone row's `pred_*` and `pred_*_count` directly.
@@ -388,7 +385,7 @@ npm run deploy            # build, then publish dist/ to gh-pages
 
 `build-data` runs `uv run scripts/build-dashboard-geojson.py` (geojsons),
 `uv run scripts/build-profile-json.py` (Profiling-mode sidecar) and
-`uv run scripts/household_model/build-behaviour-indicators.py`. The other
+`uv run scripts/model_HZ/build-behaviour-indicators.py`. The other
 scripts in `scripts/` run independently; see [data.md](./data.md) for the full
 pipeline.
 

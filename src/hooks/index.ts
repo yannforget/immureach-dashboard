@@ -1,4 +1,5 @@
 export { useProvinceAntennes } from './common/useProvinceAntennes';
+export { useMapHoverSync } from './common/useMapHoverSync';
 export { useMapSelectionSync } from './common/useMapSelectionSync';
 export { useProvinceData } from './common/useProvinceData';
 export { useSectionYears } from './common/useSectionYears';

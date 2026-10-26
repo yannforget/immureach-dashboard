@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import EChartsReact from 'echarts-for-react'
 import { useDashboardStore } from '@/store/dashboardStore'
 import { useProvinceData, useZoneData } from '@/hooks'
@@ -14,6 +14,7 @@ export function ModelBarChart() {
   const selectedProvince = useDashboardStore(s => s.selectedProvince)
   const selectedMetric = useDashboardStore(s => s.selectedMetric)
   const hoveredZoneId = useDashboardStore(s => s.hoveredZoneId)
+  const setProvince = useDashboardStore(s => s.setProvince)
   const setSelectedZone = useDashboardStore(s => s.setSelectedZone)
   const setHoveredZone = useDashboardStore(s => s.setHoveredZone)
 
@@ -25,21 +26,21 @@ export function ModelBarChart() {
   const metricMeta = MODEL_METRIC_META[selectedMetric]
 
   // Determine suffix and data column based on barDataType
-  let suffix = '%'
-  let dataColumn: string = selectedMetric
-
-  if (barDataType === 'children') {
-    suffix = ' enfants'
-    dataColumn = metricMeta.countKey
-  } else if (barDataType === 'births') {
-    suffix = ' naissance/an'
-    dataColumn = 'births_per_year'
-  }
+  const suffix =
+    barDataType === 'children' ? ' enfants' : barDataType === 'births' ? ' naissance/an' : '%'
+  const dataColumn: string =
+    barDataType === 'children'
+      ? metricMeta.countKey
+      : barDataType === 'births'
+        ? 'births_per_year'
+        : selectedMetric
 
   // Prepare bar data. Rows without a numeric value for the current mode are
   // dropped (so ungauged zones don't appear as a 0-bar in coverage/children
   // modes). The births mode is always populated.
-  const barData = rows
+  // Memoised so the click / hover effects below only re-bind when the bars
+  // actually change, not on every hover-driven re-render.
+  const barData = useMemo(() => rows
     .map(row => {
       const props = row.properties as any
       let value: number | null = null
@@ -68,7 +69,8 @@ export function ModelBarChart() {
     )
     // Sort here (ascending) so the rendered chart order matches the array the
     // mouseover / click handlers index into via params.dataIndex.
-    .sort((a, b) => a.value - b.value)
+    .sort((a, b) => a.value - b.value),
+  [rows, barDataType, selectedMetric, dataColumn, metricMeta.countKey])
 
   // Calculate chart height based on number of items
   // Use consistent bar height of 28px per item + overhead for axes/margins
@@ -77,15 +79,16 @@ export function ModelBarChart() {
   const chartHeight = barData.length * barHeightPx + chartOverhead
   const maxContainerHeight = 600 // max height before scrolling kicks in
 
-  const options = buildBarOptions({
+  const options = useMemo(() => buildBarOptions({
     items: barData,
     hoveredId: hoveredZoneId,
     metricLabel: metricMeta.label,
     suffix,
     isZeroDose: metricMeta.isZeroDose,
-  })
+  }), [barData, hoveredZoneId, metricMeta.label, suffix, metricMeta.isZeroDose])
 
-  // Handle bar clicks
+  // Handle bar clicks: a province bar selects that province (same as the map),
+  // a zone bar selects that zone.
   useEffect(() => {
     const chart = chartRef.current?.getEchartsInstance()
     if (!chart) return
@@ -93,8 +96,11 @@ export function ModelBarChart() {
     const handleClick = (params: any) => {
       if (params.componentType === 'series') {
         const item = barData[params.dataIndex]
-        if (item && selectedProvince) {
+        if (!item) return
+        if (selectedProvince) {
           setSelectedZone(item.id)
+        } else {
+          setProvince(item.name)
         }
       }
     }
@@ -103,7 +109,7 @@ export function ModelBarChart() {
     return () => {
       chart.off('click', handleClick)
     }
-  }, [selectedProvince, barData, setSelectedZone])
+  }, [selectedProvince, barData, setSelectedZone, setProvince])
 
   // Handle hover interactions
   useEffect(() => {

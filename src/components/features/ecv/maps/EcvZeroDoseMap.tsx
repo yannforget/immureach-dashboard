@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import EChartsReact from 'echarts-for-react'
 import { useDashboardStore } from '@/store/dashboardStore'
 import { useData } from '@/context/DataContext'
@@ -49,11 +49,13 @@ export function EcvZeroDoseMap() {
 
   // Zoom into the selected province's bbox, same as the zerodose CoverageMap.
   const provinceBbox = selectedProvince ? provinceBboxes[selectedProvince] : undefined
-  const boundingCoords: [[number, number], [number, number]] | undefined = provinceBbox
-    ? [[provinceBbox[0], provinceBbox[1]], [provinceBbox[2], provinceBbox[3]]]
-    : undefined
 
-  const options = buildEcvZeroDoseMapOptions({ values, mapName, boundingCoords })
+  const options = useMemo(() => {
+    const boundingCoords: [[number, number], [number, number]] | undefined = provinceBbox
+      ? [[provinceBbox[0], provinceBbox[1]], [provinceBbox[2], provinceBbox[3]]]
+      : undefined
+    return buildEcvZeroDoseMapOptions({ values, mapName, boundingCoords })
+  }, [values, mapName, provinceBbox])
 
   // Habitat and age window, when either narrows the default sample.
   const filterLabel = ecvFilterLabel(selectedMilieu, selectedAgeGroup)
