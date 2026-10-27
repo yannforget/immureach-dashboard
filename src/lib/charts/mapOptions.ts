@@ -2,6 +2,7 @@ import type { EChartsOption } from 'echarts'
 import type { ProvinceRow, ZoneRow, MetricKey, AntenneGroup } from '@/types'
 import { MODEL_METRIC_META } from '@/lib/utils/constants'
 import { getColorScaleBounds } from '@/lib/utils/dataUtils'
+import { MAP_ASPECT_SCALE } from '@/lib/charts/ecvMapOptions'
 
 interface MapConfig {
   features: (ZoneRow | ProvinceRow)[]
@@ -220,6 +221,7 @@ export function buildMapOptions(config: MapConfig): EChartsOption {
     geo: {
       map: mapName,
       roam: false,
+      aspectScale: MAP_ASPECT_SCALE,
       selectedMode: 'single',
       label: { show: false },
       emphasis: { label: { show: false } },

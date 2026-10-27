@@ -2,7 +2,7 @@ import type { EChartsOption } from 'echarts'
 import { CATEGORY_COLORS, CATEGORY_LABELS } from '@/hooks/determinants/useDeterminantData'
 import { MAP_NO_DATA_COLOR, MAP_OUT_OF_SCOPE_COLOR } from '@/lib/charts/theme'
 import { indicatorTooltipHtml } from '@/lib/charts/dumbbellOptions'
-import { ZOOM_MAX, ZOOM_MIN } from '@/lib/charts/ecvMapOptions'
+import { MAP_ASPECT_SCALE, ZOOM_MAX, ZOOM_MIN } from '@/lib/charts/ecvMapOptions'
 import type { BehaviourMapFeatureValue } from '@/hooks'
 
 interface BehaviourMapConfig {
@@ -66,6 +66,7 @@ export function buildBehaviourMapOptions(config: BehaviourMapConfig): EChartsOpt
         type: 'map',
         map: mapName,
         roam: true,
+        aspectScale: MAP_ASPECT_SCALE,
         scaleLimit: { min: ZOOM_MIN, max: ZOOM_MAX },
         ...(boundingCoords ? { boundingCoords } : {}),
         data: dataSeries,

@@ -7,6 +7,11 @@ import type { EcvMapFeatureValue } from '@/hooks'
 export const ZOOM_MIN = 1
 export const ZOOM_MAX = 12
 
+// ECharts defaults `aspectScale` to 0.75, a mid-latitude correction that
+// squeezes the DRC widthways. The country straddles the equator, where a
+// degree of longitude is ~ a degree of latitude, so keep the ratio at 1.
+export const MAP_ASPECT_SCALE = 1
+
 interface EcvMapConfig {
   values: EcvMapFeatureValue[]
   mapName: 'drc-provinces' | 'drc-zones'
@@ -115,6 +120,7 @@ export function buildEcvZeroDoseMapOptions(config: EcvMapConfig): EChartsOption 
     geo: {
       map: mapName,
       roam: true,
+      aspectScale: MAP_ASPECT_SCALE,
       scaleLimit: { min: ZOOM_MIN, max: ZOOM_MAX },
       selectedMode: 'single',
       // Shapes are registered under the province-prefixed boundary name
