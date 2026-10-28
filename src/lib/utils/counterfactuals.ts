@@ -40,25 +40,6 @@ export const LEVER_FALLBACK_LABELS: Record<string, string> = {
   Y0_min: 'Temps de trajet (min)',
 }
 
-// Which scenarios lift a child above the vaccination threshold.
-export type CounterfactualSegment = 'both' | 'hcs' | 'indiv' | 'neither'
-
-export const SEGMENT_ORDER: CounterfactualSegment[] = ['indiv', 'both', 'hcs', 'neither']
-
-export const SEGMENT_LABELS: Record<CounterfactualSegment, string> = {
-  both: 'Les deux',
-  hcs: 'Système sanitaire',
-  indiv: 'Individuel',
-  neither: 'Aucun',
-}
-
-export const SEGMENT_DESCRIPTIONS: Record<CounterfactualSegment, string> = {
-  both: "Atteint par l'une ou l'autre des approches.",
-  hcs: "Atteint uniquement en améliorant l'accès aux services.",
-  indiv: 'Atteint uniquement en agissant sur les facteurs individuels.',
-  neither: 'Reste zéro-dose dans les deux scénarios : à cibler par des approches combinées.',
-}
-
 // Province names come prefixed ("ks_Kasai"); keep the dashboard spelling.
 function cleanProvince(raw: string): string {
   return raw.replace(/^[a-z]{2}_/, '').replace(/_/g, ' ')
@@ -77,7 +58,6 @@ export function parseCounterfactualsCsv(text: string): CounterfactualRow[] {
       childId: `${province}-${r.id_sample_in_province}`,
       province,
       delta: Number(r.delta),
-      isNowVaccinated: r.is_now_vaccinated === 'TRUE',
       predFinal: Number(r.pred0_final),
       predInitial: Number(r.pred0_initial),
       levers,
@@ -85,41 +65,18 @@ export function parseCounterfactualsCsv(text: string): CounterfactualRow[] {
   })
 }
 
-// Probability above which the export classifies a child as vaccinated. It is
-// not shipped with the data (the readme only gives 0.5 as an example; the
-// export uses about 0.40), so it is recovered as the midpoint between the
-// highest probability still classified zero-dose and the lowest classified
-// vaccinated.
-export function inferThreshold(rows: CounterfactualRow[]): number {
-  let maxNo = 0
-  let minYes = 1
-  for (const r of rows) {
-    if (r.isNowVaccinated) minYes = Math.min(minYes, r.predFinal)
-    else maxNo = Math.max(maxNo, r.predFinal)
-  }
-  return (maxNo + minYes) / 2
-}
-
 export function counterfactualProvinces(rows: CounterfactualRow[]): string[] {
   return [...new Set(rows.map(r => r.province))].sort()
 }
 
 // One child with both scenarios side by side. Children missing one scenario
-// are left out: they cannot be segmented.
+// are left out: they cannot be compared.
 export interface CounterfactualChild {
   childId: string
   province: string
   predInitial: number
   hcs: CounterfactualRow
   indiv: CounterfactualRow
-  segment: CounterfactualSegment
-}
-
-function segmentOf(hcs: boolean, indiv: boolean): CounterfactualSegment {
-  if (hcs && indiv) return 'both'
-  if (hcs) return 'hcs'
-  if (indiv) return 'indiv'
-  return 'neither'
 }
 
 export function pairChildren(rows: CounterfactualRow[]): CounterfactualChild[] {
@@ -139,7 +96,6 @@ export function pairChildren(rows: CounterfactualRow[]): CounterfactualChild[] {
       predInitial: hcs.predInitial,
       hcs,
       indiv,
-      segment: segmentOf(hcs.isNowVaccinated, indiv.isNowVaccinated),
     })
   }
   return children
@@ -148,8 +104,6 @@ export function pairChildren(rows: CounterfactualRow[]): CounterfactualChild[] {
 export interface ScenarioSummary {
   scenario: CounterfactualScenario
   n: number
-  // Share (0-1) of children above the threshold under the scenario.
-  reached: number
   meanInitial: number
   meanFinal: number
 }
@@ -173,23 +127,9 @@ export function summariseScenario(
   return {
     scenario,
     n: sc.length,
-    reached: sc.length === 0 ? 0 : sc.filter(r => r.isNowVaccinated).length / sc.length,
     meanInitial: mean(sc.map(r => r.predInitial)),
     meanFinal: mean(sc.map(r => r.predFinal)),
   }
-}
-
-export interface SegmentShare {
-  segment: CounterfactualSegment
-  count: number
-  share: number
-}
-
-export function segmentShares(children: CounterfactualChild[]): SegmentShare[] {
-  return SEGMENT_ORDER.map(segment => {
-    const count = children.filter(c => c.segment === segment).length
-    return { segment, count, share: children.length === 0 ? 0 : count / children.length }
-  })
 }
 
 export interface LeverUsage {

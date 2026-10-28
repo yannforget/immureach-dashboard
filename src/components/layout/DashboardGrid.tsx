@@ -4,7 +4,7 @@ import { PlaceholderPanel } from '../common/PlaceholderPanel'
 import { EcvIndicatorCardGrid, EcvSeriesCardGrid, EcvZeroDoseMap, EcvVaccineBarChart, EcvEvolutionLineChart, EcvCaracteristicsChart } from '@/components/features/ecv'
 import { ModelIndicatorCardGrid, ModelCoverageMap, ModelBarChart, ModelVaccinationDataTable, ProfilingPanel } from '@/components/features/model'
 import { DeterminantCardGrid, BehaviourIndicatorsChart, BehaviourIndicatorsMap, PartialDependenceChart, PartialDependenceGrid, RelativeInfluenceTreemap, IndicatorMethodsNote } from '@/components/features/determinants'
-import { ActionKpiGrid, SegmentChart, ProbabilityShiftChart, LeverChart, ChildScatterChart } from '@/components/features/actions'
+import { ActionKpiGrid, ProbabilityShiftChart, LeverChart, ChildScatterChart } from '@/components/features/actions'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
 import { useDashboardStore } from '@/store/dashboardStore'
 import type { ViewMode } from '@/types'
@@ -131,30 +131,26 @@ export function DashboardGrid() {
               en modifiant ses caractéristiques, toutes choses égales par ailleurs. Le scénario
               <em> Système sanitaire</em> agit sur l'offre (opportunités manquées, sensibilisation,
               temps de trajet, doses et personnel de santé disponibles), le scénario <em>Facteurs individuels</em> sur
-              la demande (opinion, confiance en sa capacité, connaissances). Un enfant est considéré
-              comme atteint lorsque cette probabilité dépasse le seuil retenu par le modèle (environ 40&nbsp;%).
+              la demande (opinion, confiance en sa capacité, connaissances). Les scénarios sont comparés
+              selon le gain de probabilité qu'ils apportent.
             </Notes>
           </section>
           {/* Key figures of the counterfactual scenarios */}
           <section className="mb-8">
             <ActionKpiGrid />
           </section>
-          {/* Who each approach reaches (left) + mean probability shift (right) */}
+          {/* Mean probability shift (left) + child-level scatter (right) */}
           <section className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <div className="h-96 overflow-hidden rounded-lg border border-slate-200 bg-white">
-              <SegmentChart />
-            </div>
-            <div className="h-96 overflow-hidden rounded-lg border border-slate-200 bg-white">
+            <div className="h-[28rem] overflow-hidden rounded-lg border border-slate-200 bg-white">
               <ProbabilityShiftChart />
             </div>
-          </section>
-          {/* Child-level scatter (left) + levers to act on (right), both
-              filtered by the selected segment */}
-          <section className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
             <div className="h-[28rem] overflow-hidden rounded-lg border border-slate-200 bg-white">
               <ChildScatterChart />
             </div>
-            <div className="h-[28rem] overflow-hidden rounded-lg border border-slate-200 bg-white">
+          </section>
+          {/* Levers to act on */}
+          <section className="mb-8">
+            <div className="h-96 overflow-hidden rounded-lg border border-slate-200 bg-white">
               <LeverChart />
             </div>
           </section>

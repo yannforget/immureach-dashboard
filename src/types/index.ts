@@ -351,7 +351,6 @@ export interface CounterfactualRow {
   childId: string;
   province: string;
   delta: number;
-  isNowVaccinated: boolean;
   predFinal: number;
   predInitial: number;
   levers: Record<string, number>;

@@ -1,6 +1,6 @@
 import { useCounterfactuals } from '@/hooks'
-import { SCENARIO_DESCRIPTIONS, SCENARIO_LABELS, SEGMENT_DESCRIPTIONS } from '@/lib/utils/counterfactuals'
-import { CF_SCENARIO_COLORS, CF_SEGMENT_COLORS } from '@/lib/charts/theme'
+import { SCENARIO_DESCRIPTIONS, SCENARIO_LABELS } from '@/lib/utils/counterfactuals'
+import { CF_INITIAL_COLOR, CF_SCENARIO_COLORS } from '@/lib/charts/theme'
 
 interface KpiCardProps {
   label: string
@@ -23,12 +23,13 @@ function KpiCard({ label, value, detail, color }: KpiCardProps) {
 }
 
 const pct = (v: number) => `${Math.round(v * 100)} %`
+// Gain in percentage points between two probabilities (0-1).
+const gain = (from: number, to: number) => `+${Math.round((to - from) * 100)} pts`
 
 export function ActionKpiGrid() {
   const data = useCounterfactuals()
   if (!data) return null
   const { scope } = data
-  const neither = scope.segments.find(s => s.segment === 'neither')!
 
   return (
     <div className="space-y-3">
@@ -39,26 +40,26 @@ export function ActionKpiGrid() {
         <KpiCard
           label="Enfants zéro-dose analysés"
           value={String(scope.children)}
-          detail={`Probabilité moyenne actuelle d'être vacciné : ${pct(scope.hcs.meanInitial)}.`}
+          detail="Enfants de l'enquête n'ayant reçu aucune dose."
           color="#334155"
         />
         <KpiCard
-          label={`Atteints · ${SCENARIO_LABELS.indiv}`}
-          value={pct(scope.indiv.reached)}
-          detail={SCENARIO_DESCRIPTIONS.indiv}
+          label="Probabilité actuelle"
+          value={pct(scope.hcs.meanInitial)}
+          detail="Probabilité moyenne d'être vacciné avec les caractéristiques actuelles."
+          color={CF_INITIAL_COLOR}
+        />
+        <KpiCard
+          label={`Gain · ${SCENARIO_LABELS.indiv}`}
+          value={gain(scope.indiv.meanInitial, scope.indiv.meanFinal)}
+          detail={`${SCENARIO_DESCRIPTIONS.indiv} Probabilité moyenne : ${pct(scope.indiv.meanFinal)}.`}
           color={CF_SCENARIO_COLORS.indiv}
         />
         <KpiCard
-          label={`Atteints · ${SCENARIO_LABELS.hcs}`}
-          value={pct(scope.hcs.reached)}
-          detail={SCENARIO_DESCRIPTIONS.hcs}
+          label={`Gain · ${SCENARIO_LABELS.hcs}`}
+          value={gain(scope.hcs.meanInitial, scope.hcs.meanFinal)}
+          detail={`${SCENARIO_DESCRIPTIONS.hcs} Probabilité moyenne : ${pct(scope.hcs.meanFinal)}.`}
           color={CF_SCENARIO_COLORS.hcs}
-        />
-        <KpiCard
-          label="Non atteints"
-          value={pct(neither.share)}
-          detail={SEGMENT_DESCRIPTIONS.neither}
-          color={CF_SEGMENT_COLORS.neither}
         />
       </div>
     </div>

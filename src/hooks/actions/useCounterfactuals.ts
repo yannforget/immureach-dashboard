@@ -1,20 +1,16 @@
 import { useMemo } from 'react'
 import { useData } from '@/context/DataContext'
-import { useDashboardStore } from '@/store/dashboardStore'
 import type { DeterminantCategory } from '@/types'
 import {
   LEVER_CATEGORIES,
   LEVER_FALLBACK_LABELS,
   counterfactualProvinces,
-  inferThreshold,
   leverUsage,
   pairChildren,
-  segmentShares,
   summariseScenario,
   type CounterfactualChild,
   type LeverUsage,
   type ScenarioSummary,
-  type SegmentShare,
 } from '@/lib/utils/counterfactuals'
 
 export interface LeverItem extends LeverUsage {
@@ -27,7 +23,6 @@ export interface CounterfactualProvinceSummary {
   province: string | null
   label: string
   children: number
-  segments: SegmentShare[]
   hcs: ScenarioSummary
   indiv: ScenarioSummary
 }
@@ -35,15 +30,13 @@ export interface CounterfactualProvinceSummary {
 export interface CounterfactualData {
   // Provinces the counterfactual analysis covers.
   provinces: string[]
-  // Probability (0-1) above which a child counts as reached.
-  threshold: number
   // All covered provinces together: the Actions tab has no province filter.
   scope: CounterfactualProvinceSummary
-  // Every covered province, then all of them together (segment / shift charts).
+  // Every covered province, then all of them together (shift chart).
   byProvince: CounterfactualProvinceSummary[]
-  // Children of the scope, with their segment.
+  // Children of the scope, both scenarios side by side.
   children: CounterfactualChild[]
-  // Lever usage among the children of the scope and selected segment.
+  // Lever usage among the children of the scope.
   levers: LeverItem[]
 }
 
@@ -56,7 +49,6 @@ function summarise(
     province,
     label: province ?? 'Ensemble',
     children: children.length,
-    segments: segmentShares(children),
     hcs: summariseScenario(rows, 'hcs'),
     indiv: summariseScenario(rows, 'indiv'),
   }
@@ -64,7 +56,6 @@ function summarise(
 
 export function useCounterfactuals(): CounterfactualData | null {
   const { counterfactuals, covariates } = useData()
-  const selectedSegment = useDashboardStore(s => s.selectedSegment)
 
   const base = useMemo(() => {
     if (counterfactuals.length === 0) return null
@@ -80,7 +71,7 @@ export function useCounterfactuals(): CounterfactualData | null {
       ),
       summarise(null, counterfactuals, allChildren),
     ]
-    return { provinces, threshold: inferThreshold(counterfactuals), allChildren, byProvince }
+    return { provinces, allChildren, byProvince }
   }, [counterfactuals])
 
   const labelByLever = useMemo(() => {
@@ -95,21 +86,17 @@ export function useCounterfactuals(): CounterfactualData | null {
     if (!base) return null
     const scope = base.byProvince.find(s => s.province === null)!
     const children = base.allChildren
-    const leverChildren = selectedSegment
-      ? children.filter(c => c.segment === selectedSegment)
-      : children
 
     return {
       provinces: base.provinces,
-      threshold: base.threshold,
       scope,
       byProvince: base.byProvince,
       children,
-      levers: leverUsage(leverChildren).map(l => ({
+      levers: leverUsage(children).map(l => ({
         ...l,
         label: labelByLever.get(l.lever) ?? l.lever,
         category: LEVER_CATEGORIES[l.lever],
       })),
     }
-  }, [base, selectedSegment, labelByLever])
+  }, [base, labelByLever])
 }

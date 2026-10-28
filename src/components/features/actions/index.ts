@@ -1,5 +1,4 @@
 export { ActionKpiGrid } from './cards/ActionKpiGrid'
-export { SegmentChart } from './charts/SegmentChart'
 export { ProbabilityShiftChart } from './charts/ProbabilityShiftChart'
 export { LeverChart } from './charts/LeverChart'
 export { ChildScatterChart } from './charts/ChildScatterChart'

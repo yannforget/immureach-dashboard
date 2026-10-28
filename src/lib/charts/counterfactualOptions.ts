@@ -1,87 +1,11 @@
 import type { EChartsOption } from 'echarts'
 import type { CounterfactualProvinceSummary, LeverItem } from '@/hooks'
-import type { CounterfactualChild, CounterfactualSegment } from '@/lib/utils/counterfactuals'
-import { SCENARIO_LABELS, SEGMENT_LABELS, SEGMENT_ORDER } from '@/lib/utils/counterfactuals'
+import type { CounterfactualChild } from '@/lib/utils/counterfactuals'
+import { SCENARIO_LABELS } from '@/lib/utils/counterfactuals'
 import type { CounterfactualScenario, DeterminantCategory } from '@/types'
-import {
-  CF_FADED_OPACITY,
-  CF_INITIAL_COLOR,
-  CF_SCENARIO_COLORS,
-  CF_SEGMENT_COLORS,
-  CF_THRESHOLD_COLOR,
-} from './theme'
+import { CF_INITIAL_COLOR, CF_REFERENCE_COLOR, CF_SCENARIO_COLORS } from './theme'
 
 const pct = (v: number) => `${Math.round(v * 100)} %`
-
-// ---------------------------------------------------------------------------
-// Segments: 100 % stacked bar per province (+ all provinces together).
-// ---------------------------------------------------------------------------
-
-interface SegmentBarConfig {
-  rows: CounterfactualProvinceSummary[]
-  selectedSegment: CounterfactualSegment | null
-  // Label of the row the other charts are scoped to, set in bold.
-  scopeLabel: string
-}
-
-export function buildSegmentBarOptions(config: SegmentBarConfig): EChartsOption {
-  const { rows, selectedSegment, scopeLabel } = config
-
-  return {
-    grid: { left: 90, right: 24, top: 40, bottom: 32 },
-    legend: { top: 8, left: 'center', itemGap: 20, data: SEGMENT_ORDER.map(s => SEGMENT_LABELS[s]) },
-    tooltip: {
-      trigger: 'item',
-      appendToBody: true,
-      formatter: (p: any) => {
-        const row = rows[p.dataIndex]
-        const seg = row.segments.find(s => SEGMENT_LABELS[s.segment] === p.seriesName)!
-        return (
-          `<strong>${row.label}</strong><br/>${p.marker}${p.seriesName} : ` +
-          `${pct(seg.share)} (${seg.count} / ${row.children} enfants)`
-        )
-      },
-    },
-    xAxis: {
-      type: 'value',
-      min: 0,
-      max: 1,
-      axisLabel: { formatter: (v: number) => pct(v) },
-      splitLine: { show: false },
-    },
-    yAxis: {
-      type: 'category',
-      inverse: true,
-      data: rows.map(r => r.label),
-      axisTick: { show: false },
-      axisLabel: {
-        fontWeight: 'bold',
-        formatter: (v: string) => (v === scopeLabel ? `{sel|${v}}` : v),
-        rich: { sel: { fontWeight: 'bold', color: '#0f172a' } },
-      },
-    },
-    series: SEGMENT_ORDER.map(segment => ({
-      id: segment,
-      name: SEGMENT_LABELS[segment],
-      type: 'bar',
-      stack: 'segments',
-      barWidth: '55%',
-      itemStyle: {
-        color: CF_SEGMENT_COLORS[segment],
-        borderRadius: 0,
-        opacity: selectedSegment && selectedSegment !== segment ? CF_FADED_OPACITY : 1,
-      },
-      label: {
-        show: true,
-        color: '#fff',
-        fontWeight: 'bold',
-        formatter: (p: any) => (p.value >= 0.06 ? pct(p.value) : ''),
-      },
-      emphasis: { focus: 'none' },
-      data: rows.map(r => r.segments.find(s => s.segment === segment)!.share),
-    })),
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Probability shift: mean probability before -> after, per province x scenario.
@@ -93,13 +17,9 @@ interface ShiftRow {
   scenario: CounterfactualScenario
   initial: number
   final: number
-  reached: number
 }
 
-export function buildProbabilityShiftOptions(
-  rows: CounterfactualProvinceSummary[],
-  threshold: number,
-): EChartsOption {
+export function buildProbabilityShiftOptions(rows: CounterfactualProvinceSummary[]): EChartsOption {
   const items: ShiftRow[] = rows.flatMap(r =>
     (['indiv', 'hcs'] as CounterfactualScenario[]).map(scenario => ({
       label: `${r.label} · ${SCENARIO_LABELS[scenario]}`,
@@ -107,7 +27,6 @@ export function buildProbabilityShiftOptions(
       scenario,
       initial: r[scenario].meanInitial,
       final: r[scenario].meanFinal,
-      reached: r[scenario].reached,
     })),
   )
 
@@ -130,7 +49,7 @@ export function buildProbabilityShiftOptions(
           `<strong>${r.province}</strong> · ${SCENARIO_LABELS[r.scenario]}<br/>` +
           `Probabilité moyenne actuelle : ${pct(r.initial)}<br/>` +
           `Probabilité moyenne après changement : ${pct(r.final)}<br/>` +
-          `Enfants passant le seuil : <strong>${pct(r.reached)}</strong>`
+          `Gain moyen : <strong>+${Math.round((r.final - r.initial) * 100)} pts</strong>`
         )
       },
     },
@@ -172,14 +91,6 @@ export function buildProbabilityShiftOptions(
         itemStyle: { color: CF_INITIAL_COLOR },
         data: items.map((r, i) => [r.initial, i]),
         z: 3,
-        markLine: {
-          silent: true,
-          symbol: 'none',
-          lineStyle: { type: 'dashed', color: CF_THRESHOLD_COLOR },
-          // The y axis is inverted, so the line's start is its top end.
-          label: { position: 'start', formatter: `Seuil ${pct(threshold)}`, color: CF_THRESHOLD_COLOR },
-          data: [{ xAxis: threshold }],
-        },
       },
       ...(['indiv', 'hcs'] as CounterfactualScenario[]).map(scenario => ({
         name: SCENARIO_LABELS[scenario],
@@ -289,21 +200,15 @@ export function buildLeverBarOptions(config: LeverBarConfig): EChartsOption {
 
 interface ChildScatterConfig {
   children: CounterfactualChild[]
-  selectedSegment: CounterfactualSegment | null
-  threshold: number
+}
+
+// Scenario that raises the child's probability the most.
+function strongerScenario(c: CounterfactualChild): CounterfactualScenario {
+  return c.indiv.predFinal > c.hcs.predFinal ? 'indiv' : 'hcs'
 }
 
 export function buildChildScatterOptions(config: ChildScatterConfig): EChartsOption {
-  const { children, selectedSegment, threshold: t } = config
-
-  const quadrant = (segment: CounterfactualSegment, x: [number, number], y: [number, number], pos: string) => ({
-    name: SEGMENT_LABELS[segment],
-    xAxis: x[0],
-    yAxis: y[0],
-    itemStyle: { color: CF_SEGMENT_COLORS[segment], opacity: 0.05 },
-    label: { position: pos, color: CF_SEGMENT_COLORS[segment], fontWeight: 'bold' },
-    end: { xAxis: x[1], yAxis: y[1] },
-  })
+  const { children } = config
 
   return {
     grid: { left: 56, right: 24, top: 24, bottom: 52 },
@@ -314,7 +219,7 @@ export function buildChildScatterOptions(config: ChildScatterConfig): EChartsOpt
         if (p.seriesType !== 'scatter') return ''
         const c: CounterfactualChild = p.data.child
         return (
-          `<strong>${c.province}</strong> · ${SEGMENT_LABELS[c.segment]}<br/>` +
+          `<strong>${c.province}</strong><br/>` +
           `Probabilité actuelle : ${pct(c.predInitial)}<br/>` +
           `<span style="color:${CF_SCENARIO_COLORS.hcs}">●</span> ${SCENARIO_LABELS.hcs} : ${pct(c.hcs.predFinal)}<br/>` +
           `<span style="color:${CF_SCENARIO_COLORS.indiv}">●</span> ${SCENARIO_LABELS.indiv} : ${pct(c.indiv.predFinal)}`
@@ -350,26 +255,16 @@ export function buildChildScatterOptions(config: ChildScatterConfig): EChartsOpt
         data: children.map(c => ({
           value: [c.hcs.predFinal, c.indiv.predFinal],
           child: c,
-          itemStyle: {
-            color: CF_SEGMENT_COLORS[c.segment],
-            opacity: selectedSegment && selectedSegment !== c.segment ? CF_FADED_OPACITY : 0.7,
-          },
+          itemStyle: { color: CF_SCENARIO_COLORS[strongerScenario(c)], opacity: 0.7 },
         })),
+        // Equal probability under both scenarios: points above the diagonal
+        // gain more from individual factors, points below from the health system.
         markLine: {
           silent: true,
           symbol: 'none',
-          lineStyle: { type: 'dashed', color: CF_THRESHOLD_COLOR },
+          lineStyle: { type: 'dashed', color: CF_REFERENCE_COLOR },
           label: { show: false },
-          data: [{ xAxis: t }, { yAxis: t }],
-        },
-        markArea: {
-          silent: true,
-          data: [
-            quadrant('indiv', [0, t], [t, 1], 'insideTopLeft'),
-            quadrant('both', [t, 1], [t, 1], 'insideTopRight'),
-            quadrant('neither', [0, t], [0, t], 'insideBottomLeft'),
-            quadrant('hcs', [t, 1], [0, t], 'insideBottomRight'),
-          ].map(({ end, ...start }) => [start, end]) as any,
+          data: [[{ coord: [0, 0] }, { coord: [1, 1] }]],
         },
       },
     ],
