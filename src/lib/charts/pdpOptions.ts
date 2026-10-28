@@ -129,7 +129,7 @@ export function buildPdpGridOptions({ items, selected, columns, rowHeight }: Pdp
       axisPointer: { type: 'line' },
       formatter: (params: any) => {
         const p = Array.isArray(params) ? params[0] : params
-        const item = p && items[p.seriesIndex]
+        const item: PdpItem | undefined = p && items[p.seriesIndex]
         if (!item) return ''
         return (
           `<strong>${item.label}</strong> = ${formatPdpX(p.value[0])}<br/>` +
