@@ -1,8 +1,10 @@
 import { Ribbon } from '../common/Ribbon'
 import { Notes } from '../common/Notes'
 import { PlaceholderPanel } from '../common/PlaceholderPanel'
-import { EcvIndicatorCardGrid, EcvZeroDoseMap, EcvVaccineBarChart, EcvEvolutionLineChart, EcvCaracteristicsChart } from '@/components/features/ecv'
+import { EcvIndicatorCardGrid, EcvSeriesCardGrid, EcvZeroDoseMap, EcvVaccineBarChart, EcvEvolutionLineChart, EcvCaracteristicsChart } from '@/components/features/ecv'
 import { ModelIndicatorCardGrid, ModelCoverageMap, ModelBarChart, ModelVaccinationDataTable, ProfilingPanel } from '@/components/features/model'
+import { DeterminantCardGrid, BehaviourIndicatorsChart, BehaviourIndicatorsMap, PartialDependenceChart, PartialDependenceGrid, RelativeInfluenceTreemap, IndicatorMethodsNote } from '@/components/features/determinants'
+import { ActionKpiGrid, ProbabilityShiftChart, LeverChart, ChildScatterChart } from '@/components/features/actions'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
 import { useDashboardStore } from '@/store/dashboardStore'
 import type { ViewMode } from '@/types'
@@ -14,14 +16,42 @@ export function DashboardGrid() {
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-8">
-      {/* Ribbon: 4 section tabs + filters (year, province, zone) */}
-      <section className="mb-8">
+      {/* Ribbon: 5 section tabs + filters (year, province, zone; varies by section).
+          Sticky so the filters stay reachable while scrolling; the page-coloured
+          padding hides content scrolling underneath, and z-40 keeps it above
+          the charts' own overlays (map legend, download menus). */}
+      <section className="sticky top-0 z-40 mb-6 bg-slate-50 py-2">
         <Ribbon />
       </section>
 
       {activeSection === 'ecv' && (<section className="mb-8">
+        <div className="mb-6">
+          {/* ECV survey explanation */}
+          <Notes>
+            L’Enquête de couverture vaccinale (ECV) est une enquête nationale conduite au niveau de ménages et des
+            établissements de soins de 519 zones de santé de la RDC, en prenant au minimum cinq aires de santé par
+            zones de santé. Les données sur les conditions de ménages, les chefs de ménages, les mères gardiennes des
+            enfants de 6-23 mois, la vaccination des enfants et la localisation géoréférencée sont collectées par interviews
+            et par observation de cartes. Les analyses produisent notamment des indicateurs de couverture vaccinales,
+            les raisons de non vaccination et la perception des services de vaccination.
+            Données accessibles{' '}
+            <a
+              href="https://espkinshasa.net/?s=ECV"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-teal-700 underline hover:text-teal-800"
+            >
+              ici
+            </a>
+            .
+          </Notes>
+        </div>
         {/* Indicator Cards */}
         <EcvIndicatorCardGrid />
+        {/* Complete vaccination series, one card per vaccine */}
+        <div className="mt-6">
+          <EcvSeriesCardGrid />
+        </div>
         {/* Charts Grid: zero-dose map (left) + vaccine coverage bar chart (right) */}
         <section className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
           <div className="flex flex-col gap-6">
@@ -41,25 +71,92 @@ export function DashboardGrid() {
             </div>
           </div>
         </section>
-        <div className="mt-6">
-          {/* Bottom page notes */}
-          <Notes>
-            Données collectées en RDC par l'EPSK, et accessibles{' '}
-            <a
-              href="https://espkinshasa.net/note-dinformation-enquete-de-couverture-vaccinale-ecv-rdc-2023-01/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-teal-700 underline hover:text-teal-800"
-            >
-              ici
-            </a>
-            .
-          </Notes>
-        </div>
       </section>
       )}
-      {activeSection === 'determinants' && <PlaceholderPanel title="Déterminants ménages" />}
-      {activeSection === 'actions' && <PlaceholderPanel title="Actions / interventions" />}
+      {activeSection === 'determinants' && (
+        <>
+          {/* Category cards */}
+          <section className="mb-8">
+            <DeterminantCardGrid />
+          </section>
+          {/* Behaviour indicators dumbbell (left) + map of the widest-gap
+              indicator's category per area (right); the map stretches to the
+              dumbbell's content-driven height. */}
+          <section className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+              <BehaviourIndicatorsChart />
+            </div>
+            <div className="min-h-96 overflow-hidden rounded-lg border border-slate-200 bg-white">
+              <BehaviourIndicatorsMap />
+            </div>
+          </section>
+          {/* Relative influence of the household-model variables */}
+          <section className="mb-8">
+            <div className="h-[32rem] overflow-hidden rounded-lg border border-slate-200 bg-white">
+              <RelativeInfluenceTreemap />
+            </div>
+          </section>
+          {/* Partial dependency: effect of the selected variable + overview */}
+          <section className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div className="h-[32rem] overflow-hidden rounded-lg border border-slate-200 bg-white">
+              <PartialDependenceChart />
+            </div>
+            <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+              <PartialDependenceGrid />
+            </div>
+          </section>
+          {/* COM-B explanation */}
+          <section className="mt-8">
+            <Notes>
+              <strong>Modèle COM-B&nbsp;:</strong> le comportement de vaccination est déterminé par
+              l'interaction entre trois composantes : <em>Capacité</em> (connaissances, aptitudes),
+              <em> Motivation</em> (croyances, attitudes, peurs) et <em>Opportunité</em> (accès,
+              normes sociales, coûts).
+              <br />
+              <strong>Influence relative&nbsp;:</strong> part du pouvoir prédictif du modèle ménage
+              attribuée à chaque variable (total = 100&nbsp;%). Elle indique l'importance d'un
+              déterminant, pas le sens de son effet sur la vaccination.
+              <IndicatorMethodsNote />
+            </Notes>
+          </section>
+        </>
+      )}
+      {activeSection === 'actions' && (
+        <>
+          {/* Counterfactual analysis explanation */}
+          <section className="mb-8">
+            <Notes>
+              <strong>Analyse contrefactuelle&nbsp;:</strong> pour chaque enfant zéro-dose de
+              l'enquête, le modèle ménage recalcule sa probabilité d'être vacciné (au moins une dose)
+              en modifiant ses caractéristiques, toutes choses égales par ailleurs. Le scénario
+              <em> Système sanitaire</em> agit sur l'offre (opportunités manquées, sensibilisation,
+              temps de trajet, doses et personnel de santé disponibles), le scénario <em>Facteurs individuels</em> sur
+              la demande (opinion, confiance en sa capacité, connaissances). Les scénarios sont comparés
+              selon le gain de probabilité qu'ils apportent.
+            </Notes>
+          </section>
+          {/* Key figures of the counterfactual scenarios */}
+          <section className="mb-8">
+            <ActionKpiGrid />
+          </section>
+          {/* Mean probability shift (left) + child-level scatter (right) */}
+          <section className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div className="h-[28rem] overflow-hidden rounded-lg border border-slate-200 bg-white">
+              <ProbabilityShiftChart />
+            </div>
+            <div className="h-[28rem] overflow-hidden rounded-lg border border-slate-200 bg-white">
+              <ChildScatterChart />
+            </div>
+          </section>
+          {/* Levers to act on */}
+          <section className="mb-8">
+            <div className="h-96 overflow-hidden rounded-lg border border-slate-200 bg-white">
+              <LeverChart />
+            </div>
+          </section>
+        </>
+      )}
+      {activeSection === 'methodologie' && <PlaceholderPanel title="Méthodologie" />}
 
       {activeSection === 'zerodose' && (
         <>

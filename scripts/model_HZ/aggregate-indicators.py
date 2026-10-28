@@ -23,14 +23,14 @@ Outputs six CSV files (2 survey years x 3 levels) to data/output/indicators/.
 
 Run from the project root:
 
-    uv run scripts/aggregate-indicators.py
+    uv run scripts/model_HZ/aggregate-indicators.py
 """
 
 from pathlib import Path
 
 import duckdb
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 SOURCE_CSV = PROJECT_ROOT / "data/input/immureach/indicators_households_complete.csv"
 OUT_DIR = PROJECT_ROOT / "data/output/indicators"
 

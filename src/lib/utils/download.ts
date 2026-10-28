@@ -1,4 +1,5 @@
-import type { EcvCaracteristicBar, EcvCaracteristicGroup, EcvLineData } from '@/hooks'
+import type { EcvCaracteristicBar, EcvCaracteristicGroup, EcvLineData, IndicatorComparison } from '@/hooks'
+import type { EcvBarItem } from '@/lib/charts/ecvBarOptions'
 import type { AgeGroup, EcvVaccCovRow, Milieu, ZoneRow } from '@/types'
 import { AGE_GROUP_LABELS, MILIEU_LABELS } from '@/types'
 import { zoneJoinKey } from '@/lib/utils/ecvVaccCov'
@@ -155,6 +156,68 @@ export function buildEcvCaracteristicsCsv(
       cells.push(csvNumber(v?.pct ?? null), csvNumber(v?.low ?? null), csvNumber(v?.high ?? null))
     }
     lines.push(cells.join(','))
+  }
+
+  return lines.join('\n')
+}
+
+export function buildEcvVaccineBarCsv(
+  items: EcvBarItem[],
+  scope: EcvCsvScope,
+  year: number,
+): string {
+  const header = ['year', 'age_group', 'milieu', 'province', 'zone', 'vaccine', 'couverture (%)', 'IC 95% bas', 'IC 95% haut']
+  const lines = [header.map(csvCell).join(',')]
+
+  const ageGroupLabel = AGE_GROUP_LABELS[scope.ageGroup]
+  const milieuLabel = MILIEU_LABELS[scope.milieu]
+
+  // Same order as the chart reads top to bottom (highest coverage first).
+  for (const item of [...items].reverse()) {
+    lines.push([
+      String(year),
+      csvCell(ageGroupLabel),
+      csvCell(milieuLabel),
+      csvCell(scope.province ?? ''),
+      csvCell(scope.zone ?? ''),
+      csvCell(item.name),
+      csvNumber(item.value),
+      csvNumber(item.ciLow),
+      csvNumber(item.ciHigh),
+    ].join(','))
+  }
+
+  return lines.join('\n')
+}
+
+function csvDecimal(value: number | null | undefined, digits: number): string {
+  return value == null ? '' : value.toFixed(digits)
+}
+
+export function buildBehaviourIndicatorsCsv(comparison: IndicatorComparison, year: number): string {
+  // `niveau` records the level the values actually come from, which can be a
+  // fallback (e.g. province) when the requested zone has no survey data.
+  const header = [
+    'year', 'niveau', 'zone', 'indicateur', 'categorie',
+    'vaccine (0-1)', 'zero-dose (0-1)', 'ecart (0-dose - vacc)',
+    'vaccine (brut)', 'zero-dose (brut)',
+  ]
+  const lines = [header.map(csvCell).join(',')]
+
+  // Same order as the chart reads top to bottom.
+  for (const r of comparison.items) {
+    lines.push([
+      String(year),
+      csvCell(comparison.scopeLevel),
+      csvCell(comparison.scopeLabel),
+      csvCell(r.label),
+      csvCell(r.category ?? ''),
+      csvDecimal(r.vacc, 3),
+      csvDecimal(r.zd, 3),
+      csvDecimal(r.gap, 3),
+      csvDecimal(r.vaccRaw, 3),
+      csvDecimal(r.zdRaw, 3),
+    ].join(','))
   }
 
   return lines.join('\n')

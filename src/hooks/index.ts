@@ -1,4 +1,5 @@
 export { useProvinceAntennes } from './common/useProvinceAntennes';
+export { useMapHoverSync } from './common/useMapHoverSync';
 export { useMapSelectionSync } from './common/useMapSelectionSync';
 export { useProvinceData } from './common/useProvinceData';
 export { useSectionYears } from './common/useSectionYears';
@@ -12,5 +13,11 @@ export { type EcvScope, useEcvScope } from './ecv/useEcvScope';
 export { useEcvVaccCovRow } from './ecv/useEcvVaccCovRow';
 export { type EcvMapFeatureValue, useEcvZeroDoseMapData } from './ecv/useEcvZeroDoseMapData';
 export { useKeyEcvData } from './ecv/useKeyEcvData';
+export { useIndicatorsEcvData } from './ecv/useIndicatorsEcvData';
 export { type AccessibilityProfile, useAccessibilityProfile } from './model/useAccessibilityProfile';
-export { type IndicatorRow, type IndicatorComparison, useIndicatorComparison } from './model/useIndicatorComparison';
+export { type IndicatorRow, type IndicatorComparison, useIndicatorComparison } from './determinants/useIndicatorComparison';
+export { type BehaviourMapFeatureValue, useBehaviourMapData } from './determinants/useBehaviourMapData';
+export { type DeterminantData, useDeterminantData, CATEGORY_COLORS, CATEGORY_LABELS, CATEGORY_ORDER, CATEGORY_DESCRIPTIONS } from './determinants/useDeterminantData';
+export { type RiItem, type RiCategoryGroup, type RelativeInfluenceData, useRelativeInfluence, RI_CATEGORY_COLORS, RI_CATEGORY_LABELS, RI_CATEGORY_ORDER } from './determinants/useRelativeInfluence';
+export { type PdpItem, usePartialDependence, useSelectedPdpItem } from './determinants/usePartialDependence';
+export { type CounterfactualData, type CounterfactualProvinceSummary, type LeverItem, useCounterfactuals } from './actions/useCounterfactuals';

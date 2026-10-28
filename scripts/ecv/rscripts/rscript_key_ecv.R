@@ -11,8 +11,10 @@
 # unweighted sample sizes, and writes one row per (milieu, domain) with the
 # dashboard's column names, estimates as 0-100 percentages.
 #
-# Usage: Rscript rscript_key_ecv.R <in_csv> <out_csv> <age_min> <age_max> <milieux>
+# Usage: Rscript rscript_key_ecv.R <in_csv> <out_csv> <age_min> <age_max> <milieux> <max_lag_days>
 #   milieux: comma-separated subset of all,urbain,rural
+#   max_lag_days: an interview date more than this many days before its
+#     form's upload (or after it) is a typo and left out of the survey dates
 if (!requireNamespace("survey", quietly = TRUE)) {
   stop("the R package 'survey' is not installed: install.packages(\"survey\")")
 }
@@ -85,9 +87,25 @@ out_csv <- args[2]
 age_min <- as.numeric(args[3])
 age_max <- as.numeric(args[4])
 milieux <- strsplit(args[5], ",", fixed = TRUE)[[1]]
+max_lag_days <- as.numeric(args[6])
 
 # Python writes a missing milieu as an empty field.
 d <- read.csv(in_csv, stringsAsFactors = FALSE, na.strings = c("", "NA"))
+
+# --- Fieldwork dates --------------------------------------------------------
+
+# The interview date is typed on the tablet; the upload date is set by the
+# server. An interview "dated" after its upload, or long before it, is a typo.
+interview <- as.Date(d$interview_date)
+upload_lag <- as.numeric(as.Date(d$submission_date) - interview)
+d$fieldwork_date <- as.Date(ifelse(
+  !is.na(upload_lag) & upload_lag >= 0 & upload_lag <= max_lag_days,
+  interview, NA
+), origin = "1970-01-01")
+message(sprintf(
+  "  [R] %s interview date(s) ignored as implausible or missing",
+  format(sum(is.na(d$fieldwork_date)), big.mark = ",")
+))
 
 # --- Indicators -------------------------------------------------------------
 
@@ -259,6 +277,17 @@ count_domain <- function(rows, level, zones_reached) {
   )
 }
 
+# First and last fieldwork day in a domain, as ISO strings. Like nb_zones, it
+# describes the survey itself, so it is taken over every child of the file in
+# the domain's geography and reads the same under every age and milieu.
+survey_dates <- function(dates) {
+  dates <- dates[!is.na(dates)]
+  if (length(dates) == 0L) {
+    return(list(survey_start = NA_character_, survey_end = NA_character_))
+  }
+  list(survey_start = format(min(dates)), survey_end = format(max(dates)))
+}
+
 # --- Estimation -------------------------------------------------------------
 
 indicators <- c(penta3 = "penta_cov", zero_dose = "zdc_cov")
@@ -284,19 +313,22 @@ for (m in milieux) {
   domains <- c(
     list(list(
       level = "national", id = -1L, keep = rep(TRUE, nrow(mvars)),
-      rows = sel, zones_reached = unique(d$zone_id[in_age])
+      rows = sel, zones_reached = unique(d$zone_id[in_age]),
+      geo = rep(TRUE, nrow(d))
     )),
     lapply(sort(unique(d$province_id[sel])), function(pid) {
       list(
         level = "province", id = pid, keep = mvars$province_id == pid,
         rows = sel & d$province_id == pid,
-        zones_reached = unique(d$zone_id[in_age & d$province_id == pid])
+        zones_reached = unique(d$zone_id[in_age & d$province_id == pid]),
+        geo = d$province_id == pid
       )
     }),
     lapply(sort(unique(d$zone_id[sel])), function(zid) {
       list(
         level = "zone", id = zid, keep = mvars$zone_id == zid,
-        rows = sel & d$zone_id == zid, zones_reached = zid
+        rows = sel & d$zone_id == zid, zones_reached = zid,
+        geo = d$zone_id == zid
       )
     })
   )
@@ -306,7 +338,8 @@ for (m in milieux) {
     rows <- d[dom$rows, ]
     out_row <- c(
       list(milieu = m, level = dom$level, domain_id = as.integer(dom$id)),
-      as.list(count_domain(rows, dom$level, dom$zones_reached))
+      as.list(count_domain(rows, dom$level, dom$zones_reached)),
+      survey_dates(d$fieldwork_date[dom$geo])
     )
     for (ind in names(indicators)) {
       context <- paste0("milieu=", m, ", ", dom$level, " id=", dom$id, ", indicator=", ind)

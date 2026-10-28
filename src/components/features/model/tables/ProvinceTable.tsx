@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/table'
 import { MODEL_METRIC_KEYS, MODEL_METRIC_META } from '@/lib/utils/constants'
 import type { ProvinceRow } from '@/types'
+import { useDashboardStore } from '@/store/dashboardStore'
 
 interface ProvinceTableProps {
   rows: ProvinceRow[]
@@ -19,6 +20,7 @@ type SortKey = 'name' | 'births' | 'total_population' | string
 export function ProvinceTable({ rows }: ProvinceTableProps) {
   const [sortKey, setSortKey] = useState<SortKey>('name')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
+  const setProvince = useDashboardStore(s => s.setProvince)
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -101,7 +103,11 @@ export function ProvinceTable({ rows }: ProvinceTableProps) {
         </TableHeader>
         <TableBody>
           {sortedRows.map(row => (
-            <TableRow key={row.id}>
+            <TableRow
+              key={row.id}
+              className="cursor-pointer hover:bg-slate-100/50"
+              onClick={() => setProvince(row.displayName)}
+            >
               <TableCell className="font-medium w-32">
                 {row.displayName}
               </TableCell>

@@ -11,6 +11,7 @@ const SECTIONS: { value: DashboardSection; label: string }[] = [
     { value: 'zerodose', label: 'Prédictions zone santé ' },
     { value: 'determinants', label: 'Déterminants ménages' },
     { value: 'actions', label: 'Actions / interventions' },
+    { value: 'methodologie', label: 'Méthodologie' },
 ]
 
 const selectClass =
@@ -81,6 +82,12 @@ export function Ribbon() {
     const milieux = useAvailableMilieux()
     const ageGroups = useAvailableAgeGroups()
 
+    // Actions and Méthodologie have no filter at all.
+    const noFilters = activeSection === 'actions' || activeSection === 'methodologie'
+    const showYear = !noFilters
+    const showGeo = !noFilters
+    const showFilters = showYear || showGeo
+
     return (
         <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
             {/* Tabs */}
@@ -88,7 +95,7 @@ export function Ribbon() {
                 value={activeSection}
                 onValueChange={v => setActiveSection(v as DashboardSection)}
             >
-                <TabsList className="h-auto w-full flex-wrap justify-start gap-1 rounded-t-lg rounded-b-none bg-slate-50 p-1.5">
+                <TabsList className={`h-auto w-full flex-wrap justify-start gap-1 ${showFilters ? 'rounded-t-lg rounded-b-none' : 'rounded-lg'} bg-slate-50 p-1.5`}>
                     {SECTIONS.map(section => (
                         <TabsTrigger key={section.value} value={section.value} className="px-4 py-2 text-sm">
                             {section.label}
@@ -98,15 +105,18 @@ export function Ribbon() {
             </Tabs>
 
             {/* Filters */}
+            {showFilters && (
             <div className="flex flex-wrap items-center gap-5 border-t border-slate-100 px-4 py-3">
                 {/* Year */}
-                <Segmented<Year>
-                    label={yearLabel(activeSection)}
-                    info={yearInfo(activeSection)}
-                    options={years.map(y => ({ value: y, label: displayYear(activeSection, y) }))}
-                    value={selectedYear}
-                    onChange={setSelectedYear}
-                />
+                {showYear && (
+                    <Segmented<Year>
+                        label={yearLabel(activeSection)}
+                        info={yearInfo(activeSection)}
+                        options={years.map(y => ({ value: y, label: displayYear(activeSection, y) }))}
+                        value={selectedYear}
+                        onChange={setSelectedYear}
+                    />
+                )}
 
                 {/* Age (vs25, bounds included). ECV section only; it drives the
                     charts and the map, not the cards (key_ecv.csv is not split
@@ -135,6 +145,7 @@ export function Ribbon() {
                 )}
 
                 {/* Province */}
+                {showGeo && (
                 <label className="flex items-center gap-2 text-xs font-medium text-slate-500">
                     Province
                     <select
@@ -150,8 +161,10 @@ export function Ribbon() {
                         ))}
                     </select>
                 </label>
+                )}
 
                 {/* Zone */}
+                {showGeo && (
                 <label className="flex items-center gap-2 text-xs font-medium text-slate-500">
                     Zone de santé
                     <select
@@ -168,7 +181,9 @@ export function Ribbon() {
                         ))}
                     </select>
                 </label>
+                )}
             </div>
+            )}
         </div>
     )
 }

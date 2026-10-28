@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useDashboardStore } from '@/store/dashboardStore'
 import type { MetricKey } from '@/types'
+import { CONFIDENCE_BADGE_CLASSES, CONFIDENCE_LABELS, type ModelConfidence } from '@/lib/utils/modelConfidence'
 import { PRED_VACCINE_DESCRIPTIONS } from './constants'
 
 interface ModelIndicatorCardProps {
@@ -9,6 +10,7 @@ interface ModelIndicatorCardProps {
   value: number  // percentage (0-100)
   count: number  // vaccinated count or zero-dose child count
   isZeroDose: boolean
+  confidence?: ModelConfidence  // model validation R²; absent for 0-dose metrics
 }
 
 function getMetricDescription(metricKey: MetricKey): string {
@@ -25,6 +27,7 @@ export function ModelIndicatorCard({
   value,
   count,
   isZeroDose,
+  confidence,
 }: ModelIndicatorCardProps) {
   const [showTooltip, setShowTooltip] = useState(false)
   const selectedMetric = useDashboardStore(s => s.selectedMetric)
@@ -39,6 +42,7 @@ export function ModelIndicatorCard({
 
   const metricDescription = getMetricDescription(metricKey)
   const countDescription = getCountDescription(metricKey)
+  const r2Label = confidence?.r2.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
   return (
     <button
@@ -71,7 +75,7 @@ export function ModelIndicatorCard({
           {showTooltip && (
             <div className="absolute right-0 top-5 z-50 w-64 rounded-md bg-slate-900 px-3 py-3 text-xs text-white shadow-lg space-y-2">
               <div>
-                <div className="font-semibold mb-1">{isZeroDose ? 'Zero-dose Children' : 'Coverage Rate'}</div>
+                <div className="font-semibold mb-1">{isZeroDose ? 'Enfants 0 dose' : 'Taux de couverture'}</div>
                 <div className="text-slate-300">{metricDescription}</div>
               </div>
               <div>
@@ -86,6 +90,15 @@ export function ModelIndicatorCard({
                 <div className="font-semibold text-slate-400 text-2xs mb-1">Sources</div>
                 <div className="text-slate-300">Estimations ImmuReach + données population GRID3</div>
               </div>
+              {confidence && (
+                <div>
+                  <div className="font-semibold mb-1">Confiance dans le modèle</div>
+                  <div className="text-slate-300">
+                    R² de validation : {r2Label} (confiance {CONFIDENCE_LABELS[confidence.level]}).
+                    Échelle indicative : R² &gt; 0,9 élevée, &gt; 0,75 bonne, &gt; 0,5 modérée, &lt; 0,5 faible.
+                  </div>
+                </div>
+              )}
               <div className="absolute -top-1 right-2 h-2 w-2 rotate-45 bg-slate-900"></div>
             </div>
           )}
@@ -96,6 +109,14 @@ export function ModelIndicatorCard({
         <span className="text-sm text-slate-600">{suffix}</span>
       </p>
       <p className="text-xs text-slate-500">{countLabel}</p>
+      {confidence && (
+        <span
+          className={`mt-2 inline-block rounded px-1.5 py-0.5 text-[10px] font-medium ${CONFIDENCE_BADGE_CLASSES[confidence.level]}`}
+          title={`R² = ${r2Label}`}
+        >
+          Confiance {CONFIDENCE_LABELS[confidence.level]}
+        </span>
+      )}
     </button>
   )
 }

@@ -15,8 +15,10 @@ data/output/       per-domain aggregates: boundaries, population,
        │
        │  uv run scripts/build-dashboard-geojson.py
        │  uv run scripts/build-profile-json.py
+       │  uv run scripts/model_HZ/build-behaviour-indicators.py
        ▼
-public/data/       provinces.geojson, zones.geojson, profile.json
+public/data/       provinces.geojson, zones.geojson, profile.json,
+                   household_model/behaviour_indicators.json
                                                        (read by the dashboard)
 ```
 
@@ -77,7 +79,7 @@ Files produced by the ImmuReach modelling team.
 - `details_models.xlsx` — documentation of the model variables and composite
   indices. The `Household - details` sheet is the source of authorship for the
   one-line descriptions surfaced in the dumbbell tooltip (those descriptions
-  are baked into `scripts/build-profile-json.py` as the `INDICATOR_DESCRIPTIONS`
+  are baked into `scripts/model_HZ/build-behaviour-indicators.py` as the `INDICATOR_DESCRIPTIONS`
   constant — the script does not read the xlsx at build time, so editing the
   spreadsheet does not auto-propagate).
 - `travel_times_drive.tif`, `accessibility.json`, `data_and_predictions.json`,
@@ -109,7 +111,7 @@ shared borders stay coincident. The simplification ratio defaults to 10 %
 
 ### `data/output/population/`
 
-Produced by `scripts/aggregate-population.py`.
+Produced by `scripts/model_HZ/aggregate-population.py`.
 
 - `zones.csv` — one row per zone with `total_population`, `pop_u1`, `pop_u5`,
   `pop_6_12mo`, `pop_12_24mo`, `pop_6_24mo`, `births_per_year` and the level
@@ -131,7 +133,7 @@ the dashboard.
 
 ### `data/output/accessibility/`
 
-Produced by `scripts/aggregate-accessibility.py` (DuckDB).
+Produced by `scripts/model_HZ/aggregate-accessibility.py` (DuckDB).
 
 - `zone_2023.csv`, `zone_2024.csv` — passthrough of the per-zone CSV with
   geometry dropped.
@@ -144,7 +146,7 @@ Produced by `scripts/aggregate-accessibility.py` (DuckDB).
 
 ### `data/output/indicators/`
 
-Produced by `scripts/aggregate-indicators.py` (DuckDB).
+Produced by `scripts/model_HZ/aggregate-indicators.py` (DuckDB).
 
 - `zone_<year>.csv`, `province_<year>.csv`, `national_<year>.csv` for 2023 and
   2024 (the `ecv` column carries the same collection year).
@@ -170,7 +172,7 @@ for the rationale behind that scaling choice.
 
 ### `data/output/predictions/`
 
-Produced by `scripts/prepare-predictions.py`.
+Produced by `scripts/model_HZ/prepare-predictions.py`.
 
 - `zones.csv` — one row per zone with all eight `pred_*` columns from the
   predictions geopackage.
@@ -189,18 +191,24 @@ areas, mostly Nord-Kivu) have no model output.
 
 ## `public/data/` — runtime payload for the dashboard
 
-Produced by `scripts/build-dashboard-geojson.py` and `scripts/build-profile-json.py` from `data/output/`.
+Produced by `scripts/build-dashboard-geojson.py`, `scripts/build-profile-json.py` and
+`scripts/model_HZ/build-behaviour-indicators.py` from `data/output/`.
 
 - `provinces.geojson` — 26 features (~0.3 MB compact JSON).
 - `zones.geojson` — 519 features (~1.4 MB compact JSON).
-- `profile.json` — sidecar for Profiling-mode panels (~2 MB compact JSON):
-  accessibility isochrone counts and behaviour-indicator zero-dose / vaccinated
-  pairs, nested as `{ accessibility | indicators }[year][national|provinces|zones][area]`.
-  Area keys are the dashboard's *cleaned* names (matching `displayName` /
-  `selectedProvince`), so the frontend hooks look up rows directly without
-  re-cleaning at runtime. The `indicators.meta` block also ships a `description`
-  per indicator (one-line plain-English explanation), which the dumbbell
-  tooltip surfaces to give decision-makers context on each composite index.
+- `profile.json` — sidecar for the zero-dose tab's Profiling panel:
+  accessibility isochrone counts, nested as
+  `accessibility[year][national|provinces|zones][area]`.
+- `household_model/behaviour_indicators.json` — behaviour-indicator
+  zero-dose / vaccinated pairs for the household determinants tab, nested as
+  `[year][national|provinces|zones][area]`, plus a `meta` block shipping a
+  `description` per indicator (one-line plain-English explanation), which the
+  dumbbell tooltip surfaces to give decision-makers context on each composite
+  index.
+
+Area keys in both sidecars are the dashboard's *cleaned* names (matching
+`displayName` / `selectedProvince`), so the frontend hooks look up rows
+directly without re-cleaning at runtime.
 
 These are the only data files fetched at runtime. Each feature's `properties`
 carries everything the dashboard needs (no separate CSVs are loaded in the
@@ -229,17 +237,18 @@ The dashboard renders all such cells as a grey "No data" state.
 
 ## Scripts
 
-All scripts live in `scripts/` and are run from the project root.
+All scripts live in `scripts/` (the model ones in `scripts/model_HZ/`) and are run from the project root.
 
 | Script                          | Reads from                                | Writes to                                    |
 | ------------------------------- | ----------------------------------------- | -------------------------------------------- |
 | `generate-boundaries.py`        | `data/input/immureach/shapes_level3.gpkg` | `data/output/boundaries/`                    |
-| `aggregate-population.py`       | `data/input/grid3/`, `data/input/dhs/imr.csv`, `data/output/boundaries/` | `data/output/population/`                    |
-| `aggregate-accessibility.py`    | `data/input/immureach/accessibility_*.csv` | `data/output/accessibility/`                 |
-| `aggregate-indicators.py`       | `data/input/immureach/indicators_households_complete.csv` | `data/output/indicators/`                    |
-| `prepare-predictions.py`        | `data/input/immureach/data_and_predictions_260317.gpkg`, `data/output/population/zones.csv` | `data/output/predictions/`                   |
+| `model_HZ/aggregate-population.py` | `data/input/grid3/`, `data/input/dhs/imr.csv`, `data/output/boundaries/` | `data/output/population/`                    |
+| `model_HZ/aggregate-accessibility.py` | `data/input/immureach/accessibility_*.csv` | `data/output/accessibility/`                 |
+| `model_HZ/aggregate-indicators.py` | `data/input/immureach/indicators_households_complete.csv` | `data/output/indicators/`                    |
+| `model_HZ/prepare-predictions.py` | `data/input/immureach/data_and_predictions_260317.gpkg`, `data/output/population/zones.csv` | `data/output/predictions/`                   |
 | `build-dashboard-geojson.py`    | `data/output/{boundaries,population,predictions}/` | `public/data/{provinces,zones}.geojson`      |
-| `build-profile-json.py`         | `data/output/{accessibility,indicators}/`  | `public/data/profile.json`                   |
+| `build-profile-json.py`         | `data/output/accessibility/`               | `public/data/profile.json`                   |
+| `model_HZ/build-behaviour-indicators.py` | `data/output/indicators/` | `public/data/household_model/behaviour_indicators.json` |
 
 ### Running the full pipeline
 
@@ -248,20 +257,20 @@ a fresh checkout:
 
 ```bash
 uv run scripts/generate-boundaries.py        # boundaries first
-uv run scripts/aggregate-population.py       # needs boundaries
-uv run scripts/prepare-predictions.py        # needs population (for weights)
-uv run scripts/aggregate-accessibility.py    # independent
-uv run scripts/aggregate-indicators.py       # independent
+uv run scripts/model_HZ/aggregate-population.py       # needs boundaries
+uv run scripts/model_HZ/prepare-predictions.py        # needs population (for weights)
+uv run scripts/model_HZ/aggregate-accessibility.py    # independent
+uv run scripts/model_HZ/aggregate-indicators.py       # independent
 
 uv run scripts/build-dashboard-geojson.py    # builds provinces/zones.geojson
 uv run scripts/build-profile-json.py         # builds profile.json sidecar
+uv run scripts/model_HZ/build-behaviour-indicators.py  # behaviour_indicators.json
 # or, equivalently:
 npm run build-data
 ```
 
 The accessibility and indicators scripts are independent of the rest and can
-run in any order. Only `build-dashboard-geojson.py` and `build-profile-json.py`
-write to `public/data/`; everything else stays inside `data/output/`.
+run in any order. Only the three `build-*` scripts write to `public/data/`; everything else stays inside `data/output/`.
 
 ### Notes on `build-dashboard-geojson.py`
 
@@ -282,29 +291,30 @@ write to `public/data/`; everything else stays inside `data/output/`.
 
 ### Notes on `build-profile-json.py`
 
-- Reads only the per-level CSVs produced by `aggregate-accessibility.py` and
-  `aggregate-indicators.py`; no dependency on boundaries, predictions, or
-  population.
-- Normalises area keys: the accessibility CSVs ship cleaned `level_2_name` /
-  `level_3_name` ("Bas Uele", "Aketi"), while the indicators CSVs ship raw
-  prefixed names ("bu Bas Uele Province"). The script applies the same
-  `cleanName` regex used in the dashboard so both sub-blocks key on the same
-  `displayName` the frontend already has on hand.
-- Bakes `INDICATOR_DESCRIPTIONS` (one-liner per composite index, hand-written
-  from the `Household - details` sheet of `details_models.xlsx`) into each
-  `indicators.meta` entry.
+- Reads only the per-level CSVs produced by `aggregate-accessibility.py`; no
+  dependency on boundaries, predictions, or population.
 - Coerces upstream `NaN` to JSON `null` (`allow_nan=False`).
 
-### Profiling-mode consumption
+### Notes on `model_HZ/build-behaviour-indicators.py`
 
-`accessibility/` and `indicators/` are consumed by the dashboard's
-Profiling-mode panel (Data ↔ Profiling tab below the chart row):
+- Reads only the per-level CSVs produced by `aggregate-indicators.py`.
+- Normalises area keys: the indicators CSVs ship raw prefixed names
+  ("bu Bas Uele Province"). The script applies the same `cleanName` regex used
+  in the dashboard so rows key on the `displayName` the frontend already has.
+- Bakes `INDICATOR_DESCRIPTIONS` (one-liner per composite index, hand-written
+  from the `Household - details` sheet of `details_models.xlsx`) into each
+  `meta` entry.
+- Coerces upstream `NaN` to JSON `null` (`allow_nan=False`).
 
-- the cumulative-isochrone bar chart reads `profile.json → accessibility`;
-- the behaviour-indicators dumbbell reads `profile.json → indicators` (scaled
-  values for the shared axis; raw values and per-indicator description used in
-  the tooltip).
+### Dashboard consumption
+
+- the cumulative-isochrone bar chart (zero-dose tab, Profiling panel) reads
+  `profile.json → accessibility`;
+- the behaviour-indicators dumbbell (household determinants tab, below the
+  COM-B radar) reads `household_model/behaviour_indicators.json` (scaled values
+  for the shared axis; raw values and per-indicator description used in the
+  tooltip).
 
 `radar_data.json` is still produced by `aggregate-indicators.py` but currently
 unused by the dashboard — kept as the source shape that informed
-`build-profile-json.py` and as input for any future per-zone radar.
+`build-behaviour-indicators.py` and as input for any future per-zone radar.

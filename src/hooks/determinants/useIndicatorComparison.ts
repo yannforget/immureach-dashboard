@@ -1,22 +1,14 @@
 import { useMemo } from 'react'
 import { useData } from '@/context/DataContext'
 import { useDashboardStore } from '@/store/dashboardStore'
+import { buildIndicatorRows, type IndicatorRow } from '@/lib/utils/behaviourIndicators'
 import type {
   IndicatorValueMap,
   IndicatorsYear,
   ProfileScopeLevel,
 } from '@/types'
 
-export interface IndicatorRow {
-  key: string
-  label: string
-  description: string
-  zd: number
-  vacc: number
-  zdRaw: number | null
-  vaccRaw: number | null
-  gap: number
-}
+export type { IndicatorRow }
 
 export interface IndicatorComparison {
   scopeLabel: string
@@ -43,15 +35,15 @@ function pickEntry(
 }
 
 export function useIndicatorComparison(): IndicatorComparison | null {
-  const { profile, zones } = useData()
+  const { behaviourIndicators, zones, covariates } = useData()
   const selectedProvince = useDashboardStore((s) => s.selectedProvince)
   const selectedZoneId = useDashboardStore((s) => s.selectedZoneId)
   const selectedYear = useDashboardStore((s) => s.selectedYear)
 
   return useMemo(() => {
-    if (!profile) return null
+    if (!behaviourIndicators) return null
 
-    const yearBlock = profile.indicators[String(selectedYear)]
+    const yearBlock = behaviourIndicators[String(selectedYear)]
     if (!yearBlock) return null
 
     const zoneRow = selectedZoneId ? zones.find((z) => z.id === selectedZoneId) : null
@@ -68,29 +60,15 @@ export function useIndicatorComparison(): IndicatorComparison | null {
     )
     if (!entry) return null
 
-    if (level !== requestedLevel) {
-      console.warn(
-        `[indicators] no data at requested ${requestedLevel}, falling back to ${level}`,
-      )
-    }
+    const categoryByKey = new Map(covariates.map((c) => [c.variable_name, c.Category]))
 
-    const items: IndicatorRow[] = []
-    for (const meta of profile.indicators.meta) {
-      const pair = entry[meta.key]
-      if (!pair || pair.zd == null || pair.vacc == null) continue
-      const gap = pair.zd - pair.vacc
-      items.push({
-        key: meta.key,
-        label: meta.label,
-        description: meta.description ?? '',
-        zd: pair.zd,
-        vacc: pair.vacc,
-        zdRaw: pair.zd_raw,
-        vaccRaw: pair.vacc_raw,
-        gap,
-      })
-    }
-    items.sort((a, b) => Math.abs(b.gap) - Math.abs(a.gap))
+    const items = buildIndicatorRows(entry, behaviourIndicators.meta, categoryByKey)
+    // Descending by vaccinated value (highest at the top), alphabetical on ties.
+    items.sort(
+      (a, b) =>
+        b.vacc - a.vacc ||
+        a.label.localeCompare(b.label, 'fr', { sensitivity: 'base' }),
+    )
 
     const scopeLabel =
       level === 'zone'
@@ -100,5 +78,5 @@ export function useIndicatorComparison(): IndicatorComparison | null {
         : 'National'
 
     return { scopeLabel, scopeLevel: level, requestedLevel, items }
-  }, [profile, zones, selectedProvince, selectedZoneId, selectedYear])
+  }, [behaviourIndicators, zones, covariates, selectedProvince, selectedZoneId, selectedYear])
 }

@@ -9,6 +9,7 @@ ZONES_GEOJSON = PROJECT_ROOT / "data" / "output" / "boundaries" / "zones.geojson
 OUT_KEY_ECV_PATH = PROJECT_ROOT / "public" / "data" / "key_ecv.csv"
 OUT_VACC_COV_PATH = PROJECT_ROOT / "public" / "data" / "ecv_vaccination_coverage.csv"
 OUT_CARACTERISTICS_PATH = PROJECT_ROOT / "public" / "data" / "ecv_caracteristics.csv"
+OUT_INDICATORS_ECV_PATH = PROJECT_ROOT / "public" / "data" / "indicators_ecv.csv"
 
 R_KEY_PATH = PROJECT_ROOT / "scripts" / "ecv" / "rscripts" / "rscript_key_ecv.R"
 R_VACC_COV_PATH = (
@@ -16,6 +17,9 @@ R_VACC_COV_PATH = (
 )
 R_CARACTERISTICS_PATH = (
     PROJECT_ROOT / "scripts" / "ecv" / "rscripts" / "rscript_caracteristics.R"
+)
+R_INDICATORS_PATH = (
+    PROJECT_ROOT / "scripts" / "ecv" / "rscripts" / "rscript_indicators_ecv.R"
 )
 
 ## Filters
@@ -39,9 +43,15 @@ WEIGHT_COL = "ponderation"
 AGE_COL = "vs25"
 AREAS_TOTAL_COL = "nbre_as"  # health areas in the zone (sampling frame)
 AREAS_SURVEYED_COL = "nbre_asenq"  # health areas actually surveyed, per the file
+INTERVIEW_DATE_COL = "q117"  # "Date de début de l'interview lors de la visite"
+SUBMISSION_DATE_COL = "SubmissionDate"  # server-side upload timestamp
 MILIEU_COL = "q108"  # "Milieu de localisation du ménage"
 MILIEU_BY_CODE = {1: "urbain", 2: "rural"}
 MILIEUX = ("all", *MILIEU_BY_CODE.values())
+# q117 is typed on the tablet and carries typos (years 2020, 2028...). An
+# interview date is kept only if it falls this many days or fewer before the
+# form's upload; 99% of forms are uploaded within ~26 days.
+MAX_UPLOAD_LAG_DAYS = 30
 
 ## Variables and indicators
 VACCINATED = 1
@@ -65,4 +75,20 @@ VACCINES_MAPPING = {
     "vpi": "vpi_merg",
     "var": "var_merg",
     "vaa": "vaa_merg",
+}
+
+# Complete vaccination series, in card order: a child completed a series when
+# EVERY listed dose is coded VACCINATED. Keys are the `<key>_cov` column roots
+# of indicators_ecv.csv. Only doses present in both rounds are listed, so the
+# two years share one definition (the 2023 file's `vpi2_merg` / `var2_merg`
+# are left out, as in process-ecv-keys.py).
+VACCINE_SERIES = {
+    "bcg": ["bcg"],
+    "penta": ["penta1", "penta2", "penta3"],
+    "polio": ["polio0", "polio1", "polio2", "polio3"],
+    "pcv": ["pcv1", "pcv2", "pcv3"],
+    "rota": ["rota1", "rota2", "rota3"],
+    "vpi": ["vpi"],
+    "var": ["var"],
+    "vaa": ["vaa"],
 }

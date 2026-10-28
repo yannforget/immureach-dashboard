@@ -29,6 +29,10 @@ interface DashboardState {
   // Map-only Antenne overlay (purely visual; resets when province changes).
   showAntenne: boolean;
 
+  // Household-model variable whose partial dependency curve is shown in the
+  // determinants tab (null = the most influential one).
+  selectedRiVariable: string | null;
+
   // Actions
   setActiveSection: (section: DashboardSection) => void;
   setMetric: (metric: MetricKey) => void;
@@ -40,6 +44,7 @@ interface DashboardState {
   setSelectedMilieu: (milieu: Milieu) => void;
   setSelectedAgeGroup: (ageGroup: AgeGroup) => void;
   setShowAntenne: (show: boolean) => void;
+  setSelectedRiVariable: (variable: string | null) => void;
 }
 
 export const useDashboardStore = create<DashboardState>((set) => ({
@@ -53,6 +58,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   selectedMilieu: 'all',
   selectedAgeGroup: DEFAULT_AGE_GROUP,
   showAntenne: true,
+  selectedRiVariable: null,
 
   // Sections do not all publish every year (the zero-dose model covers the
   // latest one only), so the selection follows the section.
@@ -84,4 +90,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   setSelectedAgeGroup: (ageGroup) => set({ selectedAgeGroup: ageGroup }),
 
   setShowAntenne: (show) => set({ showAntenne: show }),
+
+  setSelectedRiVariable: (variable) => set({ selectedRiVariable: variable }),
+
 }));

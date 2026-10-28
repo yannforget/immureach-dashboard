@@ -12,7 +12,7 @@ in data/output/predictions/:
   - country.csv:   one row, pred_* averaged across all zones weighted by
                    pop_6_12mo
 
-Run: uv run scripts/prepare-predictions.py
+Run: uv run scripts/model_HZ/prepare-predictions.py
 """
 
 from pathlib import Path

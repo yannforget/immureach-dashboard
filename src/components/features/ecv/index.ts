@@ -1,5 +1,6 @@
 export { EcvIndicatorCard } from './cards/EcvIndicatorCard';
 export { EcvIndicatorCardGrid } from './cards/EcvIndicatorCardGrid';
+export { EcvSeriesCardGrid } from './cards/EcvSeriesCardGrid';
 export { EcvVaccineBarChart } from './charts/EcvVaccineBarChart';
 export { EcvEvolutionLineChart } from './charts/EcvEvolutionLineChart';
 export { EcvCaracteristicsChart } from './charts/EcvCaracteristicsChart';

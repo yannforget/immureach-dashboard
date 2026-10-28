@@ -1,5 +1,6 @@
 import type { EChartsOption } from 'echarts'
 import type { IndicatorRow } from '@/hooks'
+import { CATEGORY_COLORS } from '@/hooks/determinants/useDeterminantData'
 
 interface DumbbellConfig {
   items: IndicatorRow[]
@@ -12,6 +13,25 @@ const VACC = '#0d9488'
 const ZD = '#b91c1c'
 const CONNECTOR = '#cbd5e1'
 
+// Tooltip body for one indicator: label, description, both values and the
+// gap. Shared with the Déterminants map so hovering an area reads the same as
+// hovering the matching row of the dumbbell chart.
+export function indicatorTooltipHtml(r: IndicatorRow): string {
+  const sign = r.gap > 0 ? '+' : ''
+  const rawZd = r.zdRaw != null ? r.zdRaw.toFixed(2) : '—'
+  const rawVacc = r.vaccRaw != null ? r.vaccRaw.toFixed(2) : '—'
+  const desc = r.description
+    ? `<div style="margin: 4px 0 6px; color:#475569; font-size: 11px; line-height: 1.35; white-space: normal;">${r.description}</div>`
+    : ''
+  return (
+    `<strong>${r.label}</strong>` +
+    desc +
+    `<span style="color:${VACC}">●</span> Vacciné: ${r.vacc.toFixed(2)} (brut ${rawVacc})<br/>` +
+    `<span style="color:${ZD}">●</span> Zéro-dose: ${r.zd.toFixed(2)} (brut ${rawZd})<br/>` +
+    `Ecart (0-dose − vacc): ${sign}${r.gap.toFixed(2)}`
+  )
+}
+
 export function buildDumbbellOptions(config: DumbbellConfig): EChartsOption {
   const { items } = config
   const categories = items.map((r) => r.label)
@@ -22,7 +42,9 @@ export function buildDumbbellOptions(config: DumbbellConfig): EChartsOption {
   const zdPoints = items.map((r, i) => [r.zd, i])
 
   return {
-    grid: { left: 170, right: 32, top: 40, bottom: 32 },
+    // Generous left margin shifts the start of the 0–1 scale to the right,
+    // leaving the right edge (x = 1) in place.
+    grid: { left: 200, right: 32, top: 40, bottom: 32 },
     legend: {
       top: 8,
       right: 16,
@@ -38,31 +60,13 @@ export function buildDumbbellOptions(config: DumbbellConfig): EChartsOption {
       extraCssText: 'max-width: 320px; white-space: normal;',
       formatter: (params: any) => {
         const arr = Array.isArray(params) ? params : [params]
-        const i = arr[0].dataIndex as number
-        const r = items[i]
-        const gap = r.gap
-        const sign = gap > 0 ? '+' : ''
-        const rawZd = r.zdRaw != null ? r.zdRaw.toFixed(2) : '—'
-        const rawVacc = r.vaccRaw != null ? r.vaccRaw.toFixed(2) : '—'
-        const desc = r.description
-          ? `<div style="margin: 4px 0 6px; color:#475569; font-size: 11px; line-height: 1.35; white-space: normal;">${r.description}</div>`
-          : ''
-        return (
-          `<strong>${r.label}</strong>` +
-          desc +
-          `<span style="color:${VACC}">●</span> Vacciné: ${r.vacc.toFixed(2)} (raw ${rawVacc})<br/>` +
-          `<span style="color:${ZD}">●</span> Zéro-dose: ${r.zd.toFixed(2)} (raw ${rawZd})<br/>` +
-          `Ecart (0-dose − vacc): ${sign}${gap.toFixed(2)}`
-        )
+        return indicatorTooltipHtml(items[arr[0].dataIndex as number])
       },
     },
     xAxis: {
       type: 'value',
       min: 0,
       max: 1,
-      name: 'scaled 0–1',
-      nameLocation: 'middle',
-      nameGap: 22,
       splitLine: { lineStyle: { color: '#f1f5f9' } },
       axisLabel: { color: '#475569' },
     },
@@ -70,7 +74,23 @@ export function buildDumbbellOptions(config: DumbbellConfig): EChartsOption {
       type: 'category',
       inverse: true,
       data: categories,
-      axisLabel: { color: '#334155', fontSize: 12 },
+      // Labels are coloured by COM-B category, matching the category cards.
+      axisLabel: {
+        color: '#334155',
+        fontSize: 12,
+        rich: {
+          cap: { color: CATEGORY_COLORS.Capacity, fontWeight: 'bold', fontSize: 12 },
+          mot: { color: CATEGORY_COLORS.Motivation, fontWeight: 'bold', fontSize: 12 },
+          opp: { color: CATEGORY_COLORS.Opportunity, fontWeight: 'bold', fontSize: 12 },
+        },
+        formatter: (value: string, index: number) => {
+          const category = items[index]?.category
+          if (!category) return value
+          const key =
+            category === 'Capacity' ? 'cap' : category === 'Motivation' ? 'mot' : 'opp'
+          return `{${key}|${value}}`
+        },
+      },
       axisTick: { show: false },
     },
     series: [

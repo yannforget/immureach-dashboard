@@ -26,6 +26,10 @@ export const ECV_LINE_COLORS: Record<EcvMetricKey, string> = {
   vaa: '#f97316',
 };
 
+// Zero-dose red ramp, light -> dark: the ECV zero-dose map's visualMap and
+// the "Enfants zéro dose" card share it so both read as one red.
+export const ZERO_DOSE_RAMP: [string, string] = ['#fee2e2', '#7f1d1d']
+
 // Amber used to highlight the currently selected area/zone across charts
 // (map selection, bar emphasis, ECV characteristics selected bar).
 export const ECV_HIGHLIGHT_COLOR = '#ffdf33'
@@ -124,6 +128,19 @@ export const ECV_LINE_PALETTE: string[] = [
   '#c026d3',
 ];
 
+// Grey for the household model's control covariates (age, sex, wealth...) in
+// the relative-influence charts, next to the COM-B category colours.
+export const RI_CONTROL_COLOR = '#94a3b8' // slate-400
+
+// Dark label colour for text drawn over the tinted treemap tiles.
+export const RI_LABEL_COLOR = '#0f172a' // slate-900
+
+// Partial dependency charts: outline of each small-multiple panel, the
+// selected panel being outlined with RI_LABEL_COLOR instead.
+export const PDP_PANEL_BORDER_COLOR = '#e2e8f0' // slate-200
+// Muted text (panel titles' influence, axis names).
+export const PDP_MUTED_TEXT_COLOR = '#64748b' // slate-500
+
 export const ANTENNE_PALETTE: string[] = [
   '#6366f1',
   '#f59e0b',
@@ -151,7 +168,6 @@ export const DASHBOARD_THEME: any = {
     subtextStyle: { color: '#475569', }, // slate-600
   },
   line: { itemStyle: { borderWidth: 2, }, lineStyle: { width: 2, }, symbolSize: 6, },
-  radar: { itemStyle: { borderWidth: 2, }, lineStyle: { width: 2, }, symbolSize: 6, },
   bar: { itemStyle: { barBorderRadius: [2, 2, 0, 0], }, },
   pie: { itemStyle: { borderRadius: 4, borderColor: '#fff', borderWidth: 2, }, },
   scatter: { itemStyle: { borderWidth: 0, borderColor: '#fff', }, },
@@ -273,3 +289,17 @@ export const DASHBOARD_THEME: any = {
   },
   markPoint: { label: { color: '#fff', }, emphasis: { label: { color: '#fff', }, }, },
 };
+
+// Actions tab (counterfactual scenarios). Access to services is supply side,
+// hence the blue of the COM-B "Opportunité" category; individual factors get
+// violet, which no COM-B category uses, so the lever chart (coloured by
+// category) never reads as a scenario.
+export const CF_SCENARIO_COLORS = {
+  hcs: '#2563eb', // blue-600
+  indiv: '#7c3aed', // violet-600
+} as const
+
+// Probability before any change (dumbbell start point).
+export const CF_INITIAL_COLOR = '#94a3b8' // slate-400
+// Reference guide line (equal gain diagonal of the child scatter).
+export const CF_REFERENCE_COLOR = '#64748b' // slate-500

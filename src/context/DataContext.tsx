@@ -2,10 +2,13 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import * as echarts from 'echarts'
 import { cleanName } from '@/lib/utils/dataUtils'
 import { parseCsv } from '@/lib/utils/csv'
-// import type { KeyEcvRow, ProfileData, ProfileScopeLevel, ProvinceRow, Year, ZoneRow } from '@/types'
+// import type { KeyEcvRow, ProfileData, ProfileScopeLevel, ProvinceRow, RelativeInfluenceRow, Year, ZoneRow } from '@/types'
 import { parseEcvVaccCovCsv, parseMilieu } from '@/lib/utils/ecvVaccCov'
 import { parseEcvCaracteristicsCsv } from '@/lib/utils/ecvCaracteristics'
-import type { EcvCaracteristicsRow, EcvVaccCovRow, KeyEcvRow, ProfileData, ProfileScopeLevel, ProvinceRow, Year, ZoneRow } from '@/types'
+import { parseIndicatorsEcvCsv } from '@/lib/utils/ecvIndicators'
+import { parseCounterfactualsCsv } from '@/lib/utils/counterfactuals'
+import { type ModelConfidence, parseConfidenceMetricsCsv } from '@/lib/utils/modelConfidence'
+import type { BehaviourIndicatorsData, CounterfactualRow, CovariateRow, EcvCaracteristicsRow, EcvVaccCovRow, IndicatorsEcvRow, KeyEcvRow, MetricKey, PartialDependencyRow, ProfileData, ProfileScopeLevel, ProvinceRow, RelativeInfluenceRow, Year, ZoneRow } from '@/types'
 
 export type Bbox = [number, number, number, number] // [minLon, minLat, maxLon, maxLat]
 
@@ -13,9 +16,16 @@ interface DataContextType {
   provinces: ProvinceRow[]
   zones: ZoneRow[]
   profile: ProfileData | null
+  behaviourIndicators: BehaviourIndicatorsData | null
   keyEcv: KeyEcvRow[]
+  indicatorsEcv: IndicatorsEcvRow[]
   ecvVaccCov: EcvVaccCovRow[]
   ecvCaracteristics: EcvCaracteristicsRow[]
+  covariates: CovariateRow[]
+  relativeInfluences: RelativeInfluenceRow[]
+  partialDependence: PartialDependencyRow[]
+  counterfactuals: CounterfactualRow[]
+  modelConfidence: Partial<Record<MetricKey, ModelConfidence>>
   provinceBboxes: Record<string, Bbox>
   loading: boolean
   error: Error | null
@@ -35,12 +45,47 @@ function parseKeyEcvCsv(text: string): KeyEcvRow[] {
     nb_zones: toNum(r.nb_zones),
     nb_areas: toNum(r.nb_areas),
     nb_areas_tot: toNum(r.nb_areas_tot),
+    survey_start: toStr(r.survey_start),
+    survey_end: toStr(r.survey_end),
     penta_cov: toNum(r.penta_cov),
     zdc_cov: toNum(r.zdc_cov),
     penta_cov_low: toNum(r.penta_cov_low),
     penta_cov_high: toNum(r.penta_cov_high),
     zdc_cov_low: toNum(r.zdc_cov_low),
     zdc_cov_high: toNum(r.zdc_cov_high),
+  }))
+}
+
+function parseCovariatesCsv(text: string): CovariateRow[] {
+  return parseCsv(text).map(r => ({
+    Category: r.Category,
+    var_description: r.var_description,
+    variable_name: r.variable_name,
+  }))
+}
+
+function parseRelativeInfluenceCsv(text: string): RelativeInfluenceRow[] {
+  return parseCsv(text).map(r => ({
+    variable: r.Variable,
+    mean: Number(r.mean_ri),
+    median: Number(r.median_ri),
+    lower: Number(r.lower_q_ri),
+    upper: Number(r.upper_q_ri),
+  }))
+}
+
+// The partial dependency export still uses the model's old variable names;
+// rename them to the ones of relative_influences.csv.
+const PDP_VARIABLE_ALIASES: Record<string, string> = {
+  direct_cost: 'affordability',
+}
+
+function parsePartialDependencyCsv(text: string): PartialDependencyRow[] {
+  return parseCsv(text).map(r => ({
+    variable: PDP_VARIABLE_ALIASES[r.variable] ?? r.variable,
+    x: Number(r.x),
+    y: Number(r.y),
+    iteration: Number(r.iteration),
   }))
 }
 
@@ -82,9 +127,16 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [provinces, setProvinces] = useState<ProvinceRow[]>([])
   const [zones, setZones] = useState<ZoneRow[]>([])
   const [profile, setProfile] = useState<ProfileData | null>(null)
+  const [behaviourIndicators, setBehaviourIndicators] = useState<BehaviourIndicatorsData | null>(null)
   const [keyEcv, setKeyEcv] = useState<KeyEcvRow[]>([])
+  const [indicatorsEcv, setIndicatorsEcv] = useState<IndicatorsEcvRow[]>([])
   const [ecvVaccCov, setEcvVaccCov] = useState<EcvVaccCovRow[]>([])
   const [ecvCaracteristics, setEcvCaracteristics] = useState<EcvCaracteristicsRow[]>([])
+  const [covariates, setCovariates] = useState<CovariateRow[]>([])
+  const [relativeInfluences, setRelativeInfluences] = useState<RelativeInfluenceRow[]>([])
+  const [partialDependence, setPartialDependence] = useState<PartialDependencyRow[]>([])
+  const [counterfactuals, setCounterfactuals] = useState<CounterfactualRow[]>([])
+  const [modelConfidence, setModelConfidence] = useState<Partial<Record<MetricKey, ModelConfidence>>>({})
   const [provinceBboxes, setProvinceBboxes] = useState<Record<string, Bbox>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
@@ -200,11 +252,22 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           console.warn('Failed to load key_ecv.csv:', keyEcvErr)
         }
 
+        // indicators_ecv.csv (complete vaccination series, built by
+        // scripts/ecv/process-ecv-indicators.py) is likewise optional and non-fatal.
+        try {
+          const indicatorsEcvRes = await fetch('data/indicators_ecv.csv')
+          if (indicatorsEcvRes.ok) {
+            setIndicatorsEcv(parseIndicatorsEcvCsv(await indicatorsEcvRes.text()))
+          }
+        } catch (indicatorsEcvErr) {
+          console.warn('Failed to load indicators_ecv.csv:', indicatorsEcvErr)
+        }
+
         // ecv_vaccination_coverage.csv (health-zone-level EPSK survey, built by
-        // scripts/prepare-ecv-vaccination-coverage.py) is likewise optional and
+        // scripts/ecv/process-ecv-vaccination-coverage.py) is likewise optional and
         // non-fatal.
         try {
-          const ecvVaccCovRes = await fetch('/data/ecv_vaccination_coverage.csv')
+          const ecvVaccCovRes = await fetch('data/ecv_vaccination_coverage.csv')
           if (ecvVaccCovRes.ok) {
             setEcvVaccCov(parseEcvVaccCovCsv(await ecvVaccCovRes.text()))
           }
@@ -213,15 +276,79 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         }
 
         // ecv_caracteristics.csv (health-zone-level EPSK household-characteristics
-        // survey, built by scripts/prepare-ecv-caracteristics.py) is likewise
+        // survey, built by scripts/ecv/process-ecv-caracteristics.py) is likewise
         // optional and non-fatal.
         try {
-          const ecvCaractRes = await fetch('/data/ecv_caracteristics.csv')
+          const ecvCaractRes = await fetch('data/ecv_caracteristics.csv')
           if (ecvCaractRes.ok) {
             setEcvCaracteristics(parseEcvCaracteristicsCsv(await ecvCaractRes.text()))
           }
         } catch (ecvCaractErr) {
           console.warn('Failed to load ecv_caracteristics.csv:', ecvCaractErr)
+        }
+
+        // covariates_description.csv (household determinants tab, from the
+        // household model) is optional and non-fatal.
+        try {
+          const covRes = await fetch('data/household_model/covariates_description.csv')
+          if (covRes.ok) {
+            setCovariates(parseCovariatesCsv(await covRes.text()))
+          }
+        } catch (covErr) {
+          console.warn('Failed to load covariates_description.csv:', covErr)
+        }
+
+        // relative_influences.csv (household model variable importance) is
+        // likewise optional and non-fatal.
+        try {
+          const riRes = await fetch('data/household_model/relative_influences.csv')
+          if (riRes.ok) {
+            setRelativeInfluences(parseRelativeInfluenceCsv(await riRes.text()))
+          }
+        } catch (riErr) {
+          console.warn('Failed to load relative_influences.csv:', riErr)
+        }
+
+        // partial_dependency.csv (household model effect curves) is likewise
+        // optional and non-fatal.
+        try {
+          const pdRes = await fetch('data/household_model/partial_dependency.csv')
+          if (pdRes.ok) {
+            setPartialDependence(parsePartialDependencyCsv(await pdRes.text()))
+          }
+        } catch (pdErr) {
+          console.warn('Failed to load partial_dependency.csv:', pdErr)
+        }
+
+        // counterfactuals.csv (household model "what if" scenarios, actions
+        // tab) is likewise optional and non-fatal.
+        try {
+          const cfRes = await fetch('data/household_model/counterfactuals.csv')
+          if (cfRes.ok) {
+            setCounterfactuals(parseCounterfactualsCsv(await cfRes.text()))
+          }
+        } catch (cfErr) {
+          console.warn('Failed to load counterfactuals.csv:', cfErr)
+        }
+
+        // confidence_metrics.csv (model validation R² per vaccine, model tab
+        // key indicators) is likewise optional and non-fatal.
+        try {
+          const confRes = await fetch('data/confidence_metrics.csv')
+          if (confRes.ok) {
+            setModelConfidence(parseConfidenceMetricsCsv(await confRes.text()))
+          }
+        } catch (confErr) {
+          console.warn('Failed to load confidence_metrics.csv:', confErr)
+        }
+
+        try {
+          const biRes = await fetch('data/household_model/behaviour_indicators.json')
+          if (biRes.ok) {
+            setBehaviourIndicators((await biRes.json()) as BehaviourIndicatorsData)
+          }
+        } catch (biErr) {
+          console.warn('Failed to load behaviour_indicators.json:', biErr)
         }
 
       } catch (err) {
@@ -237,7 +364,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   return (
     // <DataContext.Provider value={{ provinces, zones, profile, keyEcv, provinceBboxes, loading, error }}>
-    <DataContext.Provider value={{ provinces, zones, profile, keyEcv, ecvVaccCov, ecvCaracteristics, provinceBboxes, loading, error }}>
+    <DataContext.Provider value={{ provinces, zones, profile, behaviourIndicators, keyEcv, indicatorsEcv, ecvVaccCov, ecvCaracteristics, covariates, relativeInfluences, partialDependence, counterfactuals, modelConfidence, provinceBboxes, loading, error }}>
       {children}
     </DataContext.Provider>
   )
