@@ -92,7 +92,7 @@ export function DashboardGrid() {
           </section>
           {/* Relative influence of the household-model variables */}
           <section className="mb-8">
-            <div className="h-[32rem] overflow-hidden rounded-lg border border-slate-200 bg-white">
+            <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
               <RelativeInfluenceTreemap />
             </div>
           </section>

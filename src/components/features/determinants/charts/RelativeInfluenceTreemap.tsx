@@ -5,16 +5,21 @@ import { useRelativeInfluence } from '@/hooks'
 import { useDashboardStore } from '@/store/dashboardStore'
 import { InfoBubble } from '@/components/common/InfoBubble'
 import { buildRiTreemapOptions } from '@/lib/charts/riTreemapOptions'
+import { buildRiBarOptions, riBarChartHeight } from '@/lib/charts/riBarOptions'
 import { downloadDataUrl } from '@/lib/utils/download'
 import { Button } from '@/components/ui/button'
+import { Toggle } from '@/components/ui/toggle'
+
+type RiView = 'treemap' | 'bar'
 
 export function RelativeInfluenceTreemap() {
   const { categories } = useRelativeInfluence()
   const chartRef = useRef<EChartsReact>(null)
   const [downloadOpen, setDownloadOpen] = useState(false)
+  const [view, setView] = useState<RiView>('treemap')
   const setSelectedRiVariable = useDashboardStore(s => s.setSelectedRiVariable)
 
-  // Clicking a variable tile shows its effect curve below the treemap;
+  // Clicking a variable (tile or bar) shows its effect curve below;
   // clicking a category tile keeps zooming into it.
   const onEvents = useMemo(
     () => ({
@@ -32,10 +37,12 @@ export function RelativeInfluenceTreemap() {
     return chart?.getModel()?.getSeriesByIndex(0)?.getData()?.getItemLayout(dataIndex)
   }, [])
 
-  const options = useMemo(
-    () => (categories.length > 0 ? buildRiTreemapOptions({ categories, getItemSize }) : null),
-    [categories, getItemSize],
-  )
+  const options = useMemo(() => {
+    if (categories.length === 0) return null
+    return view === 'bar'
+      ? buildRiBarOptions({ categories })
+      : buildRiTreemapOptions({ categories, getItemSize })
+  }, [view, categories, getItemSize])
 
   const top = categories[0]
 
@@ -49,7 +56,7 @@ export function RelativeInfluenceTreemap() {
   }
 
   return (
-    <div className="flex h-full flex-col">
+    <div className={`flex flex-col ${view === 'treemap' ? 'h-[32rem]' : ''}`}>
       <div className="flex items-start justify-between gap-2 border-b border-slate-200 px-4 py-3">
         <div>
           <div className="flex items-center gap-2">
@@ -57,12 +64,25 @@ export function RelativeInfluenceTreemap() {
             <InfoBubble text="Part du pouvoir prédictif du modèle ménage attribuée à chaque variable (total = 100 %). Elle indique l'importance d'un déterminant, pas le sens de son effet sur la vaccination." />
           </div>
           <p className="text-xs text-slate-500">
-            {top
-              ? "Cliquer sur une composante pour l'agrandir, sur une variable pour voir son effet ci-dessous."
-              : "Part de l'influence totale par composante."}
+            {!top
+              ? "Part de l'influence totale par composante."
+              : view === 'treemap'
+                ? "Cliquer sur une composante pour l'agrandir, sur une variable pour voir son effet ci-dessous."
+                : 'Cliquer sur une variable pour voir son effet ci-dessous.'}
           </p>
         </div>
-        <div className="relative flex-shrink-0">
+        <div className="relative flex flex-shrink-0 items-center gap-1">
+          {(['treemap', 'bar'] as RiView[]).map(v => (
+            <Toggle
+              key={v}
+              size="sm"
+              className="h-8 text-xs"
+              pressed={view === v}
+              onPressedChange={() => setView(v)}
+            >
+              {v === 'treemap' ? 'Treemap' : 'Barres'}
+            </Toggle>
+          ))}
           <Button
             variant="ghost"
             size="sm"
@@ -93,10 +113,14 @@ export function RelativeInfluenceTreemap() {
         </div>
       </div>
       {options ? (
-        <div className="min-h-0 flex-1">
+        <div
+          className={view === 'treemap' ? 'min-h-0 flex-1' : undefined}
+          style={view === 'bar' ? { height: riBarChartHeight(categories) } : undefined}
+        >
           <EChartsReact
             ref={chartRef}
             option={options}
+            notMerge
             onEvents={onEvents}
             theme="dashboard"
             style={{ width: '100%', height: '100%' }}
