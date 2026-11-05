@@ -86,9 +86,10 @@ export type ViewMode = 'data' | 'profiling';
 
 export type DashboardSection = 'ecv' | 'zerodose' | 'determinants' | 'actions' | 'methodologie';
 
-// Year the ECV survey was collected (the source exports are named after the
-// year before, see scripts/process-ecv-*.py).
-export type Year = 2023 | 2024;
+// Year the ECV survey was collected (the 2022 and 2023 source exports are
+// named after the year before, see scripts/ecv/constants.py). 2026 is an ECV
+// round only; see ECV_YEARS in lib/utils/years.ts.
+export type Year = 2023 | 2024 | 2026;
 
 export const ACCESSIBILITY_THRESHOLDS = [30, 60, 90, 120, 150, 180] as const;
 export type AccessibilityThreshold = (typeof ACCESSIBILITY_THRESHOLDS)[number];
