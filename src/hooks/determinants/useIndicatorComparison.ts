@@ -63,10 +63,11 @@ export function useIndicatorComparison(): IndicatorComparison | null {
     const categoryByKey = new Map(covariates.map((c) => [c.variable_name, c.Category]))
 
     const items = buildIndicatorRows(entry, behaviourIndicators.meta, categoryByKey)
-    // Descending by vaccinated value (highest at the top), alphabetical on ties.
+    // Descending by range length between zero-dose and vaccinated (widest gap
+    // at the top, whatever its sign), alphabetical on ties.
     items.sort(
       (a, b) =>
-        b.vacc - a.vacc ||
+        Math.abs(b.gap) - Math.abs(a.gap) ||
         a.label.localeCompare(b.label, 'fr', { sensitivity: 'base' }),
     )
 

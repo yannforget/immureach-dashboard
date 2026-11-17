@@ -54,10 +54,9 @@ export function EcvEvolutionLineChart() {
       buildEcvEvolutionLineOptions({
         years: data.years,
         series: data.series,
-        selectedYear,
         scopeLabel,
       }),
-    [data, selectedYear, scopeLabel],
+    [data, scopeLabel],
   )
 
   const handleDownloadPng = () => {
