@@ -88,15 +88,15 @@ export function DashboardGrid() {
           <section className="mb-8">
             <DeterminantCardGrid />
           </section>
-          {/* Behaviour indicators dumbbell (left) + map of the widest-gap
-              indicator's category per area (right); the map stretches to the
+          {/* Map of the widest-gap indicator's category per area (left) +
+              behaviour indicators dumbbell (right); the map stretches to the
               dumbbell's content-driven height. */}
           <section className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-              <BehaviourIndicatorsChart />
-            </div>
             <div className="min-h-96 overflow-hidden rounded-lg border border-slate-200 bg-white">
               <BehaviourIndicatorsMap />
+            </div>
+            <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+              <BehaviourIndicatorsChart />
             </div>
           </section>
           {/* Relative influence of the household-model variables */}

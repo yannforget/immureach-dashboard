@@ -54,7 +54,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   selectedZoneId: null,
   hoveredZoneId: null,
   viewMode: 'data',
-  selectedYear: 2023,
+  selectedYear: 2026,
   selectedMilieu: 'all',
   selectedAgeGroup: DEFAULT_AGE_GROUP,
   showAntenne: true,

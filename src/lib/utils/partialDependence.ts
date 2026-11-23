@@ -105,6 +105,7 @@ const PDP_X_SCALES: Record<string, PdpXScale> = {
   },
   opinion_on_vaccines: { kind: 'hidden' },
   outreach: { kind: 'hidden' },
+  community_norms: { kind: 'hidden' },
   household_travel_ohe: { kind: 'hidden' },
   cultural_alignment: { kind: 'percent' },
   // direct_cost in the model output, renamed on load.
