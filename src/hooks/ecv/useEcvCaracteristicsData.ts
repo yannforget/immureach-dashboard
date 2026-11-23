@@ -110,18 +110,26 @@ export function useEcvCaracteristicsData(): EcvCaracteristicsData {
   const { provinceName, provinceKey, zoneKey } = useEcvScope()
 
   return useMemo(() => {
-    // Whitelist + order the charted variables; the CSV may carry extra
-    // `<root>_pct` families that this panel does not show.
-    const available = new Set(Object.keys(ecvCaracteristics[0]?.values ?? {}))
-    const variables = ECV_CARACTERISTIC_KEYS.filter(v => available.has(v))
-    const groups = buildGroups(variables)
-
     const rows = ecvCaracteristics.filter(
       r =>
         r.year === selectedYear &&
         r.ageGroup === selectedAgeGroup &&
         r.milieu === selectedMilieu,
     )
+
+    // Whitelist + order the charted variables; the CSV may carry extra
+    // `<root>_pct` families that this panel does not show. A variable the
+    // selected round never asked (ECV 2026 dropped BeSD6, BeSD19 and BeSD21)
+    // is empty on every row of that year and gets no tab.
+    const available = new Set(
+      rows.flatMap(r =>
+        Object.entries(r.values)
+          .filter(([, v]) => v.pct != null)
+          .map(([root]) => root),
+      ),
+    )
+    const variables = ECV_CARACTERISTIC_KEYS.filter(v => available.has(v))
+    const groups = buildGroups(variables)
 
     const toBar = (row: EcvCaracteristicsRow, name: string, highlighted = false): EcvCaracteristicBar => {
       const values: Record<string, EcvCaracteristicValue> = {}

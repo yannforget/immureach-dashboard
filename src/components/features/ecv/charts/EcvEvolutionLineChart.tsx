@@ -8,6 +8,7 @@ import { ECV_LINE_METRIC_KEYS, ECV_METRIC_META } from '@/lib/utils/constants'
 import { buildEcvEvolutionLineOptions } from '@/lib/charts/ecvLineOptions'
 import { buildEcvEvolutionCsv, buildScopeSlug, downloadDataUrl, downloadText } from '@/lib/utils/download'
 import { ageGroupSlug, milieuSlug, withAgeGroup, withMilieu } from '@/lib/utils/ecvScope'
+import { ecvTrendCaveat } from '@/lib/utils/years'
 import { Button } from '@/components/ui/button'
 import type { EcvMetricKey } from '@/types'
 
@@ -53,10 +54,9 @@ export function EcvEvolutionLineChart() {
       buildEcvEvolutionLineOptions({
         years: data.years,
         series: data.series,
-        selectedYear,
         scopeLabel,
       }),
-    [data, selectedYear, scopeLabel],
+    [data, scopeLabel],
   )
 
   const handleDownloadPng = () => {
@@ -96,6 +96,8 @@ export function EcvEvolutionLineChart() {
       </div>
     )
   }
+
+  const caveat = ecvTrendCaveat(data.years, selectedAgeGroup)
 
   const emptyMessage =
     selectedKeys.length === 0
@@ -146,6 +148,9 @@ export function EcvEvolutionLineChart() {
           )}
         </div>
       </div>
+      {caveat && (
+        <p className="border-b border-amber-100 bg-amber-50 px-4 py-1.5 text-xs text-amber-800">{caveat}</p>
+      )}
       <div className="flex flex-1 min-h-0">
         <div className="flex-1 relative">
           {data.series.length === 0 ? (

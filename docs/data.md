@@ -37,6 +37,14 @@ downstream — the `year` column of the runtime CSVs, the year-suffixed files in
 with the **collection year**, so the file years 2022 / 2023 surface as 2023 /
 2024. The shift lives in each script's `COLLECTION_YEAR` map.
 
+`ECV2026_Vac_Palu_VR12HFC1_WKF2.dta` breaks that pattern: it was collected in
+April–May 2026 and stays 2026. It also renames the weight (`PonderationG`) and
+codes the geography (`KL`, `KL_KL_BAGATA`, ...); `scripts/ecv/utils.py`
+(`find_input`, `read_round`) maps both back onto the 2022/2023 layout, so the
+four `process-ecv-*.py` scripts treat the three rounds alike. 2026 is an ECV
+round only: the ribbon offers it on the ECV tab, not on the model tabs. See
+`docs/ecv2026.md` for how the round differs.
+
 Three providers feed the pipeline. None of these files are checked into git;
 copy them locally before running the scripts.
 

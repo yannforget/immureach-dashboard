@@ -63,10 +63,15 @@ export function useIndicatorComparison(): IndicatorComparison | null {
     const categoryByKey = new Map(covariates.map((c) => [c.variable_name, c.Category]))
 
     const items = buildIndicatorRows(entry, behaviourIndicators.meta, categoryByKey)
-    // Descending by vaccinated value (highest at the top), alphabetical on ties.
+    // Descending by range length between zero-dose and vaccinated (widest gap
+    // at the top, whatever its sign). Gaps are compared at the 2-decimal
+    // precision shown in the tooltip, so equal-looking gaps are then ordered
+    // by ascending vaccinated value, and alphabetically as a last resort.
+    const absGap = (r: IndicatorRow) => Math.round(Math.abs(r.gap) * 100)
     items.sort(
       (a, b) =>
-        b.vacc - a.vacc ||
+        absGap(b) - absGap(a) ||
+        a.vacc - b.vacc ||
         a.label.localeCompare(b.label, 'fr', { sensitivity: 'base' }),
     )
 

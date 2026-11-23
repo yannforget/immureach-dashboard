@@ -9,7 +9,6 @@ import type { EcvLineSeries } from '@/hooks'
 interface EcvLineConfig {
   years: number[]
   series: EcvLineSeries[]
-  selectedYear: number
   scopeLabel: string
 }
 
@@ -29,14 +28,15 @@ function seriesColor(series: EcvLineSeries[], index: number): string {
 // the tooltip.
 function buildBandSeries(
   s: EcvLineSeries,
+  years: number[],
   color: string,
 ): [LineSeriesOption, LineSeriesOption] {
-  const lowerData = s.values.map((v, i) => s.ciLow[i] ?? v)
+  const lowerData = s.values.map((v, i) => [years[i], s.ciLow[i] ?? v])
   const upperData = s.values.map((v, i) => {
     const low = s.ciLow[i] ?? v
     const high = s.ciHigh[i] ?? v
-    if (low == null || high == null) return null
-    return high - low
+    if (low == null || high == null) return [years[i], null]
+    return [years[i], high - low]
   })
 
   const base: LineSeriesOption = {
@@ -68,20 +68,18 @@ function buildBandSeries(
 
 // Line chart of ECV coverage rates across survey years — one line per
 // selected variable, each overlaid with a translucent 95%-CI band. 
-// Nulls create gaps (connectNulls: false) rather than drawing a 0. A dashed
-// vertical markLine highlights the ribbon's selected year, so the single-year
-// filter still reads as the "current" point.
+// Nulls create gaps (connectNulls: false) rather than drawing a 0.
 export function buildEcvEvolutionLineOptions(config: EcvLineConfig): EChartsOption {
-  const { years, series, selectedYear } = config
+  const { years, series } = config
 
   const chartSeries: LineSeriesOption[] = series.flatMap((s, i) => {
     const color = seriesColor(series, i)
-    const [ciLowSeries, ciHighSeries] = buildBandSeries(s, color)
+    const [ciLowSeries, ciHighSeries] = buildBandSeries(s, years, color)
 
     const lineSeries: LineSeriesOption = {
       name: s.name,
       type: 'line',
-      data: s.values,
+      data: s.values.map((v, j) => [years[j], v]),
       connectNulls: false,
       symbol: 'circle',
       symbolSize: 7,
@@ -89,15 +87,6 @@ export function buildEcvEvolutionLineOptions(config: EcvLineConfig): EChartsOpti
       itemStyle: { color },
       emphasis: { itemStyle: { color: '#fbbf24' } },
       z: 2,
-    }
-    if (i === 0) {
-      lineSeries.markLine = {
-        symbol: 'none',
-        silent: true,
-        lineStyle: { type: 'dashed', color: '#94a3b8' },
-        label: { formatter: `${selectedYear}`, color: '#475569' },
-        data: [{ xAxis: selectedYear }],
-      }
     }
 
     // Line series must come first: the legend derives each item's colour from
@@ -110,14 +99,17 @@ export function buildEcvEvolutionLineOptions(config: EcvLineConfig): EChartsOpti
     tooltip: {
       trigger: 'axis',
       appendToBody: true,
-      axisPointer: { type: 'line' },
+      axisPointer: { type: 'line', snap: true },
       formatter: (params: TooltipComponentFormatterCallbackParams) => {
         const list = Array.isArray(params) ? params : [params]
-        let html = `<strong>${list[0].name}</strong><br/>`
+        // On a value axis the hovered year comes from the data point itself.
+        const firstValue = list[0].value
+        const year = Array.isArray(firstValue) ? firstValue[0] : list[0].name
+        let html = `<strong>${year}</strong><br/>`
         for (const p of list) {
           const s = series.find(s => s.name === p.seriesName)
           if (!s) continue
-          const v = p.value
+          const v = Array.isArray(p.value) ? p.value[1] : p.value
           if (v == null) {
             html += `${s.name}: —<br/>`
             continue
@@ -147,12 +139,19 @@ export function buildEcvEvolutionLineOptions(config: EcvLineConfig): EChartsOpti
       bottom: 24,
       containLabel: true,
     },
+    // Numeric axis (not category) so spacing is proportional to elapsed time:
+    // a 2024 → 2026 gap is drawn twice as wide as 2023 → 2024. Ticks and
+    // labels are pinned to the survey years so in-between years (e.g. 2025)
+    // don't get a label.
     xAxis: {
-      type: 'category',
-      data: years,
+      type: 'value',
+      // Half-year padding so the first/last points aren't flush with the edge.
+      min: years[0] - 0.5,
+      max: years[years.length - 1] + 0.5,
       axisLine: { lineStyle: { color: '#cbd5e1' } },
-      axisTick: { lineStyle: { color: '#cbd5e1' } },
-      axisLabel: { color: '#475569' },
+      axisTick: { lineStyle: { color: '#cbd5e1' }, customValues: years },
+      axisLabel: { color: '#475569', customValues: years, formatter: (v: number) => String(v) },
+      splitLine: { show: false },
     },
     yAxis: {
       type: 'value',

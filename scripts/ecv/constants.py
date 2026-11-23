@@ -23,8 +23,11 @@ R_INDICATORS_PATH = (
 )
 
 ## Filters
-YEARS = ("2022", "2023")
-COLLECTION_YEAR = {"2022": "2023", "2023": "2024"}
+# Source-file years, as named in the exports. The 2022 and 2023 rounds were
+# fielded the year after the one they are named for; 2026 was not (see
+# docs/ecv2026.md, "The round labels are not the fieldwork years").
+YEARS = ("2022", "2023", "2026")
+COLLECTION_YEAR = {"2022": "2023", "2023": "2024", "2026": "2026"}
 AGE_MIN_MONTHS = 6
 AGE_MAX_MONTHS = 24
 
@@ -40,11 +43,47 @@ STRATUM_COL = "q101"  # "Nom de la strate (de la province)"
 ZONE_COL = "q103"  # "Nom de la zone de santé"
 AREA_COL = "q105"  # "Nom de la grappe (de l'Aire de santé)" -- the PSU
 WEIGHT_COL = "ponderation"
+# Rounds whose child weight is not WEIGHT_COL. The 2026 weight is also on a
+# ~10x smaller scale; every published figure is a ratio, so that is harmless.
+WEIGHT_COL_BY_YEAR = {"2026": "PonderationG"}
 AGE_COL = "vs25"
 AREAS_TOTAL_COL = "nbre_as"  # health areas in the zone (sampling frame)
 AREAS_SURVEYED_COL = "nbre_asenq"  # health areas actually surveyed, per the file
 INTERVIEW_DATE_COL = "q117"  # "Date de début de l'interview lors de la visite"
 SUBMISSION_DATE_COL = "SubmissionDate"  # server-side upload timestamp
+# Rounds whose q101 / q103 / q105 hold codes ("KL", "KL_KL_BAGATA",
+# "KL_KL_BAGATA_KL_MOSANGO") rather than names ("kl Kwilu Province"...).
+# utils.read_round() decodes them; PROVINCE_BY_CODE names the q101 codes,
+# which are the boundaries' own level_2_name prefixes upper-cased.
+CODED_GEOGRAPHY_YEARS = ("2026",)
+PROVINCE_BY_CODE = {
+    "BU": "Bas Uele",
+    "EQ": "Equateur",
+    "HK": "Haut Katanga",
+    "HL": "Haut Lomami",
+    "HU": "Haut Uele",
+    "IT": "Ituri",
+    "KC": "Kongo Central",
+    "KE": "Kasai Oriental",
+    "KG": "Kwango",
+    "KL": "Kwilu",
+    "KN": "Kinshasa",
+    "KR": "Kasai Central",
+    "KS": "Kasai",
+    "LL": "Lualaba",
+    "LM": "Lomami",
+    "MD": "Maindombe",
+    "MG": "Mongala",
+    "MN": "Maniema",
+    "NK": "Nord Kivu",
+    "NU": "Nord Ubangi",
+    "SK": "Sud Kivu",
+    "SN": "Sankuru",
+    "SU": "Sud Ubangi",
+    "TN": "Tanganyika",
+    "TP": "Tshopo",
+    "TU": "Tshuapa",
+}
 MILIEU_COL = "q108"  # "Milieu de localisation du ménage"
 MILIEU_BY_CODE = {1: "urbain", 2: "rural"}
 MILIEUX = ("all", *MILIEU_BY_CODE.values())

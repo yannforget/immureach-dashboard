@@ -1,6 +1,7 @@
 """Compute ECV key figures for young children from the raw survey microdata.
 
-Reads the Stata exports in data/input/ecv/ (ECV_2022_* and ECV_2023_*) and
+Reads the Stata exports in data/input/ecv/ (ECV_2022_*, ECV_2023_* and
+ECV2026_*; see utils.read_round for what differs between rounds) and
 derives the two headline indicators the dashboard shows, for children inside
 the age window (`vs25`, age in completed months; see AGE_MIN_MONTHS):
 
@@ -77,9 +78,9 @@ LOAD_COLUMNS = [
 ] + VACCINES_COLUMNS
 
 
-def load_year(dta_path: Path) -> pd.DataFrame:
+def load_year(dta_path: Path, year: str) -> pd.DataFrame:
     """Read one ECV Stata export into the child-level frame handed to R."""
-    raw = pd.read_stata(dta_path, columns=LOAD_COLUMNS, convert_categoricals=False)
+    raw = utils.read_round(dta_path, year, LOAD_COLUMNS)
 
     df = pd.DataFrame(
         {
@@ -226,7 +227,7 @@ def process_file(
     age_max: int = cst.AGE_MAX_MONTHS,
 ) -> pd.DataFrame:
     print(f"reading {dta_path.name} ...")
-    df = load_year(dta_path)
+    df = load_year(dta_path, year)
     print(
         f"  {len(df):,} children in {df['zone_key'].nunique()} zones / "
         f"{df['psu_key'].nunique()} areas"
@@ -303,12 +304,14 @@ def main() -> None:
 
     frames = []
     for year in cst.COLLECTION_YEAR:
-        matches = sorted(cst.INPUT_DIR.glob(f"ECV_{year}_*.dta"))
-        if not matches:
-            raise FileNotFoundError(f"no ECV_{year}_*.dta in {cst.INPUT_DIR}")
         frames.append(
             process_file(
-                matches[0], year, milieux, args.workdir, args.age_min, args.age_max
+                utils.find_input(year),
+                year,
+                milieux,
+                args.workdir,
+                args.age_min,
+                args.age_max,
             )
         )
 

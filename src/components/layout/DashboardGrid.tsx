@@ -7,12 +7,15 @@ import { DeterminantCardGrid, BehaviourIndicatorsChart, BehaviourIndicatorsMap, 
 import { ActionKpiGrid, ProbabilityShiftChart, LeverChart, ChildScatterChart } from '@/components/features/actions'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
 import { useDashboardStore } from '@/store/dashboardStore'
+import { ecvYearCaveat } from '@/lib/utils/years'
 import type { ViewMode } from '@/types'
 
 export function DashboardGrid() {
   const activeSection = useDashboardStore(s => s.activeSection)
   const viewMode = useDashboardStore(s => s.viewMode)
   const setViewMode = useDashboardStore(s => s.setViewMode)
+  const selectedYear = useDashboardStore(s => s.selectedYear)
+  const yearCaveat = ecvYearCaveat(selectedYear)
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-8">
@@ -46,6 +49,12 @@ export function DashboardGrid() {
             .
           </Notes>
         </div>
+        {/* Rounds that do not compare one-to-one with the others (ECV 2026). */}
+        {yearCaveat && (
+          <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 shadow-sm">
+            {yearCaveat}
+          </div>
+        )}
         {/* Indicator Cards */}
         <EcvIndicatorCardGrid />
         {/* Complete vaccination series, one card per vaccine */}
@@ -79,15 +88,15 @@ export function DashboardGrid() {
           <section className="mb-8">
             <DeterminantCardGrid />
           </section>
-          {/* Behaviour indicators dumbbell (left) + map of the widest-gap
-              indicator's category per area (right); the map stretches to the
+          {/* Map of the widest-gap indicator's category per area (left) +
+              behaviour indicators dumbbell (right); the map stretches to the
               dumbbell's content-driven height. */}
           <section className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-              <BehaviourIndicatorsChart />
-            </div>
             <div className="min-h-96 overflow-hidden rounded-lg border border-slate-200 bg-white">
               <BehaviourIndicatorsMap />
+            </div>
+            <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+              <BehaviourIndicatorsChart />
             </div>
           </section>
           {/* Relative influence of the household-model variables */}

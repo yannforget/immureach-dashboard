@@ -140,7 +140,7 @@ Selecting any control fans out to the other panels via store subscriptions
   selectedZoneId:     string | null,        // ZoneRow.id (e.g. "zone-142")
   hoveredZoneId:      string | null,        // cross-panel hover (province or zone id)
   viewMode:           'data' | 'profiling', // lower-panel tab
-  selectedYear:       2023 | 2024,          // collection year
+  selectedYear:       2023 | 2024 | 2026,   // collection year
   selectedMilieu:     Milieu,               // ECV only: 'all' | 'urbain' | 'rural'
   selectedAgeGroup:   AgeGroup,             // ECV only: '6-11' | '12-23' | '6-23'
   showAntenne:        boolean,              // map antenne overlay

@@ -1,6 +1,7 @@
 """Compute ECV household/child characteristics from the raw survey microdata.
 
-Reads the Stata exports in data/input/ecv/ (ECV_2022_* and ECV_2023_*) and
+Reads the Stata exports in data/input/ecv/ (ECV_2022_*, ECV_2023_* and
+ECV2026_*) and
 writes public/data/ecv_caracteristics.csv -- one row per national / province /
 zone domain, year, age group and milieu, with a `_pct` / `_low` / `_high`
 triplet per variable (point estimate and 95% confidence interval, 0-100).
@@ -100,7 +101,11 @@ def load_year(
     columns it carries.
     """
     print(f"  reading {dta_path.name} ...")
+    # Under the 2022/2023 names, so the weight shows up as WEIGHT_COL.
+    weight_col = cst.WEIGHT_COL_BY_YEAR.get(year, cst.WEIGHT_COL)
     available = stata_columns(dta_path)
+    if weight_col in available:
+        available.add(cst.WEIGHT_COL)
     absent_geo = [c for c in GEO_COLUMNS if c not in available]
     if absent_geo:
         raise ValueError(
@@ -116,9 +121,7 @@ def load_year(
         )
     source_cols = [c for c in wanted if c in available]
 
-    raw = pd.read_stata(
-        dta_path, columns=GEO_COLUMNS + source_cols, convert_categoricals=False
-    )
+    raw = utils.read_round(dta_path, year, GEO_COLUMNS + source_cols)
 
     df = pd.DataFrame(
         {
@@ -347,7 +350,7 @@ def main() -> None:
         "--years",
         default=",".join(cst.YEARS),
         help=f"comma-separated source-file years to process, as named in the\n"
-        f"ECV_<year>_*.dta filenames (default: {','.join(cst.YEARS)})",
+        f"ECV_<year>_*.dta / ECV<year>_*.dta filenames (default: {','.join(cst.YEARS)})",
     )
     parser.add_argument(
         "--variables",
@@ -415,17 +418,9 @@ def main() -> None:
 
     frames = []
     for year in years:
-        matches = sorted(cst.INPUT_DIR.glob(f"ECV_{year}_*.dta"))
-        if not matches:
-            raise FileNotFoundError(f"no ECV_{year}_*.dta in {cst.INPUT_DIR}")
-        if len(matches) > 1:
-            print(
-                f"  WARNING: {len(matches)} files match ECV_{year}_*.dta, using "
-                f"{matches[0].name}"
-            )
         frames.append(
             process_file(
-                matches[0],
+                utils.find_input(year),
                 year,
                 variables,
                 milieux,

@@ -1,6 +1,7 @@
 """Compute ECV vaccination-coverage percentages from the raw survey microdata.
 
-Reads the Stata exports in data/input/ecv/ (ECV_2022_* and ECV_2023_*) and
+Reads the Stata exports in data/input/ecv/ (ECV_2022_*, ECV_2023_* and
+ECV2026_*) and
 writes public/data/ecv_vaccination_coverage.csv -- one row per national /
 province / zone domain, year, age group and milieu, with a `_pct` / `_low` /
 `_high` triplet per metric (point estimate and 95% confidence interval, 0-100).
@@ -90,11 +91,12 @@ COUNT_COLS = ["nb_children", "nb_as", "as_enq"]
 
 def load_year(
     dta_path: Path,
+    year: str,
     provinces: dict[str, str],
     zones: dict[str, tuple[str, str]],
 ) -> pd.DataFrame:
     """Read one ECV Stata export into the child-level frame handed to R."""
-    raw = pd.read_stata(dta_path, columns=LOAD_COLUMNS, convert_categoricals=False)
+    raw = utils.read_round(dta_path, year, LOAD_COLUMNS)
 
     df = pd.DataFrame(
         {
@@ -243,7 +245,7 @@ def process_file(
     zones: dict[str, tuple[str, str]],
 ) -> pd.DataFrame:
     print(f"\n=== {year} ===")
-    df = load_year(dta_path, provinces, zones)
+    df = load_year(dta_path, year, provinces, zones)
     print(
         f"  {len(df):,} children (all ages) in {df['province'].nunique()} provinces / "
         f"{df['psu_key'].nunique()} areas"
@@ -309,7 +311,7 @@ def main() -> None:
         "--years",
         default=",".join(cst.YEARS),
         help=f"comma-separated source-file years to process, as named in the\n"
-        f"ECV_<year>_*.dta filenames (default: {','.join(cst.YEARS)})",
+        f"ECV_<year>_*.dta / ECV<year>_*.dta filenames (default: {','.join(cst.YEARS)})",
     )
     parser.add_argument(
         "--metrics",
@@ -376,17 +378,9 @@ def main() -> None:
 
     frames = []
     for year in years:
-        matches = sorted(cst.INPUT_DIR.glob(f"ECV_{year}_*.dta"))
-        if not matches:
-            raise FileNotFoundError(f"no ECV_{year}_*.dta in {cst.INPUT_DIR}")
-        if len(matches) > 1:
-            print(
-                f"  WARNING: {len(matches)} files match ECV_{year}_*.dta, using "
-                f"{matches[0].name}"
-            )
         frames.append(
             process_file(
-                matches[0],
+                utils.find_input(year),
                 year,
                 metrics,
                 milieux,

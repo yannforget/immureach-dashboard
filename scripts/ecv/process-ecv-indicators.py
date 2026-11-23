@@ -1,6 +1,7 @@
 """Compute ECV complete-series indicators for young children.
 
-Reads the Stata exports in data/input/ecv/ (ECV_2022_* and ECV_2023_*) and,
+Reads the Stata exports in data/input/ecv/ (ECV_2022_*, ECV_2023_* and
+ECV2026_*) and,
 for every vaccine of the routine schedule, estimates the share of children
 who received EVERY dose of its series (see VACCINE_SERIES in constants.py):
 
@@ -47,6 +48,7 @@ from pathlib import Path
 import pandas as pd
 
 import scripts.ecv.constants as cst
+from scripts.ecv import utils
 
 # Reuse the key-figures loader: same columns, same name cleaning.
 keys = importlib.import_module("scripts.ecv.process-ecv-keys")
@@ -157,7 +159,7 @@ def process_file(
     age_groups: list[str],
 ) -> pd.DataFrame:
     print(f"reading {dta_path.name} ...")
-    df = keys.load_year(dta_path)
+    df = keys.load_year(dta_path, year)
     print(
         f"  {len(df):,} children in {df['zone_key'].nunique()} zones / "
         f"{df['psu_key'].nunique()} areas"
@@ -249,12 +251,9 @@ def main() -> None:
 
     frames = []
     for year in cst.COLLECTION_YEAR:
-        matches = sorted(cst.INPUT_DIR.glob(f"ECV_{year}_*.dta"))
-        if not matches:
-            raise FileNotFoundError(f"no ECV_{year}_*.dta in {cst.INPUT_DIR}")
         frames.append(
             process_file(
-                matches[0],
+                utils.find_input(year),
                 year,
                 rscript,
                 milieux,

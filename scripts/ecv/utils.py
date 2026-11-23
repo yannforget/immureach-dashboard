@@ -24,6 +24,70 @@ def clean_name(series: pd.Series) -> pd.Series:
     )
 
 
+def find_input(year: str) -> Path:
+    """The round's Stata export: ECV_<year>_*.dta, or ECV<year>_*.dta (2026)."""
+    pattern = re.compile(rf"ECV_?{year}_.*\.dta")
+    matches = sorted(p for p in cst.INPUT_DIR.iterdir() if pattern.fullmatch(p.name))
+    if not matches:
+        raise FileNotFoundError(f"no ECV_{year}_*.dta / ECV{year}_*.dta in {cst.INPUT_DIR}")
+    if len(matches) > 1:
+        print(
+            f"  WARNING: {len(matches)} files match the {year} round, using "
+            f"{matches[0].name}"
+        )
+    return matches[0]
+
+
+def _decode_geography(raw: pd.DataFrame) -> pd.DataFrame:
+    """Turn a coded round's geography into the names the other rounds carry.
+
+    q101 "KL" -> "kl Kwilu"; q103 "KL_KL_BENA_DIBELE" -> "kl Bena Dibele";
+    q105 "KL_KL_BAGATA_KL_MOSANGO" -> "kl Mosango", which clean_name() then
+    treats like the earlier rounds' "kl Kwilu Province" and so on.
+    """
+    raw = raw.copy()
+    codes = raw[cst.STRATUM_COL].astype(str).str.strip()
+    unknown = sorted(set(codes) - set(cst.PROVINCE_BY_CODE))
+    if unknown:
+        raise ValueError(f"unknown province code(s) in {cst.STRATUM_COL}: {unknown}")
+    zone_codes = raw[cst.ZONE_COL].astype(str).str.strip()
+    # Prefixed with the lower-case province code, as in the earlier rounds:
+    # clean_name() strips it, and without it a name that happens to start
+    # with two letters and a space would lose its first word instead.
+    prefix = codes.str.lower() + " "
+    raw[cst.STRATUM_COL] = prefix + codes.map(cst.PROVINCE_BY_CODE)
+    raw[cst.ZONE_COL] = prefix + (
+        zone_codes.str.split("_", n=2).str[2].str.replace("_", " ").str.title()
+    )
+    # The area code repeats the zone code, then "<province code>_<area name>".
+    area_codes = raw[cst.AREA_COL].astype(str).str.strip()
+    raw[cst.AREA_COL] = prefix + pd.Series(
+        [
+            a[len(z) + 1 :].split("_", 1)[-1].replace("_", " ").title()
+            if a.startswith(z + "_")
+            else a
+            for a, z in zip(area_codes, zone_codes)
+        ],
+        index=raw.index,
+    )
+    return raw
+
+
+def read_round(dta_path: Path, year: str, columns: list[str]) -> pd.DataFrame:
+    """Read `columns` of one round, under the names the 2022/2023 files use.
+
+    Smooths over what changed between rounds: the weight column
+    (WEIGHT_COL_BY_YEAR) and coded geography (CODED_GEOGRAPHY_YEARS).
+    """
+    weight_col = cst.WEIGHT_COL_BY_YEAR.get(year, cst.WEIGHT_COL)
+    source = [weight_col if c == cst.WEIGHT_COL else c for c in columns]
+    raw = pd.read_stata(dta_path, columns=source, convert_categoricals=False)
+    raw = raw.rename(columns={weight_col: cst.WEIGHT_COL})
+    if year in cst.CODED_GEOGRAPHY_YEARS:
+        raw = _decode_geography(raw)
+    return raw
+
+
 def normalize(name: str) -> str:
     """Accent- and case-insensitive key for joining names across sources."""
     stripped = NAME_SUFFIX_RE.sub("", NAME_PREFIX_RE.sub("", str(name))).strip()

@@ -2,7 +2,7 @@ import type { EChartsOption } from 'echarts'
 import type { PdpItem } from '@/hooks'
 import { RI_CATEGORY_COLORS, RI_CATEGORY_LABELS } from '@/hooks/determinants/useRelativeInfluence'
 import { PDP_MUTED_TEXT_COLOR, PDP_PANEL_BORDER_COLOR, RI_LABEL_COLOR } from './theme'
-import { formatPdpShare, formatPdpX, pdpYExtent } from '@/lib/utils/partialDependence'
+import { formatPdpShare, formatPdpXTick, formatPdpXValue, pdpXAxisName, pdpXScale, pdpYExtent } from '@/lib/utils/partialDependence'
 import { formatRi } from '@/lib/utils/riFormat'
 
 // Y-axis bounds in whole percents, padded by a point and snapped to `step`.
@@ -13,6 +13,12 @@ function yBounds(lo: number, hi: number, step: number): [number, number] {
 }
 
 const percentLabel = (v: number) => `${Math.round(v * 100)} %`
+
+// Tooltip head line: "<label> = <x>", or the label alone when x has no meaning.
+function tooltipHead(item: PdpItem, x: number): string {
+  const value = formatPdpXValue(item.variable, x)
+  return value == null ? `<strong>${item.label}</strong>` : `<strong>${item.label}</strong> = ${value}`
+}
 
 interface PdpConfig {
   item: PdpItem
@@ -25,10 +31,15 @@ export function buildPdpOptions({ item }: PdpConfig): EChartsOption {
   const [lo, hi] = pdpYExtent([item.mean])
   const [yMin, yMax] = yBounds(lo, hi, 5)
   const xs = item.mean.map(p => p[0])
+  const scale = pdpXScale(item.variable)
+  const isLabels = scale?.kind === 'labels'
+  const isPercent = scale?.kind === 'percent'
+  // Text labels may wrap on two lines and overflow the plot edges.
+  const labelWidth = isLabels ? Math.max(60, Math.min(120, 480 / Object.keys(scale.labels).length)) : undefined
 
   return {
     animationDuration: 300,
-    grid: { top: 24, right: 24, bottom: 56, left: 56 },
+    grid: { top: 24, right: isLabels ? 56 : 24, bottom: isLabels ? 72 : pdpXAxisName(item.variable) ? 72 : 56, left: isLabels ? 64 : 56 },
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'line' },
@@ -36,22 +47,29 @@ export function buildPdpOptions({ item }: PdpConfig): EChartsOption {
         const mean = Array.isArray(params) ? params[0] : params
         if (!mean) return ''
         return (
-          `<strong>${item.label}</strong> = ${formatPdpX(mean.value[0])}<br/>` +
+          `${tooltipHead(item, mean.value[0])}<br/>` +
           `Enfants non zéro-dose prédits : <strong>${formatPdpShare(mean.value[1])}</strong>`
         )
       },
     },
     xAxis: {
       type: 'value',
-      min: Math.min(...xs),
-      max: Math.max(...xs),
-      // Ordinal scales and flags only take whole values.
+      // Percentages span the full 0-100 % range.
+      min: isPercent ? 0 : Math.min(...xs),
+      max: isPercent ? 1 : Math.max(...xs),
+      // Labelled scales get one tick per category; other ordinal scales and
+      // flags only take whole values.
+      interval: isLabels ? 1 : isPercent ? 0.1 : undefined,
       minInterval: item.discrete ? 1 : undefined,
-      name: `${item.label} (faible → élevé)`,
+      name: pdpXAxisName(item.variable) ?? `${item.label} (faible → élevé)`,
       nameLocation: 'middle',
-      nameGap: 32,
-      nameTextStyle: { color: PDP_MUTED_TEXT_COLOR },
-      axisLabel: { formatter: (v: number) => formatPdpX(v) },
+      nameGap: isLabels ? 48 : 32,
+      nameTextStyle: { color: PDP_MUTED_TEXT_COLOR, lineHeight: 14 },
+      axisTick: { show: scale?.kind !== 'hidden' },
+      axisLabel: {
+        formatter: (v: number) => formatPdpXTick(item.variable, v),
+        ...(isLabels ? { width: labelWidth, overflow: 'break' as const, hideOverlap: false, lineHeight: 13 } : {}),
+      },
       splitLine: { show: false },
     },
     yAxis: {
@@ -132,7 +150,7 @@ export function buildPdpGridOptions({ items, selected, columns, rowHeight }: Pdp
         const item: PdpItem | undefined = p && items[p.seriesIndex]
         if (!item) return ''
         return (
-          `<strong>${item.label}</strong> = ${formatPdpX(p.value[0])}<br/>` +
+          `${tooltipHead(item, p.value[0])}<br/>` +
           `<span style="color:${RI_CATEGORY_COLORS[item.category]}">●</span> ${RI_CATEGORY_LABELS[item.category]}<br/>` +
           `Enfants non zéro-dose prédits : <strong>${formatPdpShare(p.value[1])}</strong>`
         )

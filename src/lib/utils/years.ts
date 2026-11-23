@@ -1,9 +1,16 @@
-import type { DashboardSection, Year } from '@/types';
+import type { AgeGroup, DashboardSection, Year } from '@/types';
 
 // Every dataset is labelled with the year the ECV survey was collected. The
-// source exports in data/input/ecv/ are named after the year they were
-// produced, one year earlier, and the pipeline shifts them on the way out.
+// 2022 and 2023 source exports in data/input/ecv/ are named after the year
+// before collection, and the pipeline shifts them on the way out.
+//
+// Years of profile.json and the household model, which every section but ECV
+// is built on.
 export const DEFAULT_YEARS: Year[] = [2023, 2024];
+
+// ECV rounds, used until the ECV CSVs have loaded. Only the ECV section
+// offers 2026: no model or accessibility data exists for it.
+export const ECV_YEARS: Year[] = [2023, 2024, 2026];
 
 // Sections that only publish a subset of the collected years. The zero-dose
 // model is fitted on the latest survey alone, so offering the older year there
@@ -26,9 +33,36 @@ export function sectionYears(section: DashboardSection, available: Year[]): Year
  * renders against a year it has no data for.
  */
 export function resolveSectionYear(section: DashboardSection, current: Year): Year {
-  const allowed = SECTION_YEARS[section];
-  if (!allowed || allowed.includes(current)) return current;
+  const allowed = SECTION_YEARS[section] ?? (section === 'ecv' ? ECV_YEARS : DEFAULT_YEARS);
+  if (allowed.includes(current)) return current;
   return allowed[allowed.length - 1];
+}
+
+// ECV 2026 targeted 12-23 month olds and skipped Nord and Sud Kivu (see
+// docs/ecv2026.md), so its 6-11 and 6-23 windows and its national figure do
+// not compare with the earlier rounds'.
+export const ECV_TARGET_12_23_YEARS: Year[] = [2026];
+
+/** Caveat to show next to an ECV year, or undefined when there is none. */
+export function ecvYearCaveat(year: Year): string | undefined {
+  if (!ECV_TARGET_12_23_YEARS.includes(year)) return undefined;
+  return (
+    `L'ECV ${year} a ciblé les enfants de 12 à 23 mois : la tranche 6-11 mois ne compte qu'environ ` +
+    "1 000 enfants et la tranche 6-23 mois correspond en pratique aux 12-23 mois. Pour comparer avec " +
+    "les années précédentes, sélectionnez la tranche 12-23 mois. Le Nord-Kivu et le Sud-Kivu n'ont pas " +
+    'été enquêtés : les chiffres nationaux portent sur 24 provinces au lieu de 26.'
+  );
+}
+
+/**
+ * Caveat for a chart comparing ECV years at `ageGroup`, or undefined when
+ * every year in `years` covers that window the same way.
+ */
+export function ecvTrendCaveat(years: number[], ageGroup: AgeGroup): string | undefined {
+  if (ageGroup === '12-23') return undefined;
+  const targeted = ECV_TARGET_12_23_YEARS.filter(y => years.includes(y));
+  if (targeted.length === 0) return undefined;
+  return `${targeted.join(', ')} : enquête ciblée sur les 12-23 mois, comparer les années sur la tranche 12-23 mois.`;
 }
 
 // Sections whose results describe a later year than the survey they are
